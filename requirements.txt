@@ -1,0 +1,6 @@
+Django
+django-bootstrap-v5
+opencv-python
+pyzbar
+face-recognition
+pillow

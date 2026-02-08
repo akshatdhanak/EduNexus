@@ -1,0 +1,199 @@
+{% extends "layout.html" %}
+
+{% block title %}Daily Attendance{% endblock %}
+
+{% block container %}
+
+<div class="attendance-container">
+    <div class="page-header">
+        <h1>Daily Attendance</h1>
+        <p class="subtitle">Your attendance records</p>
+    </div>
+
+    <div class="attendance-content">
+        {% if daily_attendance %}
+            <div class="records-list">
+                {% for date, records in daily_attendance.items %}
+                    <div class="date-group">
+                        <div class="date-header">{{ date|date:"M d, Y" }}</div>
+                        <div class="records-table">
+                            {% for record in records %}
+                                <div class="record-row">
+                                    <div class="subject-name">{{ record.subject }}</div>
+                                    <div class="status-badge status-{{ record.status|lower }}">
+                                        {{ record.status|title }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <p>No attendance records available.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="page-actions">
+        <a href="{% url 'student_app:student_dashboard' %}" class="btn-back">← Back to Dashboard</a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block style %}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #f9fafb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    color: #1f2937;
+}
+
+.attendance-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.page-header {
+    padding: 40px 20px;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+    background: white;
+    margin-bottom: 32px;
+}
+
+.page-header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.attendance-content {
+    padding: 0 20px 32px;
+}
+
+.records-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.date-group {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.date-header {
+    padding: 16px 20px;
+    background: #f3f4f6;
+    font-weight: 600;
+    color: #111827;
+    font-size: 15px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.records-table {
+    display: flex;
+    flex-direction: column;
+}
+
+.record-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.2s;
+}
+
+.record-row:last-child {
+    border-bottom: none;
+}
+
+.record-row:hover {
+    background: #f9fafb;
+}
+
+.subject-name {
+    font-weight: 500;
+    color: #1f2937;
+    flex: 1;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-present {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-absent {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-late {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.empty-state p {
+    color: #6b7280;
+    font-size: 15px;
+}
+
+.page-actions {
+    padding: 20px;
+    text-align: center;
+}
+
+.btn-back {
+    display: inline-block;
+    padding: 10px 20px;
+    background: white;
+    color: #1f2937;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-back:hover {
+    border-color: #9ca3af;
+    background: #f9fafb;
+}
+
+{% endblock %}

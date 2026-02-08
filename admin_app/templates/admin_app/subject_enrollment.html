@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block title %}Subject Enrollment by Semester{% endblock %}
+
+{% block container %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">📚 Subject Enrollment by Semester</h1>
+    
+    <div class="text-center mb-4">
+        <a href="{% url 'admin_app:admin_dashboard' %}" class="btn btn-secondary">← Back to Dashboard</a>
+    </div>
+
+    {% for sem_data in semester_subjects_data %}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                📖 Semester {{ sem_data.semester }}
+                <span class="badge bg-light text-dark float-end">{{ sem_data.total_students_in_sem }} Students</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for subject_data in sem_data.subjects %}
+                <div class="col-md-6 mb-3">
+                    <div class="border rounded p-3" style="background: #f8f9fa;">
+                        <h6 class="text-dark">
+                            ✓ {{ subject_data.name }}
+                        </h6>
+                        <p class="mb-2">
+                            <strong>Enrolled Students:</strong> 
+                            <span class="badge bg-info">{{ subject_data.enrolled_count }}</span>
+                        </p>
+                        
+                        {% if subject_data.students %}
+                        <div class="alert alert-light p-2">
+                            <small><strong>Students:</strong></small>
+                            <ul class="list-unstyled mb-0 mt-1" style="font-size: 0.85rem;">
+                                {% for student in subject_data.students %}
+                                <li>
+                                    • {{ student.user.username }} - {{ student.name }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% else %}
+                        <p class="text-muted mb-0">
+                            <small>No students enrolled yet</small>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="card mt-5">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">📊 Summary Statistics</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for sem_data in semester_subjects_data %}
+                <div class="col-md-3">
+                    <div class="text-center p-3">
+                        <h4>{{ sem_data.total_students_in_sem }}</h4>
+                        <p class="text-muted">Semester {{ sem_data.semester }} Students</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-4 mb-4">
+        <a href="{% url 'admin_app:admin_dashboard' %}" class="btn btn-secondary">← Back to Dashboard</a>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends "layout.html" %}
+
+{% block title %}Leave Status{% endblock %}
+
+{% block container %}
+<div class="leave-view-page">
+  <div class="page-header">
+    <h1 class="page-title">Leave Requests</h1>
+    <p class="page-subtitle">Track your leave applications</p>
+  </div>
+
+  <div class="page-content">
+    {% if leaves %}
+      <div class="leaves-list">
+        {% for leave in leaves %}
+        <div class="leave-item">
+          <div class="leave-header">
+            <div class="leave-reason">{{ leave.reason }}</div>
+            <span class="status-badge status-{{ leave.status }}">{{ leave.status|title }}</span>
+          </div>
+          <div class="leave-details">
+            <div class="detail">
+              <span class="label">Description:</span>
+              <span class="value">{{ leave.discription }}</span>
+            </div>
+            <div class="detail">
+              <span class="label">Duration:</span>
+              <span class="value">{{ leave.start_date|date:"M d" }} – {{ leave.end_date|date:"M d, Y" }}</span>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <p>No leave requests found.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block style %}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #f9fafb;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  color: #1f2937;
+}
+
+.leave-view-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.page-header {
+  padding: 40px 20px;
+  text-align: center;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+  margin-bottom: 32px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.page-content {
+  padding: 0 20px 32px;
+}
+
+.leaves-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.leave-item {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.2s;
+}
+
+.leave-item:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.leave-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.leave-reason {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid;
+}
+
+.status-badge.status-approved {
+  background: #ecfdf3;
+  color: #047857;
+  border-color: #d1fae5;
+}
+
+.status-badge.status-rejected {
+  background: #fef2f2;
+  color: #7f1d1d;
+  border-color: #fecaca;
+}
+
+.status-badge.status-panding {
+  background: #fef3c7;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.leave-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail {
+  display: flex;
+  gap: 12px;
+  font-size: 0.95rem;
+}
+
+.detail .label {
+  font-weight: 600;
+  color: #6b7280;
+  min-width: 90px;
+}
+
+.detail .value {
+  color: #1f2937;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.empty-state p {
+  color: #6b7280;
+  font-size: 15px;
+}
+
+{% endblock %}

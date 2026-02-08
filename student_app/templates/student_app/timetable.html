@@ -1,0 +1,205 @@
+{% extends 'layout.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Timetable{% endblock %}
+
+{% block content %}
+<style>
+    .timetable-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .semester-selector {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .timetable-day {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .day-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        font-weight: 600;
+        font-size: 18px;
+    }
+    
+    .slot-card {
+        border-left: 4px solid #667eea;
+        background: #f8f9fa;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 6px;
+        transition: all 0.3s;
+    }
+    
+    .slot-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .slot-card.theory {
+        border-left-color: #667eea;
+    }
+    
+    .slot-card.practical {
+        border-left-color: #28a745;
+    }
+    
+    .slot-card.tutorial {
+        border-left-color: #ffc107;
+    }
+    
+    .slot-time {
+        font-weight: 600;
+        color: #495057;
+        font-size: 16px;
+    }
+    
+    .slot-subject {
+        font-size: 18px;
+        font-weight: 600;
+        color: #212529;
+        margin: 5px 0;
+    }
+    
+    .slot-info {
+        color: #6c757d;
+        font-size: 14px;
+    }
+    
+    .slot-type-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .badge-theory {
+        background: #e7e9fc;
+        color: #667eea;
+    }
+    
+    .badge-practical {
+        background: #d4edda;
+        color: #28a745;
+    }
+    
+    .badge-tutorial {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .no-slots {
+        text-align: center;
+        padding: 40px;
+        color: #6c757d;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="timetable-header">
+        <h2><i class="material-icons" style="vertical-align: middle; font-size: 32px;">schedule</i> Timetable</h2>
+        <p class="mb-0">{{ student.get_degree_display }} - Semester {{ selected_semester }}</p>
+    </div>
+    
+    <div class="semester-selector">
+        <div class="row align-items-center">
+            <div class="col-md-3">
+                <label class="form-label fw-bold">Select Semester:</label>
+            </div>
+            <div class="col-md-6">
+                <select class="form-select" id="semesterSelect" onchange="changeSemester()">
+                    {% for sem in all_semesters %}
+                    <option value="{{ sem }}" {% if sem == selected_semester %}selected{% endif %}>
+                        Semester {{ sem }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 text-end">
+                <a href="{% url 'student_app:student_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="material-icons" style="vertical-align: middle;">arrow_back</i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    {% for day in days %}
+    {% with day_slots=organized_timetable|get_item:day %}
+    {% if day_slots %}
+    <div class="timetable-day">
+        <div class="day-header">
+            <i class="material-icons" style="vertical-align: middle;">calendar_today</i>
+            {{ day|title }}
+        </div>
+        
+        <div class="row">
+            {% for slot in day_slots %}
+            <div class="col-md-6">
+                <div class="slot-card {{ slot.slot_type }}">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="slot-time">
+                            <i class="material-icons" style="vertical-align: middle; font-size: 18px;">access_time</i>
+                            {{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}
+                        </div>
+                        <span class="slot-type-badge badge-{{ slot.slot_type }}">
+                            {{ slot.get_slot_type_display }}
+                        </span>
+                    </div>
+                    <div class="slot-subject">{{ slot.subject.name }}</div>
+                    <div class="slot-info">
+                        <i class="material-icons" style="vertical-align: middle; font-size: 16px;">person</i>
+                        {{ slot.faculty.name }}
+                        {% if slot.room_number %}
+                        <span class="ms-3">
+                            <i class="material-icons" style="vertical-align: middle; font-size: 16px;">room</i>
+                            Room {{ slot.room_number }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% endwith %}
+    {% endfor %}
+    
+    {% if not organized_timetable %}
+    <div class="no-slots">
+        <i class="material-icons" style="font-size: 64px; color: #dee2e6;">event_busy</i>
+        <h4 class="mt-3">No timetable available for this semester</h4>
+        <p>Please contact the administrator to add timetable entries.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function changeSemester() {
+        const semester = document.getElementById('semesterSelect').value;
+        window.location.href = '?semester=' + semester;
+    }
+</script>
+{% endblock %}

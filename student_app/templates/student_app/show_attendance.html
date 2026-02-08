@@ -1,0 +1,104 @@
+{% extends "layout.html" %}
+
+{% block title %}Attendance{% endblock %}
+
+{% block container %}
+
+<div class="container mt-5">
+    <div class="card shadow-lg mb-4">
+        <div class="card-header bg-primary text-white text-center">
+            <h2>Attendance Record</h2>
+        </div>
+        <div class="card-body">
+            {% if attendance %}
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in attendance %}
+                            <tr>
+                                <td>{{ record.date }}</td>
+                                <td>{{ record.get_status_display }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No attendance records found.</p>
+            {% endif %}
+        </div>
+    </div>
+    <a href="{% url 'student_app:student_dashboard' %}" class="btn btn-primary">back</a>
+</div>
+
+{% endblock %}
+
+
+{% block style %}
+body {
+    background-color: #f8f9fa; /* Light gray background */
+}
+
+.container {
+    max-width: 800px;
+}
+
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.card-header {
+    font-size: 24px;
+    font-weight: bold;
+    padding: 15px;
+}
+
+.table {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+th, td {
+    text-align: center;
+    padding: 12px;
+    font-size: 16px;
+    color: black; /* Ensure text is black */
+}
+
+th {
+    background-color: #007bff; /* Blue header */
+    color: white;
+}
+
+td:nth-child(2) { /* Status column */
+    font-weight: bold;
+}
+
+td:contains("Present") {
+    background-color: #d4edda; /* Light green */
+    color: black;
+}
+
+td:contains("Absent") {
+    background-color: #f8d7da; /* Light red */
+    color: black;
+}
+
+.btn-primary {
+    display: block;
+    width: 150px;
+    margin: 20px auto;
+    padding: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 8px;
+    text-align: center;
+}
+
+{% endblock %}

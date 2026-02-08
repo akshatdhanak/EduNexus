@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+
+{% block title %}Faculties information{% endblock %}
+
+{% block container %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between mb-3">
+        <h2>Student List</h2>
+        <a href="{% url 'admin_app:faculty_add' %}" class="btn btn-success">+ Add Faculty</a>
+    </div>
+
+    <!-- Student Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Faculty ID</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Department</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody class="table-light">
+                {% for faculty in faculties %}
+                <tr>
+                    <td>{{ faculty.user.username }}</td>
+                    <td>{{ faculty.user.email }}</td>
+                    <td>{{ faculty.user.role }}</td>
+                    <td>{{ faculty.department }}</td>
+                    <td>
+                        <a href="{% url 'admin_app:faculty_edit' faculty.id %}" class="btn btn-warning btn-sm">Edit</a>
+                    </td>
+                    <td>
+                        <a href="{% url 'admin_app:faculty_delete' faculty.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this student?');">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <a href="{% url 'admin_app:admin_dashboard' %}" class="btn btn-primary">back</a>
+
+</div>
+{% endblock %}

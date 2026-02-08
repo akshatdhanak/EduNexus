@@ -1,0 +1,247 @@
+{% extends "layout.html" %}
+
+{% block title %}Register{% endblock %}
+
+{% block container %}
+<div class="register-wrapper">
+    <div class="register-card">
+        <div class="register-header">
+            <h1>Register</h1>
+            <p>Create a new account with clean, focused inputs.</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="register-form">
+            {% csrf_token %}
+            {% for field in form %}
+                <div class="form-row">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <div class="form-control-wrap {% if field.field.widget.input_type == 'checkbox' %}checkbox-wrap{% endif %}">
+                        {{ field }}
+                    </div>
+                    {% if field.help_text %}
+                        <p class="help-text">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="error-text">{{ field.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">Register</button>
+                <a href="{% url 'admin_app:admin_dashboard' %}" class="btn-secondary">Back</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const divisionSelect = document.getElementById('id_division');
+        const batchSelect = document.getElementById('id_batch');
+        const batchSuffixes = ['1', '2', '3', '4'];
+
+        function updateBatchOptions() {
+            if (!divisionSelect || !batchSelect) {
+                return;
+            }
+
+            const division = divisionSelect.value;
+            const currentValue = batchSelect.value;
+
+            batchSelect.innerHTML = '';
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = 'Select batch';
+            batchSelect.appendChild(placeholder);
+
+            if (!division) {
+                batchSelect.value = '';
+                return;
+            }
+
+            batchSuffixes.forEach(function(suffix) {
+                const option = document.createElement('option');
+                option.value = `${division}${suffix}`;
+                option.textContent = `${division}${suffix}`;
+                batchSelect.appendChild(option);
+            });
+
+            if (currentValue) {
+                batchSelect.value = currentValue;
+            }
+        }
+
+        if (divisionSelect && batchSelect) {
+            divisionSelect.addEventListener('change', updateBatchOptions);
+            updateBatchOptions();
+        }
+    });
+</script>
+{% endblock %}
+
+
+{% block style %}
+:root {
+    --surface: #ffffff;
+    --border: #e5e7eb;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent-strong: #1d4ed8;
+}
+
+body {
+    background: #f5f6f8;
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.register-wrapper {
+    max-width: 760px;
+    margin: 80px auto;
+    padding: 0 16px;
+}
+
+.register-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.06);
+    padding: 32px;
+}
+
+.register-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+}
+
+.register-header p {
+    margin: 0 0 24px 0;
+    color: var(--muted);
+    font-size: 15px;
+}
+
+.register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-row label {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+}
+
+.form-control-wrap input,
+.form-control-wrap select,
+.form-control-wrap textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    color: var(--text);
+    background: #f9fafb;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control-wrap input:focus,
+.form-control-wrap select:focus,
+.form-control-wrap textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    background: #fff;
+}
+
+.checkbox-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+    padding: 8px 0;
+}
+
+.checkbox-wrap input[type="checkbox"] {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+}
+
+.checkbox-wrap label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.help-text {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.error-text {
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.btn-primary,
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid var(--accent);
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.24);
+}
+
+.btn-primary:hover { background: var(--accent-strong); }
+
+.btn-secondary {
+    background: #fff;
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn-primary:active,
+.btn-secondary:active {
+    transform: translateY(1px);
+}
+
+@media (max-width: 640px) {
+    .register-card { padding: 24px; }
+    .form-actions { flex-direction: column; }
+    .btn-primary, .btn-secondary { width: 100%; }
+}
+{% endblock  %}

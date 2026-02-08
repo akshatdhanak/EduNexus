@@ -1,0 +1,491 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Profile{% endblock %}
+{% block nav_title %}Edit Faculty Profile{% endblock %}
+
+{% block container %}
+
+<div class="edit-profile-container">
+    <div class="edit-profile-card">
+        <!-- Header -->
+        <div class="card-header">
+            <div class="header-content">
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                <h1>Edit Profile</h1>
+            </div>
+            <p class="subtitle">Update your faculty information</p>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" enctype="multipart/form-data" class="edit-form">
+            {% csrf_token %}
+
+            <!-- Profile Photo Section -->
+            <div class="form-section">
+                <h2 class="section-title">Profile Photo</h2>
+                <div class="photo-uploader">
+                    <div class="photo-preview">
+                        <img src="{{ faculty.image.url }}" alt="Profile" class="preview-image" id="preview">
+                    </div>
+                    <div class="photo-controls">
+                        <label for="image" class="file-input-label">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="16 16 12 12 8 16"></polyline>
+                                <line x1="12" y1="12" x2="12" y2="21"></line>
+                                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+                            </svg>
+                            Choose Photo
+                        </label>
+                        <input type="file" id="image" name="image" accept="image/*" class="file-input" onchange="previewImage(event)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personal Information -->
+            <div class="form-section">
+                <h2 class="section-title">Personal Information</h2>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" value="{{ faculty.name }}" required class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="mobile_no">Mobile Number</label>
+                        <input type="tel" id="mobile_no" name="mobile_no" value="{{ faculty.mobile_no }}" class="form-input" placeholder="+91 XXXXX XXXXX">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" value="{{ user.email }}" required class="form-input">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department & Subjects (Read-only) -->
+            <div class="form-section">
+                <h2 class="section-title">Academic Information</h2>
+                <div class="info-display">
+                    <div class="info-item">
+                        <span class="label">Department</span>
+                        <span class="value">{{ faculty.department }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Subjects Assigned</span>
+                        <div class="value-list">
+                            {% for subject in faculty.subject.all %}
+                                <span class="badge">{{ subject.name }}</span>
+                            {% empty %}
+                                <span class="muted">No subjects assigned</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Save Changes
+                </button>
+                <a href="{% url 'faculty_app:profile' %}" class="btn-cancel">Cancel</a>
+            </div>
+        </form>
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('preview').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+}
+</script>
+
+{% endblock %}
+
+{% block style %}
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #f5f7fa;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    color: #1f2937;
+}
+
+.edit-profile-container {
+    max-width: 700px;
+    margin: 32px auto;
+    padding: 20px;
+}
+
+.edit-profile-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Header */
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 32px;
+    text-align: center;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.header-content svg {
+    flex-shrink: 0;
+}
+
+.card-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.subtitle {
+    font-size: 14px;
+    opacity: 0.95;
+    margin: 0;
+}
+
+/* Form */
+.edit-form {
+    padding: 32px;
+}
+
+.form-section {
+    margin-bottom: 32px;
+}
+
+.form-section:last-of-type {
+    margin-bottom: 24px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f3f4f6;
+}
+
+/* Photo Uploader */
+.photo-uploader {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 24px;
+    align-items: center;
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.photo-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 2px solid #e5e7eb;
+}
+
+.photo-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-input-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: white;
+    border: 2px solid #667eea;
+    border-radius: 8px;
+    color: #667eea;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.file-input-label:hover {
+    background: #667eea;
+    color: white;
+}
+
+/* Form Grid */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-input {
+    padding: 12px 14px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Info Display */
+.info-display {
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item .label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-item .value {
+    font-size: 14px;
+    font-weight: 500;
+    color: #111827;
+}
+
+.value-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #eef2ff;
+    color: #667eea;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.muted {
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 12px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.btn-submit,
+.btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    flex: 1;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-cancel {
+    background: white;
+    color: #374151;
+    border: 1.5px solid #d1d5db;
+    flex: 0;
+}
+
+.btn-cancel:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+/* Messages */
+.messages {
+    padding: 20px 32px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.alert:last-child {
+    margin-bottom: 0;
+}
+
+.alert-success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.alert-error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .edit-profile-container {
+        padding: 12px;
+    }
+
+    .edit-profile-card {
+        border-radius: 8px;
+    }
+
+    .card-header {
+        padding: 24px;
+    }
+
+    .header-content {
+        flex-direction: column;
+    }
+
+    .card-header h1 {
+        font-size: 20px;
+    }
+
+    .edit-form {
+        padding: 20px;
+    }
+
+    .photo-uploader {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .photo-preview {
+        order: -1;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .btn-submit,
+    .btn-cancel {
+        flex: 1;
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}

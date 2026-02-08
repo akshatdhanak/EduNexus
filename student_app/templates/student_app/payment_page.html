@@ -1,0 +1,774 @@
+{% extends "layout.html" %}
+
+{% block title %}Complete Payment{% endblock %}
+{% block nav_title %}Payment Gateway{% endblock %}
+
+{% block container %}
+
+<div class="payment-wrapper">
+    <div class="payment-container">
+        <!-- Payment Gateway Header -->
+        <div class="gateway-header">
+            <div class="gateway-logo">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                </svg>
+                <span>SecurePay Gateway</span>
+            </div>
+            <div class="secure-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <span>Secure Payment</span>
+            </div>
+        </div>
+
+        <!-- Payment Details Card -->
+        <div class="payment-card">
+            <div class="payment-info">
+                <h2>Payment Summary</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="label">Student Name</span>
+                        <span class="value">{{ student.name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Student ID</span>
+                        <span class="value">{{ student.user.username }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Semester</span>
+                        <span class="value">Semester {{ semester }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Payment Type</span>
+                        <span class="value">Academic Fee</span>
+                    </div>
+                </div>
+                
+                <div class="amount-section">
+                    <span class="amount-label">Total Amount</span>
+                    <span class="amount-value">₹{{ amount|floatformat:0 }}</span>
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <div class="payment-methods">
+                <h3>Select Payment Method</h3>
+                <div class="method-tabs">
+                    <button class="method-tab active" data-method="card">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                            <line x1="1" y1="10" x2="23" y2="10"></line>
+                        </svg>
+                        Card
+                    </button>
+                    <button class="method-tab" data-method="upi">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        UPI
+                    </button>
+                    <button class="method-tab" data-method="netbanking">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                        Net Banking
+                    </button>
+                </div>
+
+                <!-- Card Payment Form -->
+                <div class="payment-form" id="card-form">
+                    <div class="form-group">
+                        <label>Card Number</label>
+                        <input type="text" class="form-input" placeholder="1234 5678 9012 3456" maxlength="19" id="card-number">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Expiry Date</label>
+                            <input type="text" class="form-input" placeholder="MM/YY" maxlength="5" id="expiry">
+                        </div>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <input type="text" class="form-input" placeholder="123" maxlength="3" id="cvv">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Cardholder Name</label>
+                        <input type="text" class="form-input" placeholder="Name on card" id="cardholder">
+                    </div>
+                </div>
+
+                <!-- UPI Form -->
+                <div class="payment-form hidden" id="upi-form">
+                    <div class="form-group">
+                        <label>UPI ID</label>
+                        <input type="text" class="form-input" placeholder="yourname@upi" id="upi-id">
+                    </div>
+                    <div class="upi-apps">
+                        <button class="upi-app">
+                            <span>📱</span>
+                            <span>GPay</span>
+                        </button>
+                        <button class="upi-app">
+                            <span>💳</span>
+                            <span>PhonePe</span>
+                        </button>
+                        <button class="upi-app">
+                            <span>💰</span>
+                            <span>Paytm</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Net Banking Form -->
+                <div class="payment-form hidden" id="netbanking-form">
+                    <div class="form-group">
+                        <label>Select Your Bank</label>
+                        <select class="form-input" id="bank-select">
+                            <option value="">Choose bank...</option>
+                            <option value="sbi">State Bank of India</option>
+                            <option value="hdfc">HDFC Bank</option>
+                            <option value="icici">ICICI Bank</option>
+                            <option value="axis">Axis Bank</option>
+                            <option value="pnb">Punjab National Bank</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <form method="POST" action="{% url 'student_app:payment_success' %}" id="payment-form">
+                {% csrf_token %}
+                <input type="hidden" name="semester" value="{{ semester }}">
+                <input type="hidden" name="amount" value="{{ amount }}">
+                <input type="hidden" name="payment_method" value="card" id="payment-method-input">
+                
+                <div class="action-buttons">
+                    <button type="button" class="btn-pay" id="pay-button">
+                        <span class="btn-text">Pay ₹{{ amount|floatformat:0 }}</span>
+                        <span class="btn-loader hidden">
+                            <svg class="spinner" viewBox="0 0 50 50">
+                                <circle class="path" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+                            </svg>
+                            Processing...
+                        </span>
+                    </button>
+                    <a href="{% url 'student_app:fee_dashboard' %}" class="btn-cancel">Cancel</a>
+                </div>
+            </form>
+
+            <!-- Trust Badges -->
+            <div class="trust-badges">
+                <div class="badge-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                    <span>SSL Encrypted</span>
+                </div>
+                <div class="badge-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <span>100% Secure</span>
+                </div>
+                <div class="badge-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                    </svg>
+                    <span>Instant Receipt</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal-overlay hidden" id="success-modal">
+    <div class="success-modal">
+        <div class="success-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+        </div>
+        <h2>Payment Successful!</h2>
+        <p>Your payment of ₹{{ amount|floatformat:0 }} has been processed successfully.</p>
+        <div class="transaction-id">Transaction ID: <span id="txn-id"></span></div>
+        <button class="btn-continue" id="continue-button">Continue to Dashboard</button>
+    </div>
+</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.method-tab').forEach(tab => {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('.method-tab').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        
+        const method = this.dataset.method;
+        document.querySelectorAll('.payment-form').forEach(form => form.classList.add('hidden'));
+        document.getElementById(method + '-form').classList.remove('hidden');
+        
+        // Update payment method in form
+        document.getElementById('payment-method-input').value = method;
+    });
+});
+
+// Auto-format card number
+document.getElementById('card-number')?.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\s/g, '');
+    let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+    e.target.value = formattedValue;
+});
+
+// Auto-format expiry
+document.getElementById('expiry')?.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 2) {
+        value = value.slice(0, 2) + '/' + value.slice(2, 4);
+    }
+    e.target.value = value;
+});
+
+// Payment processing
+document.getElementById('pay-button').addEventListener('click', function() {
+    const button = this;
+    const btnText = button.querySelector('.btn-text');
+    const btnLoader = button.querySelector('.btn-loader');
+    
+    // Show loader
+    button.disabled = true;
+    btnText.classList.add('hidden');
+    btnLoader.classList.remove('hidden');
+    
+    // Simulate payment processing
+    setTimeout(() => {
+        // Generate transaction ID
+        const txnId = 'TXN' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        document.getElementById('txn-id').textContent = txnId;
+        
+        // Show success modal
+        document.getElementById('success-modal').classList.remove('hidden');
+        
+        // Auto-submit form after showing modal
+        setTimeout(() => {
+            document.getElementById('payment-form').submit();
+        }, 3000);
+    }, 2000);
+});
+
+// Continue button
+document.getElementById('continue-button').addEventListener('click', function() {
+    document.getElementById('payment-form').submit();
+});
+</script>
+
+{% endblock %}
+
+{% block style %}
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.payment-wrapper {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40px 20px;
+}
+
+.payment-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Gateway Header */
+.gateway-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: 20px 24px;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.gateway-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.gateway-logo svg {
+    color: #667eea;
+}
+
+.secure-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #16a34a;
+    background: #dcfce7;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+.secure-badge svg {
+    flex-shrink: 0;
+}
+
+/* Payment Card */
+.payment-card {
+    background: white;
+    padding: 32px 24px;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.payment-info h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 20px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 20px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.info-item .label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-item .value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.amount-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    margin-bottom: 32px;
+}
+
+.amount-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    opacity: 0.9;
+}
+
+.amount-value {
+    font-size: 32px;
+    font-weight: 800;
+    color: white;
+}
+
+/* Payment Methods */
+.payment-methods h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 16px;
+}
+
+.method-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.method-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.method-tab:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+.method-tab.active {
+    background: #eef2ff;
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.method-tab svg {
+    flex-shrink: 0;
+}
+
+/* Payment Forms */
+.payment-form {
+    margin-bottom: 24px;
+}
+
+.payment-form.hidden {
+    display: none;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #111827;
+    background: white;
+    transition: all 0.2s ease;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* UPI Apps */
+.upi-apps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.upi-app {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px;
+    background: #f9fafb;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.upi-app:hover {
+    background: #f3f4f6;
+    border-color: #667eea;
+    transform: translateY(-2px);
+}
+
+.upi-app span:first-child {
+    font-size: 24px;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.btn-pay {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-pay:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+}
+
+.btn-pay:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn-text, .btn-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-loader.hidden, .btn-text.hidden {
+    display: none;
+}
+
+.spinner {
+    animation: rotate 2s linear infinite;
+    width: 20px;
+    height: 20px;
+}
+
+.spinner .path {
+    stroke: white;
+    stroke-linecap: round;
+    animation: dash 1.5s ease-in-out infinite;
+}
+
+@keyframes rotate {
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes dash {
+    0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+    50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+    100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+}
+
+.btn-cancel {
+    width: 100%;
+    padding: 14px;
+    background: white;
+    color: #374151;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: block;
+}
+
+.btn-cancel:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+/* Trust Badges */
+.trust-badges {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.badge-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.badge-item svg {
+    color: #16a34a;
+    flex-shrink: 0;
+}
+
+/* Success Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.success-modal {
+    background: white;
+    padding: 48px 32px;
+    border-radius: 16px;
+    text-align: center;
+    max-width: 400px;
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: successPulse 0.6s ease;
+}
+
+@keyframes successPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.success-icon svg {
+    color: white;
+}
+
+.success-modal h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 12px;
+}
+
+.success-modal p {
+    font-size: 15px;
+    color: #6b7280;
+    margin-bottom: 20px;
+}
+
+.transaction-id {
+    font-size: 13px;
+    font-weight: 600;
+    color: #667eea;
+    background: #eef2ff;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.btn-continue {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-continue:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .payment-wrapper {
+        padding: 20px 12px;
+    }
+    
+    .payment-card {
+        padding: 24px 16px;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .amount-section {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+    
+    .method-tabs {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .trust-badges {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+</style>
+{% endblock %}

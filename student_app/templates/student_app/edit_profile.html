@@ -1,0 +1,328 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Profile{% endblock %}
+{% block nav_title %}Edit Profile{% endblock %}
+
+{% block container %}
+
+<div class="edit-profile-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <span class="material-icons align-middle me-2">edit</span>
+                        Edit Your Profile
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <span class="material-icons align-middle me-2">info</span>
+                        <strong>Note:</strong> Student ID cannot be changed as it is used for attendance marking.
+                    </div>
+
+                    {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Current Profile Picture -->
+                        <div class="mb-4 text-center">
+                            <img src="{{ student.image.url }}" class="rounded-circle mb-3" width="120" height="120" alt="Profile Picture">
+                            <p class="text-muted"><small>Current profile picture</small></p>
+                        </div>
+
+                        <!-- Student ID (Read-only) -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <span class="material-icons align-middle me-1">person</span>
+                                Student ID (Cannot be changed)
+                            </label>
+                            <input type="text" class="form-control" value="{{ student.user.username }}" disabled>
+                        </div>
+
+                        <!-- Basic Information Section -->
+                        <h5 class="section-title"><span class="material-icons me-2">person</span>Basic Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">Full Name *</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}<div class="text-danger">{{ form.name.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">Email Address *</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}<div class="text-danger">{{ form.email.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.mobile_no.id_for_label }}" class="form-label">Mobile Number *</label>
+                                {{ form.mobile_no }}
+                                {% if form.mobile_no.errors %}<div class="text-danger">{{ form.mobile_no.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.gender.id_for_label }}" class="form-label">Gender</label>
+                                {{ form.gender }}
+                                {% if form.gender.errors %}<div class="text-danger">{{ form.gender.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date_of_birth.id_for_label }}" class="form-label">Date of Birth</label>
+                                {{ form.date_of_birth }}
+                                {% if form.date_of_birth.errors %}<div class="text-danger">{{ form.date_of_birth.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.blood_group.id_for_label }}" class="form-label">Blood Group</label>
+                                {{ form.blood_group }}
+                                {% if form.blood_group.errors %}<div class="text-danger">{{ form.blood_group.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.religion.id_for_label }}" class="form-label">Religion</label>
+                                {{ form.religion }}
+                                {% if form.religion.errors %}<div class="text-danger">{{ form.religion.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.caste.id_for_label }}" class="form-label">Caste</label>
+                                {{ form.caste }}
+                                {% if form.caste.errors %}<div class="text-danger">{{ form.caste.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.mother_tongue.id_for_label }}" class="form-label">Mother Tongue</label>
+                                {{ form.mother_tongue }}
+                                {% if form.mother_tongue.errors %}<div class="text-danger">{{ form.mother_tongue.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Address Information Section -->
+                        <h5 class="section-title"><span class="material-icons me-2">home</span>Address Information</h5>
+                        <div class="mb-3">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}<div class="text-danger">{{ form.address.errors }}</div>{% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
+                                {{ form.city }}
+                                {% if form.city.errors %}<div class="text-danger">{{ form.city.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.state.id_for_label }}" class="form-label">State</label>
+                                {{ form.state }}
+                                {% if form.state.errors %}<div class="text-danger">{{ form.state.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.pincode.id_for_label }}" class="form-label">Pincode</label>
+                                {{ form.pincode }}
+                                {% if form.pincode.errors %}<div class="text-danger">{{ form.pincode.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Parent Information Section -->
+                        <h5 class="section-title"><span class="material-icons me-2">family_restroom</span>Parent Information</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.father_name.id_for_label }}" class="form-label">Father's Name</label>
+                                {{ form.father_name }}
+                                {% if form.father_name.errors %}<div class="text-danger">{{ form.father_name.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.father_occupation.id_for_label }}" class="form-label">Father's Occupation</label>
+                                {{ form.father_occupation }}
+                                {% if form.father_occupation.errors %}<div class="text-danger">{{ form.father_occupation.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.father_mobile.id_for_label }}" class="form-label">Father's Mobile</label>
+                                {{ form.father_mobile }}
+                                {% if form.father_mobile.errors %}<div class="text-danger">{{ form.father_mobile.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.mother_name.id_for_label }}" class="form-label">Mother's Name</label>
+                                {{ form.mother_name }}
+                                {% if form.mother_name.errors %}<div class="text-danger">{{ form.mother_name.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.mother_occupation.id_for_label }}" class="form-label">Mother's Occupation</label>
+                                {{ form.mother_occupation }}
+                                {% if form.mother_occupation.errors %}<div class="text-danger">{{ form.mother_occupation.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.mother_mobile.id_for_label }}" class="form-label">Mother's Mobile</label>
+                                {{ form.mother_mobile }}
+                                {% if form.mother_mobile.errors %}<div class="text-danger">{{ form.mother_mobile.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Academic Information Section -->
+                        <h5 class="section-title"><span class="material-icons me-2">school</span>Academic Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.degree.id_for_label }}" class="form-label">Degree *</label>
+                                {{ form.degree }}
+                                {% if form.degree.errors %}<div class="text-danger">{{ form.degree.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.graduation_date.id_for_label }}" class="form-label">Graduation Date *</label>
+                                {{ form.graduation_date }}
+                                {% if form.graduation_date.errors %}<div class="text-danger">{{ form.graduation_date.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- High School Information -->
+                        <h6 class="mt-4 mb-3 text-muted">High School/10th Details</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.high_school_name.id_for_label }}" class="form-label">School Name</label>
+                                {{ form.high_school_name }}
+                                {% if form.high_school_name.errors %}<div class="text-danger">{{ form.high_school_name.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.high_school_percentage.id_for_label }}" class="form-label">Percentage</label>
+                                {{ form.high_school_percentage }}
+                                {% if form.high_school_percentage.errors %}<div class="text-danger">{{ form.high_school_percentage.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.high_school_year.id_for_label }}" class="form-label">Year</label>
+                                {{ form.high_school_year }}
+                                {% if form.high_school_year.errors %}<div class="text-danger">{{ form.high_school_year.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Intermediate Information -->
+                        <h6 class="mt-3 mb-3 text-muted">Intermediate/12th Details</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.intermediate_name.id_for_label }}" class="form-label">School Name</label>
+                                {{ form.intermediate_name }}
+                                {% if form.intermediate_name.errors %}<div class="text-danger">{{ form.intermediate_name.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.intermediate_percentage.id_for_label }}" class="form-label">Percentage</label>
+                                {{ form.intermediate_percentage }}
+                                {% if form.intermediate_percentage.errors %}<div class="text-danger">{{ form.intermediate_percentage.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.intermediate_year.id_for_label }}" class="form-label">Year</label>
+                                {{ form.intermediate_year }}
+                                {% if form.intermediate_year.errors %}<div class="text-danger">{{ form.intermediate_year.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Profile Picture Upload -->
+                        <h5 class="section-title"><span class="material-icons me-2">photo_camera</span>Profile Picture</h5>
+                        <div class="mb-4">
+                            <label for="{{ form.image.id_for_label }}" class="form-label">Change Profile Picture</label>
+                            {{ form.image }}
+                            <div class="form-text">Leave empty to keep current picture</div>
+                            {% if form.image.errors %}<div class="text-danger">{{ form.image.errors }}</div>{% endif %}
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-3 justify-content-end mt-4">
+                            <a href="{% url 'student_app:profile' %}" class="btn btn-secondary">
+                                <span class="material-icons align-middle me-1">cancel</span>
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <span class="material-icons align-middle me-1">save</span>
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block style %}
+.edit-profile-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+.card-header {
+    padding: 20px;
+}
+
+.card-header h4 {
+    display: flex;
+    align-items: center;
+}
+
+.section-title {
+    color: #1e8e3e;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e8f5e9;
+}
+
+.material-icons.align-middle {
+    vertical-align: middle;
+    font-size: 20px;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #202124;
+    margin-bottom: 8px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #1e8e3e;
+    box-shadow: 0 0 0 0.2rem rgba(30, 142, 62, 0.25);
+}
+
+.btn-success {
+    background-color: #1e8e3e;
+    border-color: #1e8e3e;
+}
+
+.btn-success:hover {
+    background-color: #0d7030;
+    border-color: #0d7030;
+}
+
+.rounded-circle {
+    object-fit: cover;
+    border: 3px solid #e8f5e9;
+}
+
+hr {
+    border-color: #e0e0e0;
+}
+
+{% endblock %}

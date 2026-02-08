@@ -1,0 +1,272 @@
+{% extends "layout.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+{% block nav_title %}Admin Dashboard{% endblock %}
+
+{% block container %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h1>Dashboard</h1>
+            <p class="subtitle">Manage your institution</p>
+        </div>
+        <a href="{% url 'registration:logout' %}" class="logout-btn">Logout</a>
+    </div>
+    
+    <!-- Key Metrics -->
+    <div class="metrics-grid">
+        <div class="metric-box">
+            <div class="metric-label">Total Students</div>
+            <div class="metric-value">{{ student_count }}</div>
+        </div>
+
+        <div class="metric-box">
+            <div class="metric-label">Total Faculty</div>
+            <div class="metric-value">{{ faculty_count }}</div>
+        </div>
+    </div>
+
+    <!-- Admin Functions -->
+    <div class="functions-section">
+        <h2>Functions</h2>
+        <div class="functions-grid">
+            <a href="{% url "admin_app:manage_user" %}" class="function-card">
+                <div class="function-title">Manage Users</div>
+                <div class="function-desc">Add, edit or delete users</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "admin_app:notification" %}" class="function-card">
+                <div class="function-title">Send Notifications</div>
+                <div class="function-desc">Notify students and faculty</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "admin_app:leave" %}" class="function-card">
+                <div class="function-title">
+                    Review Leave Requests
+                    {% if pending_leaves > 0 %}<span class="badge">{{ pending_leaves }}</span>{% endif %}
+                </div>
+                <div class="function-desc">Accept or reject requests</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "admin_app:mark_faculty_attendance" %}" class="function-card">
+                <div class="function-title">Faculty Attendance</div>
+                <div class="function-desc">Record faculty attendance</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "admin_app:manage_timetable" %}" class="function-card">
+                <div class="function-title">Manage Timetable</div>
+                <div class="function-desc">View and edit class schedules</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url 'admin_app:manage_subjects' %}" class="function-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div class="function-title" style="color: white;">📚 Manage Subjects</div>
+                <div class="function-desc" style="color: rgba(255,255,255,0.9);">Add subjects by semester and manage curriculum</div>
+                <div class="function-arrow" style="color: white;">→</div>
+            </a>
+
+            <a href="{% url 'admin_app:manage_exams' %}" class="function-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                <div class="function-title" style="color: white;">🎓 Manage Exams & Results</div>
+                <div class="function-desc" style="color: rgba(255,255,255,0.9);">Create exams and view student results</div>
+                <div class="function-arrow" style="color: white;">→</div>
+            </a>
+
+            <a href="{% url 'admin:index' %}" class="function-card admin-panel">
+                <div class="function-title">Django Admin</div>
+                <div class="function-desc">Advanced administration</div>
+                <div class="function-arrow">→</div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block style %}
+* {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+.dashboard-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 48px;
+    padding-top: 20px;
+}
+
+.dashboard-header h1 {
+    font-size: 36px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.5px;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+.logout-btn {
+    padding: 8px 16px;
+    background: #f0f0f0;
+    color: #1a1a1a;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: #e0e0e0;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 48px;
+}
+
+.metric-box {
+    background: #f9f9f9;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 24px;
+    transition: all 0.2s;
+}
+
+.metric-box:hover {
+    border-color: #d0d0d0;
+    background: #fafafa;
+}
+
+.metric-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.metric-value {
+    font-size: 42px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+/* Functions Section */
+.functions-section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 24px 0;
+}
+
+.functions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.function-card {
+    display: block;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 24px;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.function-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 2px;
+    width: 0;
+    background: #1a1a1a;
+    transition: width 0.3s;
+}
+
+.function-card:hover {
+    border-color: #d0d0d0;
+    background: #f9f9f9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.function-card:hover::before {
+    width: 100%;
+}
+
+.function-card.admin-panel {
+    background: #f0f0f0;
+}
+
+.function-card.admin-panel:hover {
+    background: #e8e8e8;
+}
+
+.function-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: #dc2626;
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.function-desc {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.function-arrow {
+    font-size: 20px;
+    color: #999;
+    transition: all 0.2s;
+}
+
+.function-card:hover .function-arrow {
+    color: #1a1a1a;
+    transform: translateX(4px);
+}
+
+{% endblock %}

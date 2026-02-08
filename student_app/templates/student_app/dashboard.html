@@ -1,0 +1,241 @@
+{% extends "layout.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+{% block nav_title %}Student Dashboard{% endblock %}
+
+{% block container %}
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <div>
+            <h1>Dashboard</h1>
+            <p class="subtitle">{{ student.name }} · {{ user.email }}</p>
+        </div>
+    </div>
+    
+    {% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Student Functions -->
+    <div class="functions-section">
+        <h2>Functions</h2>
+        <div class="functions-grid">
+            <a href="{% url "student_app:profile" %}" class="function-card">
+                <div class="function-title">Profile</div>
+                <div class="function-desc">View your profile information</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "student_app:edit_profile" %}" class="function-card">
+                <div class="function-title">Edit Profile</div>
+                <div class="function-desc">Update your personal information</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "student_app:daily_attendance" %}" class="function-card">
+                <div class="function-title">Daily Attendance</div>
+                <div class="function-desc">View overall attendance records</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "student_app:attendance_summary" %}" class="function-card">
+                <div class="function-title">Attendance Summary</div>
+                <div class="function-desc">Semester-wise attendance analysis</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "student_app:subject_wise_attendance" %}" class="function-card">
+                <div class="function-title">Subject Attendance</div>
+                <div class="function-desc">Check attendance for each subject</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "student_app:fee_dashboard" %}" class="function-card">
+                <div class="function-title">Fee Dashboard</div>
+                <div class="function-desc">View fee details and receipts</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "student_app:view_timetable" %}" class="function-card">
+                <div class="function-title">Timetable</div>
+                <div class="function-desc">View semester-wise timetable</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "student_app:generate_report" %}" class="function-card">
+                <div class="function-title">Generate Report</div>
+                <div class="function-desc">Download attendance report</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "student_app:show_notification" %}" class="function-card">
+                <div class="function-title">
+                    Notifications
+                    {% if new_notifications > 0 %}<span class="badge">{{ new_notifications }}</span>{% endif %}
+                </div>
+                <div class="function-desc">View messages from admin</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "student_app:request_leave" %}" class="function-card">
+                <div class="function-title">Request Leave</div>
+                <div class="function-desc">Submit leave request</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "student_app:view_leave" %}" class="function-card">
+                <div class="function-title">
+                    Leave Status
+                    {% if new_leave_updates > 0 %}<span class="badge">{{ new_leave_updates }}</span>{% endif %}
+                </div>
+                <div class="function-desc">Check request approvals</div>
+                <div class="function-arrow">→</div>
+            </a>
+
+            <a href="{% url "student_app:view_marks" %}" class="function-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div class="function-title" style="color: white;">📊 View Marks</div>
+                <div class="function-desc" style="color: rgba(255,255,255,0.9);">Check your exam marks</div>
+                <div class="function-arrow" style="color: white;">→</div>
+            </a>
+
+            <a href="{% url "student_app:view_results" %}" class="function-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                <div class="function-title" style="color: white;">🎓 View Results</div>
+                <div class="function-desc" style="color: rgba(255,255,255,0.9);">View grades and download result PDF</div>
+                <div class="function-arrow" style="color: white;">→</div>
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block style %}
+* {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+.dashboard-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 48px;
+    padding-top: 20px;
+}
+
+.dashboard-header h1 {
+    font-size: 36px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.5px;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+/* Functions Section */
+.functions-section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 24px 0;
+}
+
+.functions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+}
+
+.function-card {
+    display: block;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 24px;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.function-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 2px;
+    width: 0;
+    background: #1a1a1a;
+    transition: width 0.3s;
+}
+
+.function-card:hover {
+    border-color: #d0d0d0;
+    background: #f9f9f9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.function-card:hover::before {
+    width: 100%;
+}
+
+.function-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: #dc2626;
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.function-desc {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.function-arrow {
+    font-size: 20px;
+    color: #999;
+    transition: all 0.2s;
+}
+
+.function-card:hover .function-arrow {
+    color: #1a1a1a;
+    transform: translateX(4px);
+}
+
+{% endblock %}

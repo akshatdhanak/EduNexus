@@ -1,0 +1,320 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <title>{% block title %} Default {% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+      /* Global Styles - Clean & Minimalist */
+      * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+      }
+
+      body {
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background-color: #f8f9fa;
+          color: #202124;
+          line-height: 1.6;
+          margin: 0;
+          padding: 0;
+      }
+
+      /* Top Navigation Bar */
+      .top-nav {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 64px;
+          background: #ffffff;
+          box-shadow: 0 1px 2px 0 rgba(60,64,67,0.1), 0 2px 6px 2px rgba(60,64,67,0.05);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 24px;
+          z-index: 1000;
+      }
+
+      .top-nav-title {
+          font-size: 22px;
+          font-weight: 400;
+          color: #5f6368;
+          letter-spacing: 0;
+      }
+
+      .nav-actions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+      }
+
+      .nav-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 18px;
+          background: transparent;
+          border: 1px solid #dadce0;
+          border-radius: 24px;
+          color: #1a73e8;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          text-decoration: none;
+      }
+
+      .nav-pill:hover {
+          background: #f8f9fa;
+          border-color: #1a73e8;
+          box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+          color: #174ea6;
+      }
+
+      .nav-pill .material-icons {
+          font-size: 18px;
+      }
+
+      /* Container */
+      .container {
+          max-width: 1200px;
+          margin: 88px auto 24px;
+          padding: 0 24px;
+      }
+
+      /* Headings */
+      h1, h2, h3 {
+          color: #202124;
+          font-weight: 400;
+          margin-bottom: 16px;
+      }
+
+      h1 {
+          font-size: 32px;
+          font-weight: 300;
+      }
+
+      h2 {
+          font-size: 24px;
+          color: #5f6368;
+          font-weight: 300;
+      }
+
+      /* Buttons - Google Material Style */
+      .btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 10px 24px;
+          border: none;
+          border-radius: 4px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          text-decoration: none;
+          letter-spacing: 0.25px;
+          outline: none;
+      }
+
+      .btn-primary {
+          background-color: #1a73e8;
+          color: white;
+          box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+      }
+
+      .btn-primary:hover {
+          background-color: #1765cc;
+          box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+          color: white;
+      }
+
+      .btn-success {
+          background-color: #1e8e3e;
+          color: white;
+          box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+      }
+
+      .btn-success:hover {
+          background-color: #188038;
+          box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+          color: white;
+      }
+
+      /* Forms */
+      form {
+          margin: 24px 0;
+      }
+
+      .form-group {
+          margin-bottom: 20px;
+      }
+
+      .form-group label {
+          display: block;
+          margin-bottom: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #5f6368;
+      }
+
+      .form-group input, 
+      .form-group select {
+          width: 100%;
+          padding: 12px 16px;
+          border: 1px solid #dadce0;
+          border-radius: 4px;
+          font-size: 14px;
+          transition: all 0.2s;
+          background: #ffffff;
+      }
+
+      .form-group input:focus, 
+      .form-group select:focus {
+          border-color: #1a73e8;
+          outline: none;
+          box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+      }
+
+      /* Table - Clean Design */
+      table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 24px;
+          background: #ffffff;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 1px 2px 0 rgba(60,64,67,0.1), 0 2px 6px 2px rgba(60,64,67,0.05);
+      }
+
+      th, td {
+          padding: 16px;
+          text-align: left;
+          border-bottom: 1px solid #e8eaed;
+      }
+
+      th {
+          background: #f8f9fa;
+          color: #5f6368;
+          font-weight: 500;
+          font-size: 14px;
+          letter-spacing: 0.25px;
+      }
+
+      tr:hover {
+          background: #f8f9fa;
+      }
+
+      /* Alerts - Material Design */
+      .alert {
+          padding: 16px 24px;
+          margin-bottom: 24px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 400;
+          border-left: 4px solid;
+      }
+
+      .alert-success {
+          color: #1e8e3e;
+          background: #e6f4ea;
+          border-left-color: #1e8e3e;
+      }
+
+      .alert-danger {
+          color: #d93025;
+          background: #fce8e6;
+          border-left-color: #d93025;
+      }
+
+      /* Card Styles */
+      .card {
+          background: #ffffff;
+          border-radius: 8px;
+          box-shadow: 0 1px 2px 0 rgba(60,64,67,0.1), 0 2px 6px 2px rgba(60,64,67,0.05);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          border: none;
+          overflow: hidden;
+      }
+
+      .card:hover {
+          box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+          transform: translateY(-2px);
+      }
+
+      .card-body {
+          padding: 24px;
+      }
+
+      .card-title {
+          font-size: 16px;
+          font-weight: 500;
+          color: #202124;
+          margin-bottom: 8px;
+      }
+
+      .card-text {
+          font-size: 14px;
+          color: #5f6368;
+          line-height: 1.5;
+      }
+
+      /* Display Numbers */
+      .display-4 {
+          font-size: 48px;
+          font-weight: 300;
+          color: #1a73e8;
+      }
+
+              {% block style %}
+              {% endblock %}
+    </style>
+  </head>
+  <body>
+        <nav class="top-nav">
+            <div class="top-nav-title">{% block nav_title %}Attendance System{% endblock %}</div>
+            <div class="nav-actions">
+                <button type="button" class="nav-pill" onclick="window.history.back()">
+                    <span class="material-icons">arrow_back</span>
+                    <span>Back</span>
+                </button>
+                {% if user.is_authenticated %}
+                    {% if user.is_superuser or user.role == "admin" %}
+                        <a href="{% url 'admin_app:admin_dashboard' %}" class="nav-pill">
+                            <span class="material-icons">dashboard</span>
+                            <span>Dashboard</span>
+                        </a>
+                    {% elif user.role == "faculty" %}
+                        <a href="{% url 'faculty_app:faculty_dashboard' %}" class="nav-pill">
+                            <span class="material-icons">dashboard</span>
+                            <span>Dashboard</span>
+                        </a>
+                    {% elif user.role == "student" %}
+                        <a href="{% url 'student_app:student_dashboard' %}" class="nav-pill">
+                            <span class="material-icons">dashboard</span>
+                            <span>Dashboard</span>
+                        </a>
+                    {% endif %}
+                    <a href="{% url 'registration:logout' %}" class="nav-pill">
+                        <span class="material-icons">logout</span>
+                        <span>Logout</span>
+                    </a>
+                {% endif %}
+            </div>
+        </nav>
+    <div class="container">{% block container %} {% endblock %}</div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %} {% endblock %}
+  </body>
+</html>

@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block title %}Edit Attendance{% endblock %}
+
+{% block container %}
+
+<div class="container mt-4 text-white">
+    <h2 class="text-center">Edit Attendance for Student ID: {{ attendance.student.user.username }}</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Update Attendance</button>
+    </form>
+    <div class="d-flex justify-content-center">
+        <a href="{% url 'faculty_app:faculty_dashboard' %}" class="btn btn-primary">back</a>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block style %}
+/* Dark Theme */
+body {
+    background-color: #212529;
+    color: white;
+}
+
+/* Container Styling */
+.container {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+}
+
+/* Form Styling */
+form {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    color: black;
+}
+
+/* Form Fields */
+form input, form select, form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+/* Form Buttons */
+.btn {
+    width: 100%;
+    padding: 10px;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+/* Centering the Back Button */
+.d-flex.justify-content-center {
+    margin-top: 15px;
+}
+
+{% endblock %}

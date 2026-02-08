@@ -1,0 +1,186 @@
+{% extends "layout.html" %}
+
+{% block title %}Send Announcement{% endblock %}
+
+{% block container %}
+<div class="page-container">
+    <div class="content-wrapper">
+        <div class="page-header">
+            <h1>Send Announcement</h1>
+            <p class="subtitle">Broadcast important messages to students or faculty</p>
+        </div>
+
+        <form method="post" class="announcement-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.recipient_role.id_for_label }}">Recipient Group</label>
+                {{ form.recipient_role }}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.title.id_for_label }}">Subject</label>
+                {{ form.title }}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.message.id_for_label }}">Message</label>
+                {{ form.message }}
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'admin_app:admin_dashboard' %}" class="btn-secondary">Cancel</a>
+                <button type="submit" class="btn-primary">Send Announcement</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block style %}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #fafafa;
+    color: #1a1a1a;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    line-height: 1.6;
+}
+
+.page-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.content-wrapper {
+    background-color: #ffffff;
+    border-radius: 2px;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+}
+
+.page-header {
+    padding: 32px 40px 24px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.page-header h1 {
+    font-size: 24px;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #666;
+    font-weight: 400;
+}
+
+.announcement-form {
+    padding: 40px;
+}
+
+.form-group {
+    margin-bottom: 32px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    letter-spacing: 0.01em;
+}
+
+.form-group select,
+.form-group input[type="text"],
+.form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d0d0d0;
+    border-radius: 2px;
+    background-color: #ffffff;
+    color: #1a1a1a;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group select:focus,
+.form-group input[type="text"]:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #1a1a1a;
+    box-shadow: 0 0 0 1px #1a1a1a;
+}
+
+.form-group textarea {
+    min-height: 180px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 8px;
+    margin-top: 40px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    letter-spacing: 0.01em;
+}
+
+.btn-primary {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+.btn-primary:hover {
+    background-color: #000000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: #666;
+    border: 1px solid #d0d0d0;
+}
+
+.btn-secondary:hover {
+    background-color: #f5f5f5;
+    color: #1a1a1a;
+}
+
+/* Select dropdown styling */
+.form-group select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%231a1a1a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+
+{% endblock  %}

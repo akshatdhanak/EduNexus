@@ -1,0 +1,163 @@
+{% extends "layout.html" %}
+
+{% block title %}Manage User{% endblock %}
+
+{% block container %}
+<div class="manage-user-container">
+  <div class="page-header">
+    <div>
+      <h1>Manage User</h1>
+      <p class="page-desc">Add, edit, or delete users</p>
+    </div>
+    <a href="{% url 'admin_app:admin_dashboard' %}" class="back-btn">← Back</a>
+  </div>
+
+  <div class="users-grid">
+    <div class="user-card">
+      <h2>Students</h2>
+      <p>Add, edit, or delete student information and enrollment</p>
+      <a href="{% url 'admin_app:student_info' %}" class="card-link">
+        Manage
+        <span class="arrow">→</span>
+      </a>
+    </div>
+
+    <div class="user-card">
+      <h2>Faculty</h2>
+      <p>Add, edit, or delete faculty information and assignments</p>
+      <a href="{% url 'admin_app:faculty_info' %}" class="card-link">
+        Manage
+        <span class="arrow">→</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block style %}
+* {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+}
+
+.manage-user-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 48px;
+  padding-top: 20px;
+  border-bottom: 1px solid #e5e5e5;
+  padding-bottom: 20px;
+}
+
+.page-header h1 {
+  font-size: 32px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.5px;
+}
+
+.page-desc {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+}
+
+.back-btn {
+  padding: 8px 16px;
+  background: #f0f0f0;
+  color: #1a1a1a;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background: #e0e0e0;
+}
+
+/* Users Grid */
+.users-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+@media (max-width: 768px) {
+  .users-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.user-card {
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 32px 24px;
+  text-align: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.user-card:hover {
+  border-color: #d0d0d0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.user-card h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 12px 0;
+}
+
+.user-card p {
+  font-size: 14px;
+  color: #666;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #1a1a1a;
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.card-link:hover {
+  background: #333;
+}
+
+.card-link .arrow {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.card-link:hover .arrow {
+  transform: translateX(4px);
+}
+
+{% endblock %}

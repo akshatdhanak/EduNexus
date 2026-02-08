@@ -1,0 +1,589 @@
+{% extends "layout.html" %}
+{% load custom_filters %}
+
+{% block title %}Manage Exams{% endblock %}
+{% block nav_title %}Manage Exams{% endblock %}
+
+{% block container %}
+<div class="exam-management-container">
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1>📚 Exam Management</h1>
+            <p class="subtitle">Organize exams by semester and type</p>
+        </div>
+        <button class="btn-add-exam" onclick="showAddExamModal()">
+            <span style="font-size: 18px;">+</span> Add New Exam
+        </button>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📝</div>
+            <div class="stat-content">
+                <div class="stat-label">Total Exams</div>
+                <div class="stat-value">{{ total_exams }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">✓</div>
+            <div class="stat-content">
+                <div class="stat-label">Marks Entered</div>
+                <div class="stat-value">{{ total_marks_entered }}</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">👥</div>
+            <div class="stat-content">
+                <div class="stat-label">Total Students</div>
+                <div class="stat-value">{{ total_students }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exams by Semester -->
+    {% if semesters %}
+        {% for semester in semesters %}
+            <div class="semester-section">
+                <div class="semester-header">
+                    <h2>Semester {{ semester }}</h2>
+                    <span class="exam-count">{{ semester_counts|get_item:semester|get_item:'total' }} exams</span>
+                </div>
+
+                <div class="exam-types-grid">
+                    {% with semester_exams=exams_by_semester|get_item:semester %}
+                        {% for exam_type, exams in semester_exams.items %}
+                            <div class="exam-type-card">
+                                <div class="exam-type-header">
+                                    <div class="exam-type-title">
+                                        <span class="exam-icon">📝</span>
+                                        <span>{{ exam_type }}</span>
+                                    </div>
+                                    <span class="exam-badge">{{ exams|length }}</span>
+                                </div>
+                                <div class="exam-list">
+                                    {% for exam in exams %}
+                                        <div class="exam-item">
+                                            <div class="exam-info">
+                                                <div class="exam-subject">{{ exam.subject.name }}</div>
+                                                <div class="exam-marks">Max: {{ exam.max_marks }} marks</div>
+                                            </div>
+                                            <button class="btn-delete" onclick="deleteExam({{ exam.id }}, '{{ exam.subject.name }} - {{ exam_type }}')">
+                                                🗑️
+                                            </button>
+                                        </div>
+                                    {% empty %}
+                                        <div class="no-exams">No {{ exam_type|lower }} added</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endwith %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3>No Exams Created Yet</h3>
+            <p>Click "Add New Exam" to create your first exam</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Add Exam Modal -->
+<div id="addExamModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New Exam</h3>
+            <span class="close" onclick="closeAddExamModal()">&times;</span>
+        </div>
+        <form method="POST" action="{% url 'admin_app:add_exam' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Subject *</label>
+                <select name="subject" required class="form-control">
+                    <option value="">Select Subject</option>
+                    {% for subject in subjects %}
+                        <option value="{{ subject.id }}">{{ subject.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Semester *</label>
+                <select name="semester" required class="form-control">
+                    <option value="">Select Semester</option>
+                    {% for sem in semester_range %}
+                        <option value="{{ sem }}">Semester {{ sem }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Exam Type *</label>
+                <select name="exam_type" required class="form-control">
+                    <option value="">Select Type</option>
+                    {% for exam_type in exam_types %}
+                        <option value="{{ exam_type.id }}">{{ exam_type.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Maximum Marks *</label>
+                <input type="number" name="max_marks" required class="form-control" min="1" max="500" placeholder="e.g., 100">
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeAddExamModal()">Cancel</button>
+                <button type="submit" class="btn-submit">Create Exam</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block style %}
+<style>
+* {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+.exam-management-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0 0 4px 0;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+.btn-add-exam {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.btn-add-exam:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Statistics */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+}
+
+.stat-label {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+/* Semester Sections */
+.semester-section {
+    margin-bottom: 40px;
+}
+
+.semester-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.semester-header h2 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.exam-count {
+    background: #f0f0f0;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+}
+
+/* Exam Type Cards */
+.exam-types-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.exam-type-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.exam-type-card.internal {
+    border-top: 4px solid #1976d2;
+}
+
+.exam-type-card.external {
+    border-top: 4px solid #7b1fa2;
+}
+
+.exam-type-card.practical {
+    border-top: 4px solid #388e3c;
+}
+
+.exam-type-header {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+}
+
+.exam-type-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 15px;
+}
+
+.exam-icon {
+    font-size: 18px;
+}
+
+.exam-badge {
+    background: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+}
+
+.exam-list {
+    padding: 12px;
+}
+
+.exam-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.exam-item:hover {
+    background: #e9ecef;
+}
+
+.exam-subject {
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+}
+
+.exam-marks {
+    font-size: 13px;
+    color: #666;
+}
+
+.btn-delete {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+}
+
+.btn-delete:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.no-exams {
+    text-align: center;
+    padding: 24px;
+    color: #999;
+    font-size: 14px;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.empty-state h3 {
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.empty-state p {
+    color: #666;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.close {
+    font-size: 28px;
+    font-weight: 300;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.close:hover {
+    color: #333;
+}
+
+.modal form {
+    padding: 24px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 24px;
+}
+
+.btn-cancel {
+    padding: 10px 20px;
+    background: #f0f0f0;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-cancel:hover {
+    background: #e0e0e0;
+}
+
+.btn-submit {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Alerts */
+.alert {
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.alert-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-left: 4px solid #4caf50;
+}
+
+.alert-error {
+    background: #ffebee;
+    color: #c62828;
+    border-left: 4px solid #f44336;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showAddExamModal() {
+    document.getElementById('addExamModal').style.display = 'block';
+}
+
+function closeAddExamModal() {
+    document.getElementById('addExamModal').style.display = 'none';
+}
+
+function deleteExam(examId, examName) {
+    if (confirm(`Are you sure you want to delete "${examName}"?\n\nThis will also delete all marks entered for this exam.`)) {
+        window.location.href = `/admin_app/admin_dashboard/manage_exams/${examId}/delete/`;
+    }
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('addExamModal');
+    if (event.target == modal) {
+        closeAddExamModal();
+    }
+}
+</script>
+{% endblock %}

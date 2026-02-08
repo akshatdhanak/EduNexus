@@ -1,0 +1,554 @@
+{% extends "layout.html" %}
+
+{% block title %}Attendance Records{% endblock %}
+
+{% block container %}
+<div class="attendance-records-page">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <span class="title-icon">📊</span> Attendance Records
+      </h1>
+      <p class="page-subtitle">View attendance by lecture or lab session</p>
+    </div>
+  </div>
+
+  <div class="container-main">
+    <!-- Filter Section -->
+    <div class="filter-card">
+      <form method="get" class="filter-form">
+        <div class="filter-group">
+          <label class="filter-label">Filter by Session Type:</label>
+          <div class="filter-buttons">
+            <a href="?filter=all" class="filter-btn {% if filter_type == 'all' %}active{% endif %}">
+              📚 All Sessions
+            </a>
+            <a href="?filter=theory" class="filter-btn {% if filter_type == 'theory' %}active{% endif %}">
+              📖 Lectures
+            </a>
+            <a href="?filter=practical" class="filter-btn {% if filter_type == 'practical' %}active{% endif %}">
+              🔬 Labs
+            </a>
+            <a href="?filter=tutorial" class="filter-btn {% if filter_type == 'tutorial' %}active{% endif %}">
+              📝 Tutorials
+            </a>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Lecture List -->
+    {% if lecture_data %}
+      <div class="records-list">
+        {% for item in lecture_data %}
+        <section class="record-row">
+          <div class="record-head">
+            <div class="record-info">
+              <div class="record-title">{{ item.lecture.subject.name }}</div>
+              <div class="record-meta">
+                <span class="badge badge-{{ item.slot_type }}">{{ item.slot_type_display }}</span>
+                <span class="meta-item">📅 {{ item.lecture.date|date:"M d, Y · H:i" }}</span>
+                {% if item.lecture.timetable.room_number %}
+                <span class="meta-item">📍 Room {{ item.lecture.timetable.room_number }}</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="record-stats">
+              <span class="stat-count">{{ item.present_count }}/{{ item.total_count }}</span>
+              <span class="stat-label">Present</span>
+              <span class="stat-pct">{{ item.attendance_percentage|floatformat:0 }}%</span>
+            </div>
+          </div>
+
+          <div class="attendance-table-wrapper list-mode">
+            {% if item.semester_groups %}
+              {% for semester, group in item.semester_groups %}
+              <div class="semester-block">
+                <div class="semester-header">Semester {{ semester }}</div>
+                <table class="attendance-table">
+                  <thead>
+                    <tr>
+                      <th>Student ID</th>
+                      <th>Name</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for attendance in group %}
+                    <tr class="{% if attendance.status == 'present' %}present-row{% endif %}">
+                      <td><code class="student-id">{{ attendance.student.user.username }}</code></td>
+                      <td class="student-name">{{ attendance.student.name }}</td>
+                      <td>
+                        {% if attendance.status == 'present' %}
+                          <span class="status-badge present">✓ Present</span>
+                        {% elif attendance.status == 'late' %}
+                          <span class="status-badge late">⏱ Late</span>
+                        {% else %}
+                          <span class="status-badge absent">✗ Absent</span>
+                        {% endif %}
+                      </td>
+                      <td>
+                        <a href="{% url 'faculty_app:edit_student_attendance' attendance.id %}" class="edit-btn">Edit</a>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% endfor %}
+            {% else %}
+              <table class="attendance-table">
+                <thead>
+                  <tr>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td colspan="4" class="empty-message">No attendance records</td>
+                  </tr>
+                </tbody>
+              </table>
+            {% endif %}
+            <div class="list-actions">
+              <a href="{% url 'faculty_app:mark_student_attendance2' item.lecture.id %}" class="action-link">✏️ Update Attendance</a>
+            </div>
+          </div>
+        </section>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3>No Attendance Records</h3>
+        <p>Start by marking attendance for your lectures</p>
+        <a href="{% url 'faculty_app:mark_student_attendance' %}" class="btn-primary">
+          <span>✓</span> Mark Attendance
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block style %}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #f5f7fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1a202c;
+}
+
+.attendance-records-page {
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+/* Header */
+.page-header {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+  padding: 48px 24px;
+  text-align: center;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.page-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  letter-spacing: -0.025em;
+}
+
+.title-icon {
+  margin-right: 12px;
+  font-size: 2rem;
+  opacity: 0.9;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+/* Container */
+.container-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px 48px;
+}
+
+/* Filter Card */
+.filter-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 32px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.filter-form {
+  margin: 0;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #4a5568;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #6b7280;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.filter-btn:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.filter-btn.active {
+  background: #1f2937;
+  color: white;
+  border-color: #1f2937;
+}
+
+/* Lecture List */
+.records-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.record-row {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  padding: 20px 20px 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.record-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.record-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.record-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+  color: #4b5563;
+  font-size: 0.9rem;
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.badge-theory {
+  background: #eef2ff;
+  color: #3730a3;
+  border-color: #c7d2fe;
+}
+
+.badge-practical {
+  background: #ecfdf3;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.badge-tutorial {
+  background: #fff7ed;
+  color: #9a3412;
+  border-color: #fed7aa;
+}
+
+.record-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: #1f2937;
+}
+
+.stat-count {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.stat-pct {
+  font-weight: 700;
+  color: #059669;
+}
+
+/* Attendance Table */
+.attendance-table-wrapper {
+  overflow-x: auto;
+  padding: 24px;
+}
+
+.attendance-table-wrapper.list-mode {
+  padding-top: 0;
+}
+
+.semester-block {
+  margin-bottom: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.semester-header {
+  background: #f9fafb;
+  padding: 10px 14px;
+  font-weight: 600;
+  color: #111827;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendance-table thead {
+  background: #f8fafc;
+}
+
+.attendance-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 2px solid #e2e8f0;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.attendance-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.875rem;
+}
+
+.attendance-table tr:hover {
+  background: #f8fafc;
+}
+
+.attendance-table tr.present-row {
+  background: #f0fdf4;
+}
+
+.student-id {
+  background: #f1f5f9;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  color: #475569;
+  font-weight: 500;
+  border: 1px solid #e2e8f0;
+}
+
+.student-name {
+  font-weight: 500;
+  color: #1a202c;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid #e5e7eb;
+}
+
+.status-badge.present {
+  background: #ecfdf3;
+  color: #047857;
+  border-color: #d1fae5;
+}
+
+.status-badge.late {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fef3c7;
+}
+
+.status-badge.absent {
+  background: #fef2f2;
+  color: #7f1d1d;
+  border-color: #fecaca;
+}
+
+.edit-btn {
+  padding: 6px 12px;
+  background: #f3f4f6;
+  color: #1f2937;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.edit-btn:hover {
+  background: #e5e7eb;
+  border-color: #d1d5db;
+}
+
+/* Card Footer */
+.card-footer {
+  padding: 16px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  text-align: right;
+}
+
+.action-link {
+  color: #1f2937;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s;
+  border-bottom: 1px solid #d1d5db;
+  padding-bottom: 2px;
+}
+
+.action-link:hover {
+  color: #111827;
+  border-bottom-color: #111827;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 80px 24px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 1.5rem;
+  color: #1a202c;
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: #1f2937;
+  color: white;
+  border: 1px solid #1f2937;
+  border-radius: 6px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-primary:hover {
+  background: #111827;
+  border-color: #111827;
+}
+
+.empty-message {
+  text-align: center;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .lecture-header {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .attendance-stats {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .filter-buttons {
+    flex-direction: column;
+  }
+
+  .filter-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+{% endblock %}

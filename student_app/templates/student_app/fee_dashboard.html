@@ -1,0 +1,376 @@
+{% extends "layout.html" %}
+
+{% block title %}Fee Dashboard{% endblock %}
+{% block nav_title %}Fee Dashboard{% endblock %}
+
+{% block container %}
+
+<!-- Django Messages -->
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="fee-dashboard-container">
+    <!-- Payment Methods Info Banner -->
+    <div class="alert alert-info shadow-sm mb-4">
+        <div class="d-flex align-items-center">
+            <span class="material-icons me-3" style="font-size: 36px;">payment</span>
+            <div>
+                <h5 class="mb-1"><strong>Quick & Secure Payment via Razorpay</strong></h5>
+                <p class="mb-0">
+                    Pay using: <strong>Credit/Debit Cards</strong> | <strong>Net Banking</strong> | 
+                    <strong>UPI</strong> (GPay, PhonePe, Paytm) | <strong>Wallets</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="summary-card">
+                <div class="card-icon bg-info">
+                    <span class="material-icons">school</span>
+                </div>
+                <div class="card-content">
+                    <h2>₹{{ totals.total_fees|default:0|floatformat:0 }}</h2>
+                    <p>Fees To Be Collected</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="summary-card">
+                <div class="card-icon bg-primary">
+                    <span class="material-icons">cached</span>
+                </div>
+                <div class="card-content">
+                    <h2>₹{{ totals.total_previously_paid|default:0|floatformat:0 }}</h2>
+                    <p>Previously Paid</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="summary-card">
+                <div class="card-icon bg-success">
+                    <span class="material-icons">check_circle</span>
+                </div>
+                <div class="card-content">
+                    <h2>₹{{ totals.total_paid|default:0|floatformat:0 }}</h2>
+                    <p>Paid</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="summary-card">
+                <div class="card-icon bg-danger">
+                    <span class="material-icons">error_outline</span>
+                </div>
+                <div class="card-content">
+                    <h2>₹{{ totals.total_outstanding|default:0|floatformat:0 }}</h2>
+                    <p>Outstanding Amount</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#fee-details">
+                        <span class="material-icons me-2">description</span>
+                        Academic Fee Details
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#receipts">
+                        <span class="material-icons me-2">receipt</span>
+                        Receipts List
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body">
+            <div class="tab-content">
+                <!-- Academic Fee Details Tab -->
+                <div class="tab-pane fade show active" id="fee-details">
+                    <div class="fee-status-badge">
+                        {% if totals.total_outstanding == 0 %}
+                        <span class="badge bg-success">No Due Certificate</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">Due: ₹{{ totals.total_outstanding|floatformat:0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <h5 class="text-danger mb-3"><span class="material-icons align-middle me-2">monetization_on</span>Fee Details</h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Sr.</th>
+                                    <th>Semester</th>
+                                    <th>Fees To Be Collected</th>
+                                    <th>Refunded</th>
+                                    <th>Previously Paid</th>
+                                    <th>Paid</th>
+                                    <th>Outstanding</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for fee in fee_structure %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ fee.semester }}</td>
+                                    <td>₹{{ fee.fees_to_be_collected|floatformat:0 }}</td>
+                                    <td class="text-muted">₹{{ fee.refunded|floatformat:0 }}</td>
+                                    <td class="text-info">₹{{ fee.previously_paid|floatformat:0 }}</td>
+                                    <td class="text-success">₹{{ fee.paid|floatformat:0 }}</td>
+                                    <td class="text-danger">₹{{ fee.outstanding|floatformat:0 }}</td>
+                                    <td>
+                                        {% if fee.outstanding > 0 %}
+                                        <form method="POST" action="{% url 'student_app:pay_fees' %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="semester" value="{{ fee.semester }}">
+                                            <input type="hidden" name="amount" value="{{ fee.outstanding }}">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="material-icons align-middle" style="font-size: 16px;">payment</i>
+                                                Pay Now
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        <span class="badge bg-success">Paid</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted py-4">
+                                        <span class="material-icons" style="font-size: 48px; opacity: 0.3;">receipt_long</span>
+                                        <p class="mt-2">No fee structure found</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            {% if fee_structure %}
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td colspan="2">Total</td>
+                                    <td>₹{{ totals.total_fees|default:0|floatformat:0 }}</td>
+                                    <td class="text-muted">₹{{ totals.total_refunded|default:0|floatformat:0 }}</td>
+                                    <td class="text-info">₹{{ totals.total_previously_paid|default:0|floatformat:0 }}</td>
+                                    <td class="text-success">₹{{ totals.total_paid|default:0|floatformat:0 }}</td>
+                                    <td class="text-danger">₹{{ totals.total_outstanding|default:0|floatformat:0 }}</td>
+                                </tr>
+                            </tfoot>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Receipts List Tab -->
+                <div class="tab-pane fade" id="receipts">
+                    <h5 class="text-danger mb-3"><span class="material-icons align-middle me-2">receipt</span>Receipts List</h5>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Sr.</th>
+                                    <th>Date</th>
+                                    <th>Receipt No.</th>
+                                    <th>Semester</th>
+                                    <th>Payment Mode</th>
+                                    <th>Ref. No.</th>
+                                    <th>Ref. Date</th>
+                                    <th>Ref. Bank</th>
+                                    <th>Amount</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for receipt in receipts %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ receipt.date|date:"d-m-Y" }}</td>
+                                    <td>{{ receipt.receipt_no }}</td>
+                                    <td>{{ receipt.semester }}</td>
+                                    <td>{{ receipt.get_payment_mode_display }}</td>
+                                    <td>{{ receipt.reference_no|default:"-" }}</td>
+                                    <td>{{ receipt.reference_date|date:"d-m-Y"|default:"-" }}</td>
+                                    <td>{{ receipt.reference_bank|default:"-" }}</td>
+                                    <td class="text-success fw-bold">₹{{ receipt.amount|floatformat:0 }}</td>
+                                    <td>
+                                        <a href="{% url 'student_app:download_receipt' receipt.id %}" class="btn btn-sm btn-outline-primary" title="Download Receipt">
+                                            <span class="material-icons" style="font-size: 18px;">download</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center text-muted py-4">
+                                        <span class="material-icons" style="font-size: 48px; opacity: 0.3;">receipt</span>
+                                        <p class="mt-2">No receipts found</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block style %}
+<style>
+.fee-dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+
+/* Summary Cards */
+.summary-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.card-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-icon .material-icons {
+    font-size: 32px;
+    color: white;
+}
+
+.card-content h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    color: #202124;
+}
+
+.card-content p {
+    font-size: 14px;
+    color: #5f6368;
+    margin: 4px 0 0 0;
+}
+
+/* Tab Styling */
+.nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.nav-tabs .nav-link {
+    color: #5f6368;
+    border: none;
+    padding: 12px 24px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.nav-tabs .nav-link.active {
+    color: #1e8e3e;
+    border-bottom: 3px solid #1e8e3e;
+    background: transparent;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #1e8e3e;
+    border-color: transparent;
+}
+
+/* Fee Status Badge */
+.fee-status-badge {
+    float: right;
+    margin-bottom: 10px;
+}
+
+.fee-status-badge .badge {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+/* Table Styling */
+.table {
+    margin-top: 20px;
+}
+
+.table thead th {
+    font-weight: 600;
+    color: #202124;
+    border-bottom: 2px solid #dee2e6;
+    padding: 12px;
+}
+
+.table tbody td {
+    padding: 12px;
+    vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.material-icons.align-middle {
+    vertical-align: middle;
+    font-size: 20px;
+}
+
+h5 {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+/* Background colors */
+.bg-info {
+    background-color: #17a2b8 !important;
+}
+
+.bg-primary {
+    background-color: #007bff !important;
+}
+
+.bg-success {
+    background-color: #1e8e3e !important;
+}
+
+.bg-danger {
+    background-color: #dc3545 !important;
+}
+</style>
+{% endblock %}

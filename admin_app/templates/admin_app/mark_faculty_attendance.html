@@ -1,0 +1,614 @@
+{% extends "layout.html" %}
+
+{% block title %}Mark Faculty Attendance{% endblock %}
+
+{% block container %}
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1>Faculty Attendance</h1>
+      <p class="page-date">{{ date|date:"l, F j, Y" }}</p>
+    </div>
+    <a href="{% url 'admin_app:admin_dashboard' %}" class="back-btn">← Back</a>
+  </div>
+
+  {% if messages %}
+  <div class="messages-container">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="content-grid">
+    <!-- Scanner Section -->
+    <div class="section-card">
+      <h2>Mark Present</h2>
+      <p class="section-desc">Scan barcode or enter faculty ID</p>
+      
+      <div class="scanner-controls">
+        <button type="button" class="primary-btn" id="startScanner">
+          Scan Barcode
+        </button>
+        
+        <div id="scannerContainer" class="scanner-container" style="display: none">
+          <video id="video" class="video-feed"></video>
+          <div class="scanner-actions">
+            <button type="button" class="secondary-btn" id="stopScanner">
+              Stop Scanner
+            </button>
+          </div>
+          <div id="scanResult" class="scan-result"></div>
+        </div>
+      </div>
+
+      <!-- Manual Entry -->
+      <form method="post" id="attendanceForm" class="manual-form">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="faculty_username">Faculty ID</label>
+          <input
+            type="text"
+            class="form-input"
+            id="faculty_username"
+            name="faculty_username"
+            placeholder="Enter faculty username"
+          />
+        </div>
+        <button type="submit" class="primary-btn">Mark Present</button>
+      </form>
+    </div>
+
+    <!-- Faculty List Section -->
+    <div class="section-card">
+      <h2>Attendance List</h2>
+      <p class="section-desc">Today's faculty attendance status</p>
+      
+      <div class="table-container">
+        <table class="attendance-table">
+          <thead>
+            <tr>
+              <th>Faculty ID</th>
+              <th>Name</th>
+              <th>Department</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for attendance in attendances %}
+            <tr class="status-{{ attendance.status }}">
+              <td class="faculty-id">{{ attendance.faculty.user.username }}</td>
+              <td class="faculty-name">{{ attendance.faculty.name }}</td>
+              <td class="faculty-dept">{{ attendance.faculty.get_department_display }}</td>
+              <td>
+                <span class="status-badge status-{{ attendance.status }}">
+                  {{ attendance.status|upper }}
+                </span>
+              </td>
+              <td class="action-cell">
+                {% if attendance.status == 'present' %}
+                <form method="post" style="display: inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="unmark" />
+                  <input type="hidden" name="faculty_username" value="{{ attendance.faculty.user.username }}" />
+                  <button type="submit" class="action-btn action-unmark">Unmark</button>
+                </form>
+                {% else %}
+                <form method="post" style="display: inline">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="mark" />
+                  <input type="hidden" name="faculty_username" value="{{ attendance.faculty.user.username }}" />
+                  <button type="submit" class="action-btn">Mark</button>
+                </form>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="empty-state">No faculty members found</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block style %}
+* {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+}
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 40px;
+  padding-top: 20px;
+  border-bottom: 1px solid #e5e5e5;
+  padding-bottom: 20px;
+}
+
+.page-header h1 {
+  font-size: 32px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.5px;
+}
+
+.page-date {
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+}
+
+.back-btn {
+  padding: 8px 16px;
+  background: #f0f0f0;
+  color: #1a1a1a;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  background: #e0e0e0;
+}
+
+.messages-container {
+  margin-bottom: 24px;
+}
+
+.alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.alert-success {
+  background: #f0fdf4;
+  color: #166534;
+  border-left: 3px solid #22c55e;
+}
+
+.alert-error,
+.alert-danger {
+  background: #fef2f2;
+  color: #991b1b;
+  border-left: 3px solid #ef4444;
+}
+
+.alert-info {
+  background: #f0f9ff;
+  color: #0c2340;
+  border-left: 3px solid #0ea5e9;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+@media (max-width: 900px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-card {
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  padding: 28px;
+  transition: all 0.2s;
+}
+
+.section-card:hover {
+  border-color: #d0d0d0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.section-card h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 4px 0;
+}
+
+.section-desc {
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 20px 0;
+}
+
+/* Scanner Controls */
+.scanner-controls {
+  margin-bottom: 24px;
+}
+
+.scanner-container {
+  background: #f9f9f9;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.video-feed {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 6px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.scanner-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.scan-result {
+  margin-top: 12px;
+}
+
+/* Form Styles */
+.manual-form {
+  background: #f9f9f9;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #1a1a1a;
+  box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.1);
+}
+
+/* Button Styles */
+.primary-btn {
+  background: #1a1a1a;
+  color: #ffffff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.primary-btn:hover {
+  background: #333;
+}
+
+.primary-btn:active {
+  transform: scale(0.98);
+}
+
+.secondary-btn {
+  background: #e5e5e5;
+  color: #1a1a1a;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.secondary-btn:hover {
+  background: #d0d0d0;
+}
+
+/* Table Styles */
+.table-container {
+  overflow-x: auto;
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.attendance-table thead {
+  background: #f9f9f9;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.attendance-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: #1a1a1a;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.attendance-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.attendance-table tbody tr {
+  transition: all 0.2s;
+}
+
+.attendance-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.faculty-id {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.faculty-name {
+  color: #1a1a1a;
+}
+
+.faculty-dept {
+  color: #666;
+  font-size: 13px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-present {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.status-late {
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.status-absent {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.action-cell {
+  text-align: center;
+}
+
+.action-btn {
+  background: #1a1a1a;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background: #333;
+}
+
+.action-done {
+  color: #22c55e;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.empty-state {
+  text-align: center;
+  color: #999;
+  padding: 24px !important;
+}
+
+{% endblock %} {% block extra_js %}
+<script src="https://unpkg.com/@zxing/library@latest"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    console.log("Faculty attendance page loaded");
+
+    const startBtn = document.getElementById("startScanner");
+    const stopBtn = document.getElementById("stopScanner");
+    const scannerContainer = document.getElementById("scannerContainer");
+    const video = document.getElementById("video");
+    const scanResult = document.getElementById("scanResult");
+    const usernameInput = document.getElementById("faculty_username");
+    const attendanceForm = document.getElementById("attendanceForm");
+
+    let codeReader = null;
+    let isScanning = false;
+
+    startBtn.addEventListener("click", async function () {
+      console.log("Start scanner clicked");
+      scannerContainer.style.display = "block";
+      startBtn.disabled = true;
+      scanResult.innerHTML =
+        '<div class="alert alert-info">Initializing camera...</div>';
+
+      try {
+        // Check if ZXing library is loaded
+        if (typeof ZXing === "undefined") {
+          throw new Error("ZXing library not loaded. Please refresh the page.");
+        }
+
+        console.log("ZXing library loaded successfully");
+        codeReader = new ZXing.BrowserBarcodeReader();
+
+        // Get available video devices
+        console.log("Requesting camera access...");
+        const videoInputDevices = await codeReader.listVideoInputDevices();
+        console.log(
+          "Available cameras:",
+          videoInputDevices.length,
+          videoInputDevices
+        );
+
+        if (videoInputDevices.length === 0) {
+          throw new Error(
+            "No camera found on this device. Please connect a camera and try again."
+          );
+        }
+
+        // Use the first camera
+        const selectedDeviceId = videoInputDevices[0].deviceId;
+        console.log("Selected camera ID:", selectedDeviceId);
+
+        scanResult.innerHTML =
+          '<div class="alert alert-success">Starting camera...</div>';
+        isScanning = true;
+
+        // Start decoding from video device
+        console.log("Starting video decode...");
+        await codeReader.decodeFromVideoDevice(
+          selectedDeviceId,
+          video,
+          (result, err) => {
+            if (result && isScanning) {
+              console.log("Barcode detected:", result.text);
+              const username = result.text.toLowerCase().trim();
+
+              scanResult.innerHTML = `<div class="alert alert-success"><strong>✓ Detected:</strong> ${username}</div>`;
+              usernameInput.value = username;
+
+              // Stop scanning
+              isScanning = false;
+
+              // Auto-submit form after brief delay
+              setTimeout(() => {
+                console.log("Auto-submitting form...");
+                attendanceForm.submit();
+              }, 1000);
+            }
+
+            if (err && err.name !== "NotFoundException") {
+              console.error("Scanner error:", err);
+            }
+          }
+        );
+
+        console.log("Camera started successfully");
+        scanResult.innerHTML =
+          '<div class="alert alert-success"><strong>Camera Active!</strong> Point camera at faculty barcode...</div>';
+      } catch (error) {
+        console.error("Camera initialization error:", error);
+        let errorMsg = "<strong>Failed to start camera:</strong><br>";
+
+        if (
+          error.name === "NotAllowedError" ||
+          error.name === "PermissionDeniedError"
+        ) {
+          errorMsg +=
+            "Camera permission denied. Please:<br>" +
+            "1. Click the camera icon in the address bar<br>" +
+            "2. Allow camera access<br>" +
+            "3. Refresh the page and try again";
+        } else if (
+          error.name === "NotFoundError" ||
+          error.message.includes("No camera")
+        ) {
+          errorMsg +=
+            "No camera detected. Please check:<br>" +
+            "1. Camera is connected<br>" +
+            "2. Camera is not being used by another app<br>" +
+            "3. Try refreshing the page";
+        } else if (error.name === "NotReadableError") {
+          errorMsg +=
+            "Camera is in use by another application. Please close other apps using the camera.";
+        } else {
+          errorMsg += error.message || "Unknown error occurred";
+        }
+
+        scanResult.innerHTML = `<div class="alert alert-danger">${errorMsg}</div>`;
+        startBtn.disabled = false;
+
+        // Only hide container if camera truly failed
+        setTimeout(() => {
+          if (!isScanning) {
+            scannerContainer.style.display = "none";
+          }
+        }, 5000);
+      }
+    });
+
+    stopBtn.addEventListener("click", function () {
+      console.log("Stop scanner clicked");
+      isScanning = false;
+
+      if (codeReader) {
+        try {
+          codeReader.reset();
+          console.log("CodeReader reset");
+        } catch (e) {
+          console.error("Error resetting codeReader:", e);
+        }
+      }
+
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach((track) => {
+          track.stop();
+          console.log("Track stopped:", track.label);
+        });
+        video.srcObject = null;
+      }
+
+      scannerContainer.style.display = "none";
+      startBtn.disabled = false;
+      scanResult.innerHTML = "";
+      console.log("Scanner stopped");
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "layout.html" %}
+
+{% block title %}Attendance{% endblock %}
+
+{% block container %}
+
+<div class="container mt-5">
+    <h3 class="text-center mb-4">Subject-wise Attendance Report</h3>
+    
+    <table class="table table-light">
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th>Overall Attendance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in subject_attendance %}
+                <tr>
+                    <td>{{ record.subject }}</td>
+                    <td style="background-color: {% if record.attendance_percentage >= 75 %}green{% elif record.attendance_percentage >= 50 %}yellow{% else %}red{% endif %};">
+                        {{ record.attendance_percentage }}%
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'student_app:student_dashboard' %}" class="btn btn-back">Back</a>
+</div>
+
+{% endblock %}
+
+{% block style %}
+/* Background Theme */
+body {
+    background-color: #181818; /* Dark background for a modern look */
+    color: #ffffff; /* White text for better readability */
+    font-family: 'Arial', sans-serif;
+}
+
+/* Centered and Styled Container */
+.container {
+    max-width: 900px;
+    background: #222831; /* Dark Gray Card Background */
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3); /* Deep shadow for depth */
+}
+
+/* Header */
+h3 {
+    font-size: 26px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #00adb5; /* Aqua Blue */
+}
+
+/* Table Styling */
+.table {
+    background-color: #31363F; /* Dark Table Background */
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+}
+
+/* Table Headers */
+th {
+    background-color: #00adb5; /* Aqua Blue Header */
+    color: black;
+    font-size: 18px;
+    padding: 12px;
+}
+
+/* Table Cells */
+td {
+    padding: 12px;
+    font-size: 16px;
+    color:rgb(21, 21, 21); /* Soft White */
+}
+
+/* Attendance Status Colors */
+td[style*="green"] {
+    background-color: #4CAF50 !important; /* Bright Green */
+    color: white;
+}
+
+td[style*="yellow"] {
+    background-color: #FFC107 !important; /* Deep Yellow */
+    color: black;
+}
+
+td[style*="red"] {
+    background-color: #FF5733 !important; /* Fiery Red */
+    color: white;
+}
+
+/* Back Button Styling */
+.btn-back {
+    background-color: #393e46; /* Dark Gray */
+    color: #ffffff; /* White text */
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Hover Effect */
+.btn-back:hover {
+    background-color: #222831; /* Slightly darker gray */
+    color: #00adb5; /* Aqua Blue text */
+}
+
+}   
+{% endblock %}

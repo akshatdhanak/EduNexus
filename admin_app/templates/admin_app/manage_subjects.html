@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Subjects - Attendance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #f5f7fa;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 1.2rem 0;
+            border-bottom: 1px solid #e8eef5;
+        }
+
+        .navbar-text {
+            color: #1a202c;
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .nav-btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 6px;
+            background: #f0f3f7;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-btn:hover {
+            background: #e0e8f0;
+            color: #1a202c;
+            transform: translateY(-1px);
+        }
+
+        .nav-btn.logout {
+            color: #e74c3c;
+        }
+
+        .nav-btn.logout:hover {
+            background: #fadbd8;
+        }
+
+        .container-wrapper {
+            padding: 2.5rem 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .page-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: -0.5px;
+        }
+
+        .page-title i {
+            color: #3b82f6;
+        }
+
+        .add-subject-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 0.7rem 1.8rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .add-subject-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+            color: white;
+            text-decoration: none;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+
+        .semester-section {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e8eef5;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .semester-section:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .semester-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.8rem;
+            padding-bottom: 1.2rem;
+            border-bottom: 2px solid #e8eef5;
+        }
+
+        .semester-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .semester-title i {
+            color: #3b82f6;
+        }
+
+        .subject-count {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+        }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .subject-card {
+            background: #f9fafb;
+            border: 1px solid #e8eef5;
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .subject-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .subject-card:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .subject-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .subject-code {
+            font-weight: 700;
+            color: #3b82f6;
+            font-size: 1rem;
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.5px;
+        }
+
+        .subject-name {
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+        }
+
+        .subject-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            color: #64748b;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .meta-item i {
+            color: #3b82f6;
+        }
+
+        .credit-badge {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 0.35rem 0.75rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border: 1px solid #bfdbfe;
+        }
+
+        .elective-badge {
+            background: #fef3c7;
+            color: #b45309;
+            padding: 0.35rem 0.75rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border: 1px solid #fde68a;
+        }
+
+        .subject-actions {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: auto;
+            padding-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.55rem 1rem;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            transition: all 0.3s ease;
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .btn-edit {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        .btn-edit:hover {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            text-decoration: none;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            text-decoration: none;
+        }
+
+        .empty-semester {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #94a3b8;
+        }
+
+        .empty-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            opacity: 0.4;
+        }
+
+        .empty-text {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .add-link {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .add-link:hover {
+            text-decoration: underline;
+            color: #2563eb;
+            transform: translateX(2px);
+        }
+
+        .alert {
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left-color: #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #7f1d1d;
+            border-left-color: #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+
+            .subjects-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .container-wrapper {
+                padding: 1rem;
+            }
+
+            .semester-section {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container-fluid px-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="navbar-text">
+                    <i class="bi bi-book-fill"></i> Attendance System
+                </span>
+                <div class="nav-buttons">
+                    <a href="/admin_app/admin_dashboard/" class="nav-btn">
+                        <i class="bi bi-house"></i> Dashboard
+                    </a>
+                    <a href="/accounts/logout/" class="nav-btn logout">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-wrapper">
+        <div class="container-lg">
+            <!-- Header -->
+            <div class="page-header">
+                <h1 class="page-title">
+                    <i class="bi bi-book"></i>Manage Subjects
+                </h1>
+                <a href="{% url 'admin_app:add_subject' %}" class="add-subject-btn">
+                    <i class="bi bi-plus-circle"></i> Add New Subject
+                </a>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <i class="bi bi-check-circle"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Subjects by Semester -->
+            {% if subjects_by_semester %}
+                {% for semester, subjects in subjects_by_semester.items %}
+                    <div class="semester-section">
+                        <div class="semester-header">
+                            <h2 class="semester-title">
+                                <i class="bi bi-calendar3"></i>
+                                Semester {{ semester }}
+                            </h2>
+                            <span class="subject-count">
+                                <i class="bi bi-book"></i> {{ subjects.count }} Subject{{ subjects.count|pluralize }}
+                            </span>
+                        </div>
+
+                        {% if subjects %}
+                            <div class="subjects-grid">
+                                {% for subject in subjects %}
+                                    <div class="subject-card">
+                                        <div class="subject-code">{{ subject.code }}</div>
+                                        <div class="subject-name">{{ subject.name }}</div>
+                                        
+                                        <div class="subject-meta">
+                                            {% if subject.department %}
+                                                <span class="meta-item">
+                                                    <i class="bi bi-building"></i>
+                                                    {{ subject.department.code }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+
+                                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                                            <span class="credit-badge">
+                                                <i class="bi bi-star"></i> {{ subject.credits }} Credits
+                                            </span>
+                                            {% if subject.is_elective %}
+                                                <span class="elective-badge">
+                                                    <i class="bi bi-award"></i> Elective
+                                                </span>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="subject-actions">
+                                            <a href="{% url 'admin_app:edit_subject' subject.id %}" class="btn-sm btn-edit">
+                                                <i class="bi bi-pencil"></i> Edit
+                                            </a>
+                                            <a href="{% url 'admin_app:delete_subject' subject.id %}" class="btn-sm btn-delete">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-semester">
+                                <div class="empty-icon">📚</div>
+                                <div class="empty-text">No subjects added for Semester {{ semester }}</div>
+                                <a href="{% url 'admin_app:add_subject' %}" class="add-link">
+                                    <i class="bi bi-plus"></i> Add subject
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="semester-section" style="text-align: center; padding: 4rem 2rem;">
+                    <div class="empty-icon">📚</div>
+                    <div class="empty-text">No subjects found</div>
+                    <a href="{% url 'admin_app:add_subject' %}" class="add-link">
+                        <i class="bi bi-plus"></i> Add your first subject
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
