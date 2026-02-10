@@ -45,12 +45,13 @@
         <section class="record-row">
           <div class="record-head">
             <div class="record-info">
-              <div class="record-title">{{ item.lecture.subject.name }}</div>
+              <div class="record-title">{{ item.lecture.subject_offering.subject.name }}</div>
               <div class="record-meta">
                 <span class="badge badge-{{ item.slot_type }}">{{ item.slot_type_display }}</span>
-                <span class="meta-item">📅 {{ item.lecture.date|date:"M d, Y · H:i" }}</span>
-                {% if item.lecture.timetable.room_number %}
-                <span class="meta-item">📍 Room {{ item.lecture.timetable.room_number }}</span>
+                <span class="meta-item">📅 {{ item.lecture.date|date:"M d, Y" }}</span>
+                <span class="meta-item">🕐 {{ item.lecture.start_time|time:"H:i" }} - {{ item.lecture.end_time|time:"H:i" }}</span>
+                {% if item.lecture.room_number %}
+                <span class="meta-item">📍 Room {{ item.lecture.room_number }}</span>
                 {% endif %}
               </div>
             </div>

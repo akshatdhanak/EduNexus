@@ -3,93 +3,312 @@
 {% block title %}Profile{% endblock %}
 
 {% block container %}
-<div class="page-container">
-    <div class="profile-card">
-        <div class="profile-hero">
-            <img src="{{ obj.image.url }}" alt="avatar" class="avatar" width="120" height="120">
-            <h1 class="title">{{ obj.name }}</h1>
-            <p class="subtitle">ID: {{ obj.user.username }}</p>
-            {% if obj.user.role == "faculty" %}
-                <p class="meta">Department: {{ obj.department }}</p>
-            {% else %}
-                <p class="meta">Degree: {{ obj.get_degree_display }}</p>
-            {% endif %}
+<div class="profile-page">
+    <div class="profile-hero">
+        <div class="hero-card">
+            <div class="avatar-wrap">
+                <img src="{{ obj.image.url }}" alt="avatar" class="avatar" width="120" height="120">
+            </div>
+            <div class="hero-text">
+                <p class="role-pill">{{ obj.user.role|title }}</p>
+                <h1 class="title">{{ obj.name }}</h1>
+                <p class="subtitle">ID: {{ obj.user.username }}</p>
+                {% if obj.user.role == "faculty" %}
+                    <p class="meta">Department · {{ obj.department|default:"—" }}</p>
+                {% else %}
+                    <p class="meta">Degree · {{ obj.degree_program.name if obj.degree_program else "—" }}</p>
+                {% endif %}
+            </div>
+            <div class="hero-actions">
+                {% if obj.user.role == "faculty" %}
+                    <a href="{% url 'faculty_app:edit_profile' %}" class="btn-primary">Edit Profile</a>
+                    <a href="{% url 'faculty_app:faculty_dashboard' %}" class="btn-secondary">Back</a>
+                {% else %}
+                    <a href="{% url 'student_app:edit_profile' %}" class="btn-primary">Edit Profile</a>
+                    <a href="{% url 'student_app:student_dashboard' %}" class="btn-secondary">Back</a>
+                {% endif %}
+            </div>
         </div>
+    </div>
 
-        <div class="profile-details">
-            <div class="detail-row">
+    <div class="profile-grid">
+        <div class="info-card">
+            <div class="info-header">Contact</div>
+            <div class="info-row">
                 <span class="label">Email</span>
                 <span class="value">{{ obj.user.email }}</span>
             </div>
-
             {% if obj.user.role == "faculty" %}
-            <div class="detail-row">
+            <div class="info-row">
+                <span class="label">Phone</span>
+                <span class="value">{{ obj.phone|default:"—" }}</span>
+            </div>
+            {% else %}
+            <div class="info-row">
+                <span class="label">Phone</span>
+                <span class="value">{{ obj.mobile_no|default:"—" }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="info-card">
+            <div class="info-header">Academic</div>
+            {% if obj.user.role == "faculty" %}
+            <div class="info-row">
+                <span class="label">Department</span>
+                <span class="value">{{ obj.department|default:"—" }}</span>
+            </div>
+            <div class="info-row">
                 <span class="label">Salary</span>
                 <span class="value">{{ obj.salary }} ₹</span>
             </div>
-            <div class="detail-row">
-                <span class="label">Department</span>
-                <span class="value">{{ obj.department }}</span>
-            </div>
-            <div class="detail-row vertical">
-                <span class="label">Subjects</span>
-                <div class="value-list">
-                    {% for sub in obj.subject.all %}
-                        <span class="chip">{{ sub.name }}</span>
-                    {% empty %}
-                        <span class="muted">No subjects assigned</span>
-                    {% endfor %}
-                </div>
-            </div>
             {% else %}
-            <div class="detail-row">
-                <span class="label">Phone</span>
-                <span class="value">{{ obj.mobile_no }}</span>
+            <div class="info-row">
+                <span class="label">Degree</span>
+                <span class="value">{{ obj.degree_program.name if obj.degree_program else "—" }}</span>
             </div>
-            <div class="detail-row">
+            <div class="info-row">
                 <span class="label">Graduation Date</span>
-                <span class="value">{{ obj.graduation_date }}</span>
+                <span class="value">{{ obj.batch|default:"—" }}</span>
             </div>
             {% endif %}
         </div>
 
-        <div class="actions">
-            {% if obj.user.role == "faculty" %}
-                <a href="{% url 'faculty_app:edit_profile' %}" class="btn-primary">Edit Profile</a>
-                <a href="{% url 'faculty_app:faculty_dashboard' %}" class="btn-secondary">Back</a>
-            {% else %}
-                <a href="{% url 'student_app:edit_profile' %}" class="btn-primary">Edit Profile</a>
-                <a href="{% url 'student_app:student_dashboard' %}" class="btn-secondary">Back</a>
-            {% endif %}
+        {% if obj.user.role == "faculty" %}
+        <div class="info-card full">
+            <div class="info-header">Subjects</div>
+            <div class="chip-list">
+                {% for sub in obj.subjects.all %}
+                    <span class="chip">{{ sub.name }}</span>
+                {% empty %}
+                    <span class="muted">No subjects assigned</span>
+                {% endfor %}
+            </div>
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
 
 {% block style %}
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+    --ink: #0f172a;
+    --muted: #64748b;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --accent: #2563eb;
+    --shadow: 0 24px 50px rgba(15, 23, 42, 0.12);
+}
+
 * { box-sizing: border-box; }
-body { background-color: #2b2f33; color: #1a1a1a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; }
-.page-container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
-.profile-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 2px; overflow: hidden; }
-.profile-hero { display: flex; flex-direction: column; align-items: center; padding: 32px; border-bottom: 1px solid #f0f0f0; }
-.avatar { border-radius: 50%; border: 1px solid #e0e0e0; }
-.title { margin-top: 16px; font-size: 22px; font-weight: 600; letter-spacing: -0.02em; color: #1a1a1a; }
-.subtitle { margin-top: 4px; font-size: 14px; color: #666; }
-.meta { margin-top: 2px; font-size: 13px; color: #888; }
-.profile-details { padding: 24px 32px; }
-.detail-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #f0f0f0; }
-.detail-row:last-child { border-bottom: none; }
-.detail-row.vertical { flex-direction: column; align-items: flex-start; }
-.label { font-size: 13px; font-weight: 500; color: #1a1a1a; }
-.value { font-size: 14px; color: #1a1a1a; }
-.value-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-.chip { background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 2px; padding: 6px 10px; font-size: 13px; color: #1a1a1a; }
-.muted { color: #666; font-size: 13px; }
-.actions { display: flex; gap: 12px; justify-content: flex-end; padding: 16px 32px 24px; border-top: 1px solid #f0f0f0; }
-.btn-primary, .btn-secondary { padding: 10px 20px; font-size: 14px; font-weight: 500; border-radius: 2px; text-decoration: none; display: inline-block; }
-.btn-primary { background: #1a1a1a; color: #fff; }
-.btn-primary:hover { background: #000; }
-.btn-secondary { background: transparent; color: #666; border: 1px solid #d0d0d0; }
-.btn-secondary:hover { background: #f5f5f5; color: #1a1a1a; }
-@media (max-width: 640px) { .profile-details { padding: 20px; } .actions { padding: 16px 20px 24px; } }
+
+body {
+    background: radial-gradient(circle at 20% 20%, #e0e7ff 0%, #f8fafc 45%, #f1f5f9 100%);
+    color: var(--ink);
+    font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+}
+
+.profile-page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+}
+
+.profile-hero {
+    margin-bottom: 28px;
+}
+
+.hero-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+}
+
+.avatar-wrap {
+    width: 120px;
+    height: 120px;
+    border-radius: 20px;
+    background: linear-gradient(140deg, #2563eb, #7c3aed);
+    padding: 6px;
+}
+
+.avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 2px solid #ffffff;
+    background: #ffffff;
+}
+
+.hero-text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.role-pill {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 600;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'Fraunces', 'Times New Roman', serif;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: var(--muted);
+}
+
+.meta {
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.hero-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff;
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: #ffffff;
+}
+
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.06);
+}
+
+.info-card.full {
+    grid-column: 1 / -1;
+}
+
+.info-header {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    margin-bottom: 14px;
+    font-weight: 600;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px dashed #e2e8f0;
+    font-size: 14px;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.label {
+    color: var(--muted);
+    font-weight: 500;
+}
+
+.value {
+    color: var(--ink);
+    font-weight: 600;
+}
+
+.chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.chip {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #4338ca;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.muted {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+@media (max-width: 860px) {
+    .hero-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .hero-actions {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .avatar-wrap {
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 640px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+    }
+}
 {% endblock %}

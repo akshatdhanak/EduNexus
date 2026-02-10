@@ -14,7 +14,6 @@ urlpatterns = [
     path("show_notification/", views.show_notification, name="show_notification"),
     path("request_leave/", views.request_leave, name="request_leave"),
     path("view_leave/", views.view_leave, name="view_leave"),
-    path("register_student/", views.register_student, name="register_student"),
     path("show_student_attendance", views.show_student_attendance, name="show_student_attendance"),
     path("edit_student_attendance/<int:attendance_id>", views.edit_student_attendance, name="edit_student_attendance"),
     path("mark_student_attendance/", views.mark_student_attendance, name="mark_student_attendance"),

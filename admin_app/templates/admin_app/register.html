@@ -3,33 +3,106 @@
 {% block title %}Register{% endblock %}
 
 {% block container %}
-<div class="register-wrapper">
-    <div class="register-card">
-        <div class="register-header">
-            <h1>Register</h1>
-            <p>Create a new account with clean, focused inputs.</p>
+<div class="card" style="max-width:880px;margin:24px auto;padding:0;overflow:visible;">
+    <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+            <div>
+                <h1 style="margin:0;font-size:22px;">Create Account</h1>
+                <p class="subtitle" style="margin:4px 0 0;">Add a new user to the system</p>
+            </div>
+            <div>
+                <a href="{% url 'admin_app:admin_dashboard' %}" class="nav-pill">Back</a>
+            </div>
         </div>
 
-        <form method="post" enctype="multipart/form-data" class="register-form">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            {% for field in form %}
-                <div class="form-row">
-                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                    <div class="form-control-wrap {% if field.field.widget.input_type == 'checkbox' %}checkbox-wrap{% endif %}">
-                        {{ field }}
-                    </div>
-                    {% if field.help_text %}
-                        <p class="help-text">{{ field.help_text }}</p>
-                    {% endif %}
-                    {% if field.errors %}
-                        <div class="error-text">{{ field.errors|striptags }}</div>
-                    {% endif %}
-                </div>
-            {% endfor %}
 
-            <div class="form-actions">
-                <button type="submit" class="btn-primary">Register</button>
-                <a href="{% url 'admin_app:admin_dashboard' %}" class="btn-secondary">Back</a>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Username</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}<div class="error-text">{{ form.username.errors|striptags }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="error-text">{{ form.email.errors|striptags }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Password</label>
+                        {{ form.password }}
+                        {% if form.password.help_text %}<small class="text-muted">{{ form.password.help_text }}</small>{% endif %}
+                        {% if form.password.errors %}<div class="error-text">{{ form.password.errors|striptags }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Profile Image</label>
+                        {{ form.image }}
+                        {% if form.image.errors %}<div class="error-text">{{ form.image.errors|striptags }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Division</label>
+                        {{ form.division }}
+                        {% if form.division.errors %}<div class="error-text">{{ form.division.errors|striptags }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Batch</label>
+                        {{ form.batch }}
+                        {% if form.batch.errors %}<div class="error-text">{{ form.batch.errors|striptags }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Semester</label>
+                        {{ form.semester }}
+                        {% if form.semester.errors %}<div class="error-text">{{ form.semester.errors|striptags }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Department (optional)</label>
+                        {{ form.department }}
+                        {% if form.department.errors %}<div class="error-text">{{ form.department.errors|striptags }}</div>{% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Degree Program (optional)</label>
+                        {{ form.degree_program }}
+                        {% if form.degree_program.errors %}<div class="error-text">{{ form.degree_program.errors|striptags }}</div>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px;">
+                <button type="submit" class="btn btn-primary">Register</button>
+                <a href="{% url 'admin_app:student_info' %}" class="btn btn-secondary">Cancel</a>
             </div>
         </form>
     </div>

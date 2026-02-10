@@ -10,7 +10,19 @@ from .models import ExamSchedule, ExamMarks, ExamType, Subject, Student
 @staff_member_required
 def manage_exams(request):
     """View and manage exams organized by semester and type"""
-    
+    default_exam_types = [
+        ("Sessional", "Internal assessment"),
+        ("External", "University/end-term assessment"),
+        ("Practical", "Lab/practical assessment"),
+    ]
+
+    if not ExamType.objects.exists():
+        for name, description in default_exam_types:
+            ExamType.objects.get_or_create(
+                name=name,
+                defaults={"description": description, "is_mandatory": True},
+            )
+
     exams = ExamSchedule.objects.all().select_related('subject', 'exam_type').order_by('subject__semester', 'exam_type', 'subject__name')
     
     # Organize exams by semester and exam type

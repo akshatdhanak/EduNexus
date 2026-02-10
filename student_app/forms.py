@@ -1,5 +1,5 @@
 from django import forms
-from admin_app.models import Student
+from admin_app.models import Student, DegreeProgram
 from registration.models import CustomUser
 
 
@@ -18,6 +18,7 @@ class StudentProfileForm(forms.ModelForm):
             'address', 'city', 'state', 'pincode',
             'father_name', 'father_contact',
             'mother_name', 'mother_contact',
+            'degree_program',
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Full Name'}),
@@ -44,6 +45,13 @@ class StudentProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if user:
             self.fields['email'].initial = user.email
+
+        # degree program choices
+        self.fields['degree_program'] = forms.ModelChoiceField(
+            queryset=DegreeProgram.objects.all(),
+            required=False,
+            widget=forms.Select(attrs={'class': 'form-control'})
+        )
     
     def save(self, commit=True, user=None):
         student = super().save(commit=False)

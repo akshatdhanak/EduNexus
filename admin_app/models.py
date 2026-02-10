@@ -173,6 +173,7 @@ class Faculty(models.Model):
     name = models.CharField(max_length=200)
     email = models.EmailField()
     phone = models.CharField(max_length=15, blank=True, null=True)
+    department = models.ForeignKey(Department, on_delete=models.PROTECT, related_name='faculties', null=True, blank=True)
     specialization = models.CharField(max_length=200, blank=True, null=True)
     subjects = models.ManyToManyField(Subject, blank=True, related_name='qualified_faculties')
     salary = models.DecimalField(max_digits=10, decimal_places=2, default=0)

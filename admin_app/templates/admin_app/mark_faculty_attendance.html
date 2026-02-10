@@ -82,7 +82,7 @@
             <tr class="status-{{ attendance.status }}">
               <td class="faculty-id">{{ attendance.faculty.user.username }}</td>
               <td class="faculty-name">{{ attendance.faculty.name }}</td>
-              <td class="faculty-dept">{{ attendance.faculty.get_department_display }}</td>
+              <td class="faculty-dept">{{ attendance.faculty.department|default:"—" }}</td>
               <td>
                 <span class="status-badge status-{{ attendance.status }}">
                   {{ attendance.status|upper }}

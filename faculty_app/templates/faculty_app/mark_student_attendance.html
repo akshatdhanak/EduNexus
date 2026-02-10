@@ -427,6 +427,13 @@
                                     <div class="meta-item">🕐 {{ lecture.start_time|time:"H:i" }} - {{ lecture.end_time|time:"H:i" }}</div>
                                     <div class="meta-item">🏫 Room {{ lecture.room_number|default:"—" }}</div>
                                     <div class="meta-item">👥 Sem {{ lecture.subject_offering.subject.semester }}</div>
+                                    <div class="meta-item">
+                                        {% if lecture.lecture_type == 'theory' %}
+                                            👥 Division {{ lecture.subject_offering.division }}
+                                        {% else %}
+                                            👥 Batch {{ lecture.subject_offering.division }}
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                             <a href="{% url 'faculty_app:mark_student_attendance2' lecture.id %}" class="mark-btn">✓ Mark</a>

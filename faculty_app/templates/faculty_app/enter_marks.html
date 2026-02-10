@@ -232,16 +232,44 @@
     {% if not exam_id %}
         <div class="exam-selector">
             <h3 style="margin-bottom: 1.5rem; color: #1a1a1a;">
-                <i class="bi bi-list-check" style="color: #667eea;"></i> Select Exam
+                <i class="bi bi-list-check" style="color: #667eea;"></i> Select Subject &amp; Exam
             </h3>
-            
+
+            <form method="get" class="mb-3" id="subjectExamForm">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label">Subject</label>
+                        <select name="subject_id" class="form-control">
+                            <option value="">Choose subject</option>
+                            {% for subj in subjects %}
+                                <option value="{{ subj.id }}" {% if selected_subject_id and subj.id|stringformat:"s" == selected_subject_id %}selected{% endif %}>{{ subj.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Exam Type</label>
+                        <select name="exam_type_id" class="form-control">
+                            <option value="">All Types</option>
+                            {% for et in exam_types_for_selected %}
+                                <option value="{{ et.0 }}" {% if et.0|stringformat:"s" == selected_exam_type_id %}selected{% endif %}>{{ et.1 }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary">Show Exams</button>
+                        <a href="{% url 'faculty_app:enter_marks' %}" class="btn btn-secondary ms-2">Reset</a>
+                    </div>
+                </div>
+            </form>
+
             {% if exams %}
                 <div class="alert alert-info">
                     <i class="bi bi-info-circle"></i> Choose an exam to view and enter marks for all students in that semester.
                 </div>
-                
+
                 <div class="row">
                     {% for exam in exams %}
+                        {# If exam_type filter is present, ensure it matches (server-side filtered already) #}
                         <div class="col-md-6 mb-3">
                             <a href="?exam_id={{ exam.id }}" class="card text-decoration-none" style="cursor: pointer; height: 100%; border: 2px solid #e0e0e0; transition: all 0.3s ease;"
                                onmouseover="this.style.borderColor='#667eea'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.2)';"
@@ -253,14 +281,14 @@
                                                 {{ exam.subject.name }}
                                             </h5>
                                             <p class="text-muted" style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">
-                                                Semester {{ exam.semester }}
+                                                Semester {{ exam.subject.semester }}
                                             </p>
                                         </div>
                                         <span style="display: inline-block; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background-color: #667eea; color: white;">
                                             <i class="bi bi-certificate"></i> {{ exam.exam_type.name }}
                                         </span>
                                     </div>
-                                    
+
                                     <div style="background-color: #f5f5f5; padding: 0.75rem; border-radius: 6px; text-align: center;">
                                         <p style="margin: 0; color: #666; font-size: 0.9rem;">Max Marks: <strong style="color: #667eea; font-size: 1.1rem;">{{ exam.max_marks }}</strong></p>
                                     </div>
@@ -273,7 +301,7 @@
                 <div class="no-exams">
                     <div class="no-exams-icon">📭</div>
                     <h5>No Exams Available</h5>
-                    <p class="text-muted mb-0">There are no exams created for your subjects yet. Contact the admin to create exams.</p>
+                    <p class="text-muted mb-0">There are no exams created for your selected subject yet. Try a different subject or contact the admin.</p>
                 </div>
             {% endif %}
         </div>
@@ -294,6 +322,28 @@
                 </div>
                 
                 {% if students %}
+                    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;">
+                        <form method="get" style="display:flex;gap:8px;align-items:center;" id="marksFilterForm">
+                            <input type="hidden" name="exam_id" value="{{ exam_id }}">
+                            {% if divisions %}
+                                <select name="division" class="form-control" style="width:140px;">
+                                    <option value="">All Divisions</option>
+                                    {% for d in divisions %}
+                                        <option value="{{ d }}" {% if d == selected_division %}selected{% endif %}>{{ d }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                            {% if degree_programs %}
+                                <select name="degree_program" class="form-control" style="width:240px;">
+                                    <option value="">All Degree Programs</option>
+                                    {% for dp in degree_programs %}
+                                        <option value="{{ dp.id }}" {% if dp.id|stringformat:"s" == selected_degree %}selected{% endif %}>{{ dp.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            {% endif %}
+                            <button type="submit" class="btn btn-secondary">Apply</button>
+                        </form>
+                    </div>
                     <div class="alert alert-warning">
                         <i class="bi bi-exclamation-triangle"></i> <strong>Important:</strong> Enter marks between 0 and {{ exam.max_marks }}. Leave empty if marks are not yet available.
                     </div>
@@ -360,7 +410,7 @@
                     <div class="no-exams">
                         <div class="no-exams-icon">👥</div>
                         <h5>No Students Found</h5>
-                        <p class="text-muted mb-0">There are no students in Semester {{ exam.semester }}.</p>
+                        <p class="text-muted mb-0">There are no students in Semester {{ exam.subject.semester }}.</p>
                     </div>
                     
                     <div style="margin-top: 2rem;">

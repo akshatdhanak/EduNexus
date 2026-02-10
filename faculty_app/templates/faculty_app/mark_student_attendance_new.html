@@ -420,24 +420,31 @@
                         <div class="lecture-card">
                             <div class="lecture-info">
                                 <div class="lecture-title">
-                                    {% if lecture.timetable.slot_type == 'theory' %}
+                                    {% if lecture.lecture_type == 'theory' %}
                                         <span class="session-badge session-theory">📖 Lecture</span>
-                                    {% elif lecture.timetable.slot_type == 'practical' %}
+                                    {% elif lecture.lecture_type == 'practical' %}
                                         <span class="session-badge session-practical">🔬 Lab</span>
                                     {% else %}
                                         <span class="session-badge session-tutorial">📝 Tutorial</span>
                                     {% endif %}
-                                    <span>{{ lecture.subject.name }}</span>
+                                    <span>{{ lecture.subject_offering.subject.name }}</span>
                                 </div>
                                 <div class="lecture-details">
                                     <div class="lecture-detail-item">
-                                        🕐 {{ lecture.date|date:"H:i" }} - {{ lecture.timetable.end_time|time:"H:i" }}
+                                        🕐 {{ lecture.start_time|time:"H:i" }} - {{ lecture.end_time|time:"H:i" }}
                                     </div>
                                     <div class="lecture-detail-item">
-                                        🏫 Room {{ lecture.timetable.room }}
+                                        🏫 Room {{ lecture.room_number|default:"—" }}
                                     </div>
                                     <div class="lecture-detail-item">
-                                        👥 Semester {{ lecture.timetable.semester }}
+                                        👥 Sem {{ lecture.subject_offering.subject.semester }}
+                                    </div>
+                                    <div class="lecture-detail-item">
+                                        {% if lecture.lecture_type == 'theory' %}
+                                            👥 Division {{ lecture.subject_offering.division }}
+                                        {% else %}
+                                            👥 Batch {{ lecture.subject_offering.division }}
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>

@@ -93,7 +93,7 @@ def edit_profile(request):
     if request.method == 'POST':
         # Update basic info
         faculty.name = request.POST.get('name', faculty.name)
-        faculty.mobile_no = request.POST.get('mobile_no', faculty.mobile_no)
+        faculty.phone = request.POST.get('phone', faculty.phone)
         
         # Handle profile image
         if 'image' in request.FILES:
@@ -435,54 +435,6 @@ def view_leave(request):
     return render(request, "view_leave.html", {"leaves": leaves})
 
 @faculty_required
-def register_student(request):
-    """Faculty can register new students"""
-    from admin_app.forms import StudentForm
-    from admin_app.models import assign_subjects_by_semester
-    
-    if request.method == "POST":
-        form = StudentForm(request.POST, request.FILES)
-        if form.is_valid():
-            try:
-                username = form.cleaned_data["username"]
-                email = form.cleaned_data["email"]
-                password = form.cleaned_data.get("password")
-                
-                user = CustomUser.objects.create(
-                    username=username,
-                    email=email,
-                    role="student"
-                )
-                if password:
-                    user.set_password(password)
-                else:
-                    user.set_password("student123")
-                user.save()
-                
-                student = form.save(commit=False)
-                student.user = user
-                student.save()
-                
-                # Auto-assign subjects based on semester
-                assign_subjects_by_semester(student)
-                
-                messages.success(request, f"Student {username} registered successfully!")
-                return redirect("faculty_app:register_student")
-            except Exception as e:
-                messages.error(request, f"Error: {str(e)}")
-        else:
-            messages.error(request, "Please correct the errors below.")
-    else:
-        form = StudentForm()
-    
-    students = Student.objects.all().order_by("-id")[:10]
-    
-    return render(request, "faculty_app/register_student.html", {
-        "form": form,
-        "students": students
-    })
-
-@faculty_required
 def view_timetable(request):
     """Display timetable for the logged-in faculty member"""
     from admin_app.models import Timetable
@@ -519,32 +471,60 @@ def enter_marks(request):
     """Faculty can enter exam marks for students"""
     try:
         faculty = Faculty.objects.get(user=request.user)
-        
+
         # Get all exam schedules for subjects taught by this faculty
         subject_offerings = SubjectOffering.objects.filter(faculty=faculty)
         subjects = Subject.objects.filter(offerings__in=subject_offerings).distinct()
         exam_schedules = ExamSchedule.objects.filter(subject__in=subjects).order_by('-exam_date', 'subject')
-        
-        # Get selected exam
+
+        # Get selected exam and optional filters
         exam_id = request.GET.get('exam_id')
         exam = None
         students = []
-        
+        selected_division = request.GET.get('division') or None
+        selected_degree = request.GET.get('degree_program') or None
+        # UI filters: subject and exam type (for selection step)
+        selected_subject_id = request.GET.get('subject_id') or None
+        selected_exam_type_id = request.GET.get('exam_type_id') or None
+
         if exam_id:
             try:
                 exam = ExamSchedule.objects.get(id=exam_id, subject__in=subjects)
-                
+
                 # Get students enrolled in this subject in the same semester
                 semester = exam.subject.semester
                 student_enrollments = StudentEnrollment.objects.filter(
                     subject_offering__subject=exam.subject,
                     student__semester=semester
                 ).select_related('student')
-                
-                # Get marks for these students
-                for enrollment in student_enrollments:
-                    student = enrollment.student
-                    exam_mark, created = ExamMarks.objects.get_or_create(
+
+                # If explicit enrollments exist, use them. Otherwise fall back to all students in that semester
+                if student_enrollments.exists():
+                    # apply optional filters to enrollments
+                    if selected_division:
+                        student_enrollments = student_enrollments.filter(student__division=selected_division)
+                    if selected_degree:
+                        student_enrollments = student_enrollments.filter(student__degree_program_id=selected_degree)
+                    enrollment_iter = (enrollment.student for enrollment in student_enrollments)
+                else:
+                    # fallback: students in the same semester
+                    fallback_qs = Student.objects.filter(semester=semester, status='active')
+                    # If subject has a department, prefer students from that department only
+                    subj_dept = getattr(exam.subject, 'department', None)
+                    if subj_dept:
+                        filtered_by_dept = fallback_qs.filter(degree_program__department=subj_dept)
+                        # only apply department restriction if it yields results
+                        if filtered_by_dept.exists():
+                            fallback_qs = filtered_by_dept
+                    if selected_division:
+                        fallback_qs = fallback_qs.filter(division=selected_division)
+                    if selected_degree:
+                        fallback_qs = fallback_qs.filter(degree_program_id=selected_degree)
+                    enrollment_iter = fallback_qs
+
+                # Get or create marks for these students
+                for student in enrollment_iter:
+                    exam_mark, _ = ExamMarks.objects.get_or_create(
                         student=student,
                         exam_schedule=exam,
                         defaults={}
@@ -556,76 +536,81 @@ def enter_marks(request):
                         'roll_number': student.roll_number,
                         'marks': exam_mark
                     })
-                    
+
             except ExamSchedule.DoesNotExist:
                 messages.error(request, "Exam not found.")
-        
-        # Handle form submission
-        if request.method == 'POST' and exam_id:
+
+        # Handle form submission for marks
+        if request.method == 'POST' and exam:
+            updated_count = 0
+            for key, value in request.POST.items():
+                if key.startswith('marks_'):
+                    student_id = key.split('_', 1)[1]
+                    marks = value.strip()
+                    if marks:
+                        try:
+                            marks_val = float(marks)
+                            if 0 <= marks_val <= exam.max_marks:
+                                exam_mark = ExamMarks.objects.get(
+                                    student_id=student_id,
+                                    exam_schedule_id=exam.id
+                                )
+                                exam_mark.marks_obtained = marks_val
+                                exam_mark.marked_by = faculty
+                                exam_mark.marked_date = timezone.now()
+                                exam_mark.is_marked = True
+                                exam_mark.save()
+                                updated_count += 1
+                            else:
+                                messages.warning(request, f"Marks for student must be between 0 and {exam.max_marks}")
+                        except ValueError:
+                            messages.warning(request, "Invalid marks value provided")
+
+            if updated_count > 0:
+                messages.success(request, f"✓ Successfully updated marks for {updated_count} student(s)")
+                return redirect(f"{request.path}?exam_id={exam.id}")
+
+        # prepare filter options: divisions and degree programs
+        if exam:
+            divisions = Student.objects.filter(semester=exam.subject.semester).values_list('division', flat=True).distinct()
+            subj_dept = getattr(exam.subject, 'department', None)
+            degree_programs = subj_dept.degree_programs.all() if subj_dept is not None else []
+        else:
+            divisions = Student.objects.none()
+            degree_programs = []
+
+        # Provide subject and exam type options for the selection step
+        subjects_for_faculty = subjects
+        exam_types_for_selected = []
+        exams_for_display = exam_schedules
+        if selected_subject_id:
             try:
-                exam = ExamSchedule.objects.get(id=exam_id, subject__in=subjects)
-                
-                # Update marks for all students
-                updated_count = 0
-                for key, value in request.POST.items():
-                    if key.startswith('marks_'):
-                        student_id = key.split('_')[1]
-                        marks = value.strip()
-                        
-                        if marks:  # Only update if marks are provided
-                            try:
-                                marks = float(marks)
-                                if 0 <= marks <= exam.max_marks:
-                                    exam_mark = ExamMarks.objects.get(
-                                        student_id=student_id,
-                                        exam_schedule_id=exam_id
-                                    )
-                                    exam_mark.marks_obtained = marks
-                                    exam_mark.marked_by = faculty
-                                    exam_mark.marked_date = timezone.now()
-                                    exam_mark.is_marked = True
-                                    exam_mark.save()
-                                    updated_count += 1
-                                else:
-                                    messages.warning(request, f"Marks for student must be between 0 and {exam.max_marks}")
-                            except ValueError:
-                                messages.warning(request, f"Invalid marks value provided")
-                
-                if updated_count > 0:
-                    messages.success(request, f"✓ Successfully updated marks for {updated_count} student(s)")
-                    # Refresh students list
-                    students = []
-                    semester = exam.subject.semester
-                    student_enrollments = StudentEnrollment.objects.filter(
-                        subject_offering__subject=exam.subject,
-                        student__semester=semester
-                    ).select_related('student')
-                    for enrollment in student_enrollments:
-                        student = enrollment.student
-                        exam_mark = ExamMarks.objects.get(student=student, exam_schedule=exam)
-                        students.append({
-                            'id': student.id,
-                            'user': student.user,
-                            'name': student.name,
-                            'roll_number': student.roll_number,
-                            'marks': exam_mark
-                        })
-                
-                # Redirect back to the same page with the query param instead of reversing an invalid view name
-                return redirect(f"{request.path}?exam_id={exam_id}")
-            except ExamSchedule.DoesNotExist:
-                messages.error(request, "Exam not found.")
-        
+                selected_subject_id = int(selected_subject_id)
+                exams_for_display = exam_schedules.filter(subject_id=selected_subject_id)
+                # gather available exam types for this subject
+                exam_types_for_selected = exams_for_display.values_list('exam_type__id', 'exam_type__name').distinct()
+            except ValueError:
+                pass
+
         context = {
             'faculty': faculty,
-            'exams': exam_schedules,
+            'exams': exams_for_display,
+            'all_exams': exam_schedules,
             'exam': exam,
             'exam_id': exam_id,
             'students': students,
+            'divisions': divisions,
+            'degree_programs': degree_programs,
+            'selected_division': selected_division,
+            'selected_degree': selected_degree,
+            'subjects': subjects_for_faculty,
+            'selected_subject_id': selected_subject_id,
+            'exam_types_for_selected': list(exam_types_for_selected),
+            'selected_exam_type_id': selected_exam_type_id,
         }
-        
+
         return render(request, 'faculty_app/enter_marks.html', context)
-    
+
     except Faculty.DoesNotExist:
         messages.error(request, "Faculty profile not found.")
         return redirect("faculty_app:dashboard")

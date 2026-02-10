@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.hashers import make_password
-from .models import Attendance, Faculty, LeaveRequest, Student, Subject, Notification, Lecture
+from .models import Attendance, Faculty, LeaveRequest, Student, Subject, Notification, Lecture, Department, DegreeProgram
 from registration.models import CustomUser
 
 # Student Registration Form
@@ -21,10 +21,12 @@ class StudentForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}), required=False)
     division = forms.ChoiceField(choices=DIVISION_CHOICES, widget=forms.Select(attrs={'class': 'form-control'}))
     batch = forms.ChoiceField(choices=[("", "Select batch")], widget=forms.Select(attrs={'class': 'form-control'}))
+    department = forms.ModelChoiceField(queryset=Department.objects.all(), required=False, widget=forms.Select(attrs={'class': 'form-control'}))
+    degree_program = forms.ModelChoiceField(queryset=DegreeProgram.objects.all(), required=False, widget=forms.Select(attrs={'class': 'form-control'}))
     
     class Meta:
         model = Student
-        fields = ["username", "email", "password", "name", "image", "phone", "semester", "division", "batch", "date_of_birth"]
+        fields = ["username", "email", "password", "name", "image", "phone", "semester", "division", "batch", "degree_program", "date_of_birth"]
         widgets = {
             'username': forms.Select(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
@@ -42,6 +44,9 @@ class StudentForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             self.fields['username'].initial = self.instance.user.username
             self.fields['email'].initial = self.instance.user.email
+            if self.instance.degree_program:
+                self.fields['degree_program'].initial = self.instance.degree_program
+                self.fields['department'].initial = self.instance.degree_program.department
 
         division_value = None
         if self.data.get('division'):
@@ -55,6 +60,19 @@ class StudentForm(forms.ModelForm):
                 for suffix in self.BATCH_SUFFIXES
             ]
             self.fields['batch'].choices = [("", "Select batch")] + batch_choices
+
+        # If department is selected in POST data, filter degree programs
+        dept_value = None
+        if self.data.get('department'):
+            dept_value = self.data.get('department')
+        elif self.instance and self.instance.pk and self.instance.degree_program:
+            dept_value = getattr(self.instance.degree_program.department, 'id', None)
+
+        if dept_value:
+            try:
+                self.fields['degree_program'].queryset = DegreeProgram.objects.filter(department_id=dept_value).order_by('name')
+            except Exception:
+                self.fields['degree_program'].queryset = DegreeProgram.objects.none()
         
     def clean_password(self):
         password = self.cleaned_data.get("password")
@@ -116,14 +134,14 @@ class FacultyForm(forms.ModelForm):
     
     class Meta:
         model = Faculty
-        fields = ["username", "email", "password", "name", "image", "phone", "specialization", "salary"]
+        fields = ["username", "email", "password", "name", "image", "phone", "department", "salary"]
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
-            'specialization': forms.TextInput(attrs={'class': 'form-control'}),
+            'department': forms.Select(attrs={'class': 'form-control'}),
             'salary': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 

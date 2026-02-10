@@ -276,22 +276,30 @@
             {% if day_slots %}
             <div class="slots-container">
                 {% for slot in day_slots %}
-                <div class="slot-card slot-type-{{ slot.slot_type }}">
+                <div class="slot-card slot-type-{{ slot.lecture_type }}">
                     <div class="slot-header">
                         <div class="slot-time">
                             {{ slot.start_time|time:"g:i A" }} – {{ slot.end_time|time:"g:i A" }}
                         </div>
-                        <span class="slot-type-badge badge-{{ slot.slot_type }}">
-                            {{ slot.get_slot_type_display }}
+                        <span class="slot-type-badge badge-{{ slot.lecture_type }}">
+                            {{ slot.get_lecture_type_display }}
                         </span>
                     </div>
-                    
-                    <div class="slot-subject">{{ slot.subject.name }}</div>
+
+                    <div class="slot-subject">{{ slot.subject_offering.subject.name }}</div>
                     
                     <div class="slot-details">
                         <div class="detail-item">
                             <span class="label">Faculty</span>
-                            <span class="value">{{ slot.faculty.name }}</span>
+                            <span class="value">{{ slot.subject_offering.faculty.name }}</span>
+                        </div>
+                        <div class="detail-item">
+                            {% if slot.lecture_type == 'theory' %}
+                                <span class="label">Division</span>
+                            {% else %}
+                                <span class="label">Batch</span>
+                            {% endif %}
+                            <span class="value">{{ slot.subject_offering.division }}</span>
                         </div>
                         {% if slot.room_number %}
                         <div class="detail-item">
@@ -686,7 +694,7 @@
     border-radius: 12px !important;
     padding: 32px !important;
     width: 90% !important;
-    max-width: 600px !important;
+    max-width: 720px !important;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
     animation: slideIn 0.3s ease-out !important;
     position: relative !important;
@@ -708,7 +716,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     border-bottom: 2px solid #f0f0f0;
     padding-bottom: 16px;
 }
@@ -734,8 +742,22 @@
     color: #1a1a1a;
 }
 
+.modal-form {
+    margin-top: 8px;
+}
+
+.modal-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
 .modal-form-group {
-    margin-bottom: 18px;
+    margin-bottom: 0;
+}
+
+.modal-form-group.full {
+    grid-column: 1 / -1;
 }
 
 .modal-form-group label {
@@ -803,6 +825,12 @@
     background: #e0e0e0;
     border-color: #b0b0b0;
 }
+
+@media (max-width: 640px) {
+    .modal-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
 </style>
 
 <!-- Add Entry Modal -->
@@ -812,103 +840,128 @@
             <h2>Add Timetable Entry</h2>
             <button type="button" class="modal-close" data-close-modal>&times;</button>
         </div>
-        
-        <form method="POST" action="{% url 'admin_app:add_timetable' %}">
+
+        <form method="POST" action="{% url 'admin_app:add_timetable' %}" class="modal-form">
             {% csrf_token %}
-            
-            <div class="modal-form-group">
-                <label for="modalDepartmentSelect">Department</label>
-                <select id="modalDepartmentSelect" required>
-                    <option value="">-- Select Department --</option>
-                    {% for dept in departments %}
-                    <option value="{{ dept.id }}">{{ dept.name }}</option>
-                    {% endfor %}
-                </select>
+            <div class="modal-form-grid">
+                <div class="modal-form-group">
+                    <label for="modalDepartmentSelect">Department</label>
+                    <select id="modalDepartmentSelect" required>
+                        <option value="">-- Select Department --</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.id }}">{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="modalSemesterSelect">Semester</label>
+                    <select id="modalSemesterSelect" required>
+                        <option value="">-- Select Semester --</option>
+                        {% for sem in semesters %}
+                        <option value="{{ sem }}">Semester {{ sem }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="modal-form-group full">
+                    <label for="subjectSelect">Subject</label>
+                    <select name="subject" id="subjectSelect" required>
+                        <option value="">-- Select Subject --</option>
+                        {% for subject in subjects %}
+                        <option value="{{ subject.id }}"
+                                data-semester="{{ subject.semester }}"
+                                data-department="{{ subject.department_id }}">
+                            {{ subject.code }} - {{ subject.name }} (Sem {{ subject.semester }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <small class="text-muted" id="noSubjectsMsg" style="display:none;">No subjects found for this department/semester.</small>
+                </div>
+
+                <div class="modal-form-group full">
+                    <label for="facultySelect">Faculty</label>
+                    <select name="faculty" id="facultySelect" required>
+                        <option value="">-- Select Faculty --</option>
+                        {% for faculty in faculties %}
+                        <option value="{{ faculty.id }}">{{ faculty.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="academicYear">Academic Year</label>
+                    <input type="text" name="academic_year" id="academicYear" placeholder="e.g., 2025-26" required>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="lectureType">Lecture Type</label>
+                    <select name="lecture_type" id="lectureType" required>
+                        <option value="">-- Select Type --</option>
+                        <option value="theory">Theory</option>
+                        <option value="practical">Practical</option>
+                        <option value="tutorial">Tutorial</option>
+                    </select>
+                </div>
+
+                <div class="modal-form-group" id="divisionGroup">
+                    <label for="divisionSelect">Division</label>
+                    <select name="division" id="divisionSelect" required>
+                        <option value="">-- Select Division --</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                    </select>
+                </div>
+
+                <div class="modal-form-group" id="batchGroup" style="display:none;">
+                    <label for="batchSelect">Batch</label>
+                    <select name="division" id="batchSelect" disabled>
+                        <option value="">-- Select Batch --</option>
+                        <option value="A1">A1</option>
+                        <option value="A2">A2</option>
+                        <option value="A3">A3</option>
+                        <option value="A4">A4</option>
+                        <option value="B1">B1</option>
+                        <option value="B2">B2</option>
+                        <option value="B3">B3</option>
+                        <option value="B4">B4</option>
+                        <option value="C1">C1</option>
+                        <option value="C2">C2</option>
+                        <option value="C3">C3</option>
+                        <option value="C4">C4</option>
+                    </select>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="day">Day</label>
+                    <select name="day" id="day" required>
+                        <option value="">-- Select Day --</option>
+                        <option value="monday">Monday</option>
+                        <option value="tuesday">Tuesday</option>
+                        <option value="wednesday">Wednesday</option>
+                        <option value="thursday">Thursday</option>
+                        <option value="friday">Friday</option>
+                        <option value="saturday">Saturday</option>
+                    </select>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="startTime">Start Time</label>
+                    <input type="time" name="start_time" id="startTime" required>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="endTime">End Time</label>
+                    <input type="time" name="end_time" id="endTime" required>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="roomNumber">Room Number</label>
+                    <input type="text" name="room_number" id="roomNumber" placeholder="e.g., A101">
+                </div>
             </div>
 
-            <div class="modal-form-group">
-                <label for="modalSemesterSelect">Semester</label>
-                <select id="modalSemesterSelect" required>
-                    <option value="">-- Select Semester --</option>
-                    {% for sem in semesters %}
-                    <option value="{{ sem }}">Semester {{ sem }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div class="modal-form-group">
-                <label for="subjectSelect">Subject</label>
-                <select name="subject" id="subjectSelect" required>
-                    <option value="">-- Select Subject --</option>
-                    {% for subject in subjects %}
-                    <option value="{{ subject.id }}"
-                            data-semester="{{ subject.semester }}"
-                            data-department="{{ subject.department_id }}">
-                        {{ subject.code }} - {{ subject.name }} (Sem {{ subject.semester }})
-                    </option>
-                    {% endfor %}
-                </select>
-                <small class="text-muted" id="noSubjectsMsg" style="display:none;">No subjects found for this department/semester.</small>
-            </div>
-
-            <div class="modal-form-group">
-                <label for="facultySelect">Faculty</label>
-                <select name="faculty" id="facultySelect" required>
-                    <option value="">-- Select Faculty --</option>
-                    {% for faculty in faculties %}
-                    <option value="{{ faculty.id }}">{{ faculty.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="modal-form-group">
-                <label for="academicYear">Academic Year</label>
-                <input type="text" name="academic_year" id="academicYear" placeholder="e.g., 2025-26" required>
-            </div>
-
-            <div class="modal-form-group">
-                <label for="division">Division</label>
-                <input type="text" name="division" id="division" placeholder="e.g., A" required>
-            </div>
-            
-            <div class="modal-form-group">
-                <label for="day">Day</label>
-                <select name="day" id="day" required>
-                    <option value="">-- Select Day --</option>
-                    <option value="monday">Monday</option>
-                    <option value="tuesday">Tuesday</option>
-                    <option value="wednesday">Wednesday</option>
-                    <option value="thursday">Thursday</option>
-                    <option value="friday">Friday</option>
-                    <option value="saturday">Saturday</option>
-                </select>
-            </div>
-            
-            <div class="modal-form-group">
-                <label for="startTime">Start Time</label>
-                <input type="time" name="start_time" id="startTime" required>
-            </div>
-            
-            <div class="modal-form-group">
-                <label for="endTime">End Time</label>
-                <input type="time" name="end_time" id="endTime" required>
-            </div>
-            
-            <div class="modal-form-group">
-                <label for="lectureType">Lecture Type</label>
-                <select name="lecture_type" id="lectureType" required>
-                    <option value="">-- Select Type --</option>
-                    <option value="theory">Theory</option>
-                    <option value="practical">Practical</option>
-                    <option value="tutorial">Tutorial</option>
-                </select>
-            </div>
-            
-            <div class="modal-form-group">
-                <label for="roomNumber">Room Number</label>
-                <input type="text" name="room_number" id="roomNumber" placeholder="e.g., A101">
-            </div>
-            
             <div class="modal-actions">
                 <button type="submit" class="btn-primary">Add Entry</button>
                 <button type="button" class="btn-secondary" data-close-modal>Cancel</button>
@@ -930,6 +983,11 @@
         const subjectSelect = document.getElementById('subjectSelect');
         const noSubjectsMsg = document.getElementById('noSubjectsMsg');
         const academicYearInput = document.getElementById('academicYear');
+        const lectureTypeSelect = document.getElementById('lectureType');
+        const divisionGroup = document.getElementById('divisionGroup');
+        const batchGroup = document.getElementById('batchGroup');
+        const divisionSelect = document.getElementById('divisionSelect');
+        const batchSelect = document.getElementById('batchSelect');
 
         function filterSubjectOfferings() {
             if (!subjectSelect || !modalDepartmentSelect || !modalSemesterSelect) {
@@ -943,6 +1001,8 @@
             Array.from(subjectSelect.options).forEach(function(option) {
                 if (!option.value) {
                     option.hidden = false;
+                    option.disabled = false;
+                    option.style.display = '';
                     return;
                 }
 
@@ -953,6 +1013,8 @@
                 const shouldShow = matchesDept && matchesSem;
 
                 option.hidden = !shouldShow;
+                option.disabled = !shouldShow;
+                option.style.display = shouldShow ? '' : 'none';
                 if (shouldShow) {
                     hasVisible = true;
                 }
@@ -963,14 +1025,42 @@
                 noSubjectsMsg.style.display = hasVisible ? 'none' : 'block';
             }
 
+            subjectSelect.value = '';
             if (!hasVisible) {
                 subjectSelect.value = '';
+            }
+        }
+
+        function syncDivisionBatchFields() {
+            if (!lectureTypeSelect || !divisionGroup || !batchGroup || !divisionSelect || !batchSelect) {
+                return;
+            }
+
+            const isTheory = lectureTypeSelect.value === 'theory' || !lectureTypeSelect.value;
+
+            if (isTheory) {
+                divisionGroup.style.display = '';
+                batchGroup.style.display = 'none';
+                divisionSelect.disabled = false;
+                divisionSelect.required = true;
+                batchSelect.disabled = true;
+                batchSelect.required = false;
+                batchSelect.value = '';
+            } else {
+                divisionGroup.style.display = 'none';
+                batchGroup.style.display = '';
+                batchSelect.disabled = false;
+                batchSelect.required = true;
+                divisionSelect.disabled = true;
+                divisionSelect.required = false;
+                divisionSelect.value = '';
             }
         }
 
         if (openButton && modal) {
             openButton.addEventListener('click', function() {
                 filterSubjectOfferings();
+                syncDivisionBatchFields();
                 if (academicYearInput && !academicYearInput.value) {
                     const now = new Date();
                     const year = now.getFullYear();
@@ -1008,6 +1098,12 @@
         if (modalSemesterSelect) {
             modalSemesterSelect.addEventListener('change', filterSubjectOfferings);
         }
+
+        if (lectureTypeSelect) {
+            lectureTypeSelect.addEventListener('change', syncDivisionBatchFields);
+        }
+
+        syncDivisionBatchFields();
     });
 </script>
 {% endblock %}
