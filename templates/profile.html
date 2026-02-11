@@ -16,7 +16,7 @@
                 {% if obj.user.role == "faculty" %}
                     <p class="meta">Department · {{ obj.department|default:"—" }}</p>
                 {% else %}
-                    <p class="meta">Degree · {{ obj.degree_program.name if obj.degree_program else "—" }}</p>
+                    <p class="meta">Degree · {% if obj.degree_program %}{{ obj.degree_program.name }}{% else %}—{% endif %}</p>
                 {% endif %}
             </div>
             <div class="hero-actions">
@@ -65,7 +65,7 @@
             {% else %}
             <div class="info-row">
                 <span class="label">Degree</span>
-                <span class="value">{{ obj.degree_program.name if obj.degree_program else "—" }}</span>
+                <span class="value">{% if obj.degree_program %}{{ obj.degree_program.name }}{% else %}—{% endif %}</span>
             </div>
             <div class="info-row">
                 <span class="label">Graduation Date</span>
