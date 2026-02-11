@@ -70,8 +70,8 @@
                                 {% if form.phone.errors %}<div class="text-danger">{{ form.phone.errors }}</div>{% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <!-- Placeholder for fields not present in Student model -->
-                                &nbsp;
+                                <label for="{{ form.semester.id_for_label }}" class="form-label">Semester *</label>
+                                <input type="text" class="form-control" value="{{ student.semester|default:'—' }}" disabled>
                             </div>
                         </div>
 
@@ -89,8 +89,14 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-4 mb-3">&nbsp;</div>
-                            <div class="col-md-4 mb-3">&nbsp;</div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.division.id_for_label }}" class="form-label">Division *</label>
+                                <input type="text" class="form-control" value="{{ student.division|default:'—' }}" disabled>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.batch.id_for_label }}" class="form-label">Batch *</label>
+                                <input type="text" class="form-control" value="{{ student.batch|default:'—' }}" disabled>
+                            </div>
                             <div class="col-md-4 mb-3">&nbsp;</div>
                         </div>
 
@@ -133,15 +139,11 @@
                                 {% if form.father_name.errors %}<div class="text-danger">{{ form.father_name.errors }}</div>{% endif %}
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="{{ form.father_occupation.id_for_label }}" class="form-label">Father's Occupation</label>
-                                {{ form.father_occupation }}
-                                {% if form.father_occupation.errors %}<div class="text-danger">{{ form.father_occupation.errors }}</div>{% endif %}
+                                <label for="{{ form.father_contact.id_for_label }}" class="form-label">Father's Mobile</label>
+                                {{ form.father_contact }}
+                                {% if form.father_contact.errors %}<div class="text-danger">{{ form.father_contact.errors }}</div>{% endif %}
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.father_mobile.id_for_label }}" class="form-label">Father's Mobile</label>
-                                {{ form.father_mobile }}
-                                {% if form.father_mobile.errors %}<div class="text-danger">{{ form.father_mobile.errors }}</div>{% endif %}
-                            </div>
+                            <div class="col-md-4 mb-3">&nbsp;</div>
                         </div>
 
                         <div class="row">
@@ -151,15 +153,11 @@
                                 {% if form.mother_name.errors %}<div class="text-danger">{{ form.mother_name.errors }}</div>{% endif %}
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label for="{{ form.mother_occupation.id_for_label }}" class="form-label">Mother's Occupation</label>
-                                {{ form.mother_occupation }}
-                                {% if form.mother_occupation.errors %}<div class="text-danger">{{ form.mother_occupation.errors }}</div>{% endif %}
+                                <label for="{{ form.mother_contact.id_for_label }}" class="form-label">Mother's Mobile</label>
+                                {{ form.mother_contact }}
+                                {% if form.mother_contact.errors %}<div class="text-danger">{{ form.mother_contact.errors }}</div>{% endif %}
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="{{ form.mother_mobile.id_for_label }}" class="form-label">Mother's Mobile</label>
-                                {{ form.mother_mobile }}
-                                {% if form.mother_mobile.errors %}<div class="text-danger">{{ form.mother_mobile.errors }}</div>{% endif %}
-                            </div>
+                            <div class="col-md-4 mb-3">&nbsp;</div>
                         </div>
 
                         <hr class="my-4">
@@ -173,49 +171,8 @@
                                 {% if form.degree_program.errors %}<div class="text-danger">{{ form.degree_program.errors }}</div>{% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
-                                <!-- Graduation date not currently stored on Student model -->
-                                <label class="form-label">Graduation Date</label>
-                                <input type="text" class="form-control" value="{{ student.batch|default:'—' }}" disabled>
-                            </div>
-                        </div>
-
-                        <!-- High School Information -->
-                        <h6 class="mt-4 mb-3 text-muted">High School/10th Details</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.high_school_name.id_for_label }}" class="form-label">School Name</label>
-                                {{ form.high_school_name }}
-                                {% if form.high_school_name.errors %}<div class="text-danger">{{ form.high_school_name.errors }}</div>{% endif %}
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="{{ form.high_school_percentage.id_for_label }}" class="form-label">Percentage</label>
-                                {{ form.high_school_percentage }}
-                                {% if form.high_school_percentage.errors %}<div class="text-danger">{{ form.high_school_percentage.errors }}</div>{% endif %}
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="{{ form.high_school_year.id_for_label }}" class="form-label">Year</label>
-                                {{ form.high_school_year }}
-                                {% if form.high_school_year.errors %}<div class="text-danger">{{ form.high_school_year.errors }}</div>{% endif %}
-                            </div>
-                        </div>
-
-                        <!-- Intermediate Information -->
-                        <h6 class="mt-3 mb-3 text-muted">Intermediate/12th Details</h6>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.intermediate_name.id_for_label }}" class="form-label">School Name</label>
-                                {{ form.intermediate_name }}
-                                {% if form.intermediate_name.errors %}<div class="text-danger">{{ form.intermediate_name.errors }}</div>{% endif %}
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="{{ form.intermediate_percentage.id_for_label }}" class="form-label">Percentage</label>
-                                {{ form.intermediate_percentage }}
-                                {% if form.intermediate_percentage.errors %}<div class="text-danger">{{ form.intermediate_percentage.errors }}</div>{% endif %}
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="{{ form.intermediate_year.id_for_label }}" class="form-label">Year</label>
-                                {{ form.intermediate_year }}
-                                {% if form.intermediate_year.errors %}<div class="text-danger">{{ form.intermediate_year.errors }}</div>{% endif %}
+                                <label class="form-label">Graduation Date (set by admin)</label>
+                                <input type="text" class="form-control" value="{% if student.graduation_date %}{{ student.graduation_date|date:'Y-m-d' }}{% else %}—{% endif %}" disabled>
                             </div>
                         </div>
 

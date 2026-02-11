@@ -4,190 +4,212 @@
 
 {% block title %}Timetable{% endblock %}
 
-{% block content %}
+{% block container %}
 <style>
-    .timetable-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 12px;
-        margin-bottom: 30px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    :root {
+        --tt-ink: #1f1d1b;
+        --tt-surface: #ffffff;
+        --tt-border: #e6e2da;
+        --tt-time: #58b25b;
+        --tt-mon: #f26a5a;
+        --tt-tue: #f2c14e;
+        --tt-wed: #4fb6c2;
+        --tt-thu: #4a78c2;
+        --tt-fri: #f39b3a;
+        --tt-sat: #8f6cd9;
     }
-    
-    .semester-selector {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 30px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+    .timetable-wrap {
+        margin: 12px auto 36px;
     }
-    
-    .timetable-day {
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+    .timetable-hero {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 22px 26px;
+        border-radius: 14px;
+        background: linear-gradient(120deg, #f8efe3 0%, #f2f4ff 55%, #f3ecff 100%);
+        border: 1px solid var(--tt-border);
+        box-shadow: 0 14px 30px rgba(58, 62, 91, 0.08);
     }
-    
-    .day-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 12px 20px;
-        border-radius: 6px;
-        margin-bottom: 15px;
-        font-weight: 600;
-        font-size: 18px;
+
+    .timetable-hero h2 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        color: var(--tt-ink);
     }
-    
-    .slot-card {
-        border-left: 4px solid #667eea;
-        background: #f8f9fa;
-        padding: 15px;
-        margin-bottom: 10px;
-        border-radius: 6px;
-        transition: all 0.3s;
+
+    .timetable-hero p {
+        margin: 6px 0 0;
+        color: #5a5a5a;
+        font-weight: 500;
     }
-    
-    .slot-card:hover {
-        transform: translateX(5px);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+    .timetable-grid {
+        margin-top: 22px;
+        overflow: auto;
+        border-radius: 16px;
+        border: 1px solid var(--tt-border);
+        background: var(--tt-surface);
+        box-shadow: 0 18px 35px rgba(47, 52, 77, 0.08);
     }
-    
-    .slot-card.theory {
-        border-left-color: #667eea;
+
+    .timetable-grid table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+        box-shadow: none;
     }
-    
-    .slot-card.practical {
-        border-left-color: #28a745;
+
+    .timetable-grid th,
+    .timetable-grid td {
+        border: 1px solid var(--tt-border);
+        padding: 14px 12px;
+        vertical-align: top;
     }
-    
-    .slot-card.tutorial {
-        border-left-color: #ffc107;
-    }
-    
-    .slot-time {
-        font-weight: 600;
-        color: #495057;
-        font-size: 16px;
-    }
-    
-    .slot-subject {
-        font-size: 18px;
-        font-weight: 600;
-        color: #212529;
-        margin: 5px 0;
-    }
-    
-    .slot-info {
-        color: #6c757d;
-        font-size: 14px;
-    }
-    
-    .slot-type-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 600;
+
+    .timetable-grid thead th {
         text-transform: uppercase;
+        font-size: 13px;
+        letter-spacing: 1px;
+        color: #ffffff;
     }
-    
-    .badge-theory {
-        background: #e7e9fc;
-        color: #667eea;
-    }
-    
-    .badge-practical {
-        background: #d4edda;
-        color: #28a745;
-    }
-    
-    .badge-tutorial {
-        background: #fff3cd;
-        color: #856404;
-    }
-    
-    .no-slots {
+
+    .timetable-grid .col-time {
+        background: var(--tt-time);
+        color: #ffffff;
         text-align: center;
-        padding: 40px;
-        color: #6c757d;
+        font-weight: 700;
+    }
+
+    .timetable-grid .day-monday { background: var(--tt-mon); }
+    .timetable-grid .day-tuesday { background: var(--tt-tue); }
+    .timetable-grid .day-wednesday { background: var(--tt-wed); }
+    .timetable-grid .day-thursday { background: var(--tt-thu); }
+    .timetable-grid .day-friday { background: var(--tt-fri); }
+    .timetable-grid .day-saturday { background: var(--tt-sat); }
+
+    .time-cell {
+        font-weight: 600;
+        color: #3f3f3f;
+        text-align: center;
+        background: #f7f4ef;
+    }
+
+    .slot-chip {
+        background: #f3f0ff;
+        border: 1px solid #e2dcff;
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-bottom: 10px;
+    }
+
+    .slot-chip:last-child {
+        margin-bottom: 0;
+    }
+
+    .slot-subject {
+        font-weight: 700;
+        color: #2a2a2a;
+    }
+
+    .slot-meta {
+        margin-top: 4px;
+        color: #6a6a6a;
+        font-size: 13px;
+    }
+
+    .slot-type {
+        display: inline-block;
+        margin-top: 6px;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        background: #e8f1ff;
+        color: #335a9d;
+        font-weight: 600;
+    }
+
+    .slot-type.practical { background: #e6f6ea; color: #1f7a36; }
+    .slot-type.tutorial { background: #fff3d9; color: #9b6b11; }
+
+    .empty-cell {
+        color: #c2b9ab;
+        text-align: center;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+    }
+
+    @media (max-width: 900px) {
+        .timetable-hero {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+        }
     }
 </style>
 
-<div class="container-fluid py-4">
-    <div class="timetable-header">
-        <h2><i class="material-icons" style="vertical-align: middle; font-size: 32px;">schedule</i> Timetable</h2>
-        <p class="mb-0">{{ student.get_degree_display }} - Semester {{ selected_semester }}</p>
-    </div>
-    
-    <div class="semester-selector">
-        <div class="row align-items-center">
-            <div class="col-md-3">
-                <label class="form-label fw-bold">Select Semester:</label>
-            </div>
-            <div class="col-md-6">
-                <select class="form-select" id="semesterSelect" onchange="changeSemester()">
-                    {% for sem in all_semesters %}
-                    <option value="{{ sem }}" {% if sem == selected_semester %}selected{% endif %}>
-                        Semester {{ sem }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3 text-end">
-                <a href="{% url 'student_app:student_dashboard' %}" class="btn btn-outline-secondary">
-                    <i class="material-icons" style="vertical-align: middle;">arrow_back</i>
-                    Back to Dashboard
-                </a>
-            </div>
+<div class="timetable-wrap">
+    <div class="timetable-hero">
+        <div>
+            <h2>Timetable</h2>
+            <p>{% if student.degree_program %}{{ student.degree_program.name }}{% else %}—{% endif %} • Semester {{ selected_semester }}</p>
         </div>
+        <a href="{% url 'student_app:student_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="material-icons" style="vertical-align: middle;">arrow_back</i>
+            Back to Dashboard
+        </a>
     </div>
-    
-    {% for day in days %}
-    {% with day_slots=organized_timetable|get_item:day %}
-    {% if day_slots %}
-    <div class="timetable-day">
-        <div class="day-header">
-            <i class="material-icons" style="vertical-align: middle;">calendar_today</i>
-            {{ day|title }}
-        </div>
-        
-        <div class="row">
-            {% for slot in day_slots %}
-            <div class="col-md-6">
-                <div class="slot-card {{ slot.slot_type }}">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <div class="slot-time">
-                            <i class="material-icons" style="vertical-align: middle; font-size: 18px;">access_time</i>
-                            {{ slot.start_time|time:"g:i A" }} - {{ slot.end_time|time:"g:i A" }}
-                        </div>
-                        <span class="slot-type-badge badge-{{ slot.slot_type }}">
-                            {{ slot.get_slot_type_display }}
-                        </span>
-                    </div>
-                    <div class="slot-subject">{{ slot.subject.name }}</div>
-                    <div class="slot-info">
-                        <i class="material-icons" style="vertical-align: middle; font-size: 16px;">person</i>
-                        {{ slot.faculty.name }}
-                        {% if slot.room_number %}
-                        <span class="ms-3">
-                            <i class="material-icons" style="vertical-align: middle; font-size: 16px;">room</i>
-                            Room {{ slot.room_number }}
-                        </span>
+
+    {% if has_slots %}
+    <div class="timetable-grid">
+        <table>
+            <thead>
+                <tr>
+                    <th class="col-time">Time</th>
+                    <th class="day-monday">Monday</th>
+                    <th class="day-tuesday">Tuesday</th>
+                    <th class="day-wednesday">Wednesday</th>
+                    <th class="day-thursday">Thursday</th>
+                    <th class="day-friday">Friday</th>
+                    <th class="day-saturday">Saturday</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for slot in time_slots %}
+                <tr>
+                    <td class="time-cell">{{ slot.start }} - {{ slot.end }}</td>
+                    {% for day in days %}
+                    {% with day_slots=timetable_grid|get_item:day %}
+                    {% with cell_slots=day_slots|get_item:slot.key %}
+                    <td>
+                        {% if cell_slots %}
+                            {% for entry in cell_slots %}
+                            <div class="slot-chip">
+                                <div class="slot-subject">{{ entry.subject_offering.subject.name }}</div>
+                                <div class="slot-meta">{{ entry.subject_offering.faculty.name }}{% if entry.room_number %} · Room {{ entry.room_number }}{% endif %}</div>
+                                <span class="slot-type {{ entry.lecture_type }}">{{ entry.get_lecture_type_display }}</span>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="empty-cell">—</div>
                         {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
+                    </td>
+                    {% endwith %}
+                    {% endwith %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    {% endif %}
-    {% endwith %}
-    {% endfor %}
-    
-    {% if not organized_timetable %}
+    {% else %}
     <div class="no-slots">
         <i class="material-icons" style="font-size: 64px; color: #dee2e6;">event_busy</i>
         <h4 class="mt-3">No timetable available for this semester</h4>
@@ -195,11 +217,4 @@
     </div>
     {% endif %}
 </div>
-
-<script>
-    function changeSemester() {
-        const semester = document.getElementById('semesterSelect').value;
-        window.location.href = '?semester=' + semester;
-    }
-</script>
 {% endblock %}

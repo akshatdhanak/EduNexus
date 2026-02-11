@@ -46,7 +46,7 @@
             {% else %}
             <div class="info-row">
                 <span class="label">Phone</span>
-                <span class="value">{{ obj.mobile_no|default:"—" }}</span>
+                <span class="value">{{ obj.phone|default:"—" }}</span>
             </div>
             {% endif %}
         </div>
@@ -68,8 +68,12 @@
                 <span class="value">{% if obj.degree_program %}{{ obj.degree_program.name }}{% else %}—{% endif %}</span>
             </div>
             <div class="info-row">
-                <span class="label">Graduation Date</span>
+                <span class="label">Batch</span>
                 <span class="value">{{ obj.batch|default:"—" }}</span>
+            </div>
+            <div class="info-row">
+                <span class="label">Graduation Date</span>
+                <span class="value">{% if obj.graduation_date %}{{ obj.graduation_date|date:"Y-m-d" }}{% else %}—{% endif %}</span>
             </div>
             {% endif %}
         </div>

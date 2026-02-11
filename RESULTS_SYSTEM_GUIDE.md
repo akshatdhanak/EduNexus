@@ -1,12 +1,12 @@
-# Attendance System - Results Management Module
+# Attendance System - Results Operations Module
 
 ## 🎓 Overview
 
-Complete academic results management system with exam creation, faculty mark entry, student result viewing, and PDF generation with grading system.
+Complete academic results operations system with exam creation, faculty mark entry, student result viewing, and PDF generation with grading system.
 
 ## ✨ Features Implemented
 
-### 1. **Admin Panel - Exam Management**
+### 1. **Admin Panel - Exam Operations**
 
 - **Exam Creation**: Admins can create exams for any subject with three types:
   - **Internal Exams**: In-semester assessments

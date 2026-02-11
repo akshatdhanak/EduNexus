@@ -1,4 +1,4 @@
-# Class Diagram - University Attendance & Exam Management System
+# Class Diagram - University Attendance & Exam Operations System
 
 ## Class Relationships & Inheritance
 
@@ -158,7 +158,7 @@
                  └──────────────────┘
 
 
-EXAM MANAGEMENT HIERARCHY
+EXAM OPERATIONS HIERARCHY
 ═════════════════════════════════════════
 
 ┌─────────────────────────┐
@@ -424,7 +424,7 @@ BaseEntity (Abstract)
 
 User (Abstract)
 ├─ Authentication
-├─ Authorization  
+├─ Authorization
 │
 ├─ Student
 │  └─ Academic Info
@@ -581,16 +581,16 @@ FinancialEntity (Abstract)
 
 ## Associations & Cardinalities
 
-| Association | From | To | Cardinality | Role |
-|------------|------|-------|-------------|------|
-| Teaches | Faculty | Subject | N:M | instructor |
-| Enrolls | Student | Subject | N:M | learner |
-| Takes | Student | Exam | N:M | examinee |
-| Marks | Faculty | ExamMarks | 1:N | marker |
-| Tracks | Lecture | Attendance | 1:N | tracked_in |
-| Calculates | ExamMarks | SubjectResult | 1:1 | used_for |
-| Pays | Student | FeeReceipt | 1:N | payer |
-| Requests | Student | LeaveRequest | 1:N | requester |
+| Association | From      | To            | Cardinality | Role       |
+| ----------- | --------- | ------------- | ----------- | ---------- |
+| Teaches     | Faculty   | Subject       | N:M         | instructor |
+| Enrolls     | Student   | Subject       | N:M         | learner    |
+| Takes       | Student   | Exam          | N:M         | examinee   |
+| Marks       | Faculty   | ExamMarks     | 1:N         | marker     |
+| Tracks      | Lecture   | Attendance    | 1:N         | tracked_in |
+| Calculates  | ExamMarks | SubjectResult | 1:1         | used_for   |
+| Pays        | Student   | FeeReceipt    | 1:N         | payer      |
+| Requests    | Student   | LeaveRequest  | 1:N         | requester  |
 
 ---
 
@@ -602,4 +602,4 @@ FinancialEntity (Abstract)
 ✅ **Polymorphism** - Shared interface for common operations  
 ✅ **Maintainability** - Easy to locate and modify functionality  
 ✅ **Scalability** - New classes inherit common traits  
-✅ **Type Safety** - Clear contracts for inter-class communication  
+✅ **Type Safety** - Clear contracts for inter-class communication

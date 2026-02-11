@@ -106,14 +106,25 @@ def subject_wise_attendance(request):
     student = Student.objects.get(user=request.user)
     subject_attendance = []
 
-    # Get the subjects the student is enrolled in
-    subjects = student.subjects.all()
+    # Get the subjects the student is enrolled in via subject offerings
+    enrollments = student.enrollments.select_related("subject_offering__subject").filter(status="active")
+    subjects = []
+    seen_subject_ids = set()
+    for enrollment in enrollments:
+        subject = enrollment.subject_offering.subject
+        if subject and subject.id not in seen_subject_ids:
+            subjects.append(subject)
+            seen_subject_ids.add(subject.id)
 
     for subject in subjects:
-        lectures = Lecture.objects.filter(subject=subject)  # Get all lectures for the subject
+        lectures = Lecture.objects.filter(subject_offering__subject=subject)  # Get all lectures for the subject
         total_lectures = lectures.count()
         # print(total_lectures)
-        attended_lectures = Attendance.objects.filter(student=student, lecture__subject=subject, status="present").count()
+        attended_lectures = Attendance.objects.filter(
+            student=student,
+            lecture__subject_offering__subject=subject,
+            status="present"
+        ).count()
 
         # print(attended_lectures)
 
@@ -212,6 +223,7 @@ def fee_dashboard(request):
     """Display fee dashboard with semester-wise breakdown and receipts"""
     from admin_app.models import FeeStructure, FeeReceipt
     from django.db.models import Sum
+    from decimal import Decimal
     
     try:
         student = Student.objects.get(user=request.user)
@@ -220,10 +232,18 @@ def fee_dashboard(request):
         return redirect("student_app:student_dashboard")
     
     # Get fee structure for all semesters
-    fee_structure = FeeStructure.objects.filter(student=student).order_by('semester')
+    fee_structure_qs = FeeStructure.objects.filter(student=student).order_by('semester')
+    fee_structure = list(fee_structure_qs)
+
+    # Compute display-only previously paid values across semesters
+    running_paid = Decimal('0.00')
+    for fee in fee_structure:
+        fee.display_previously_paid = running_paid
+        current_paid_total = (fee.previously_paid or 0) + (fee.paid or 0) - (fee.refunded or 0)
+        running_paid += current_paid_total
     
     # Calculate totals
-    totals = fee_structure.aggregate(
+    totals = fee_structure_qs.aggregate(
         total_fees=Sum('fees_to_be_collected'),
         total_refunded=Sum('refunded'),
         total_previously_paid=Sum('previously_paid'),
@@ -232,7 +252,7 @@ def fee_dashboard(request):
     )
     
     # Get all receipts
-    receipts = FeeReceipt.objects.filter(student=student).order_by('-date')
+    receipts = FeeReceipt.objects.filter(student=student).order_by('-payment_date')
     
     context = {
         'student': student,
@@ -253,24 +273,29 @@ def attendance_summary(request):
         messages.error(request, "Student profile not found.")
         return redirect("student_app:student_dashboard")
     
-    # Get all subjects for the student
-    subjects = student.subjects.all()
+    # Get all subjects for the student via subject offerings
+    enrollments = student.enrollments.select_related("subject_offering__subject").filter(status="active")
+    subjects = []
+    seen_subject_ids = set()
+    for enrollment in enrollments:
+        subject = enrollment.subject_offering.subject
+        if subject and subject.id not in seen_subject_ids:
+            subjects.append(subject)
+            seen_subject_ids.add(subject.id)
     
     # Find which semesters have attendance data
     semesters_with_data = set()
     for subject in subjects:
-        lectures = Lecture.objects.filter(subject=subject)
+        lectures = Lecture.objects.filter(subject_offering__subject=subject)
         if lectures.exists():
             # Check if student has any attendance records for this subject
             attendance_exists = Attendance.objects.filter(
                 student=student,
-                lecture__subject=subject
+                lecture__subject_offering__subject=subject
             ).exists()
             if attendance_exists:
-                # Assuming semester is stored in student model, otherwise use current semester
-                # For now, we'll use the student's semester field
-                if hasattr(student, 'semester') and student.semester:
-                    semesters_with_data.add(student.semester)
+                if subject.semester:
+                    semesters_with_data.add(subject.semester)
     
     # If no semester data found, use student's current semester or default to 7
     if not semesters_with_data:
@@ -293,6 +318,11 @@ def attendance_summary(request):
         selected_semester = str(max(semesters_with_data))
     
     selected_semester = int(selected_semester)
+
+    subjects_for_semester = [
+        subject for subject in subjects
+        if subject.semester == selected_semester
+    ]
     
     # Build attendance data for each subject
     attendance_data = []
@@ -300,9 +330,9 @@ def attendance_summary(request):
     total_present = 0
     total_absent = 0
     
-    for subject in subjects:
+    for subject in subjects_for_semester:
         # Get all lectures for this subject
-        lectures = Lecture.objects.filter(subject=subject)
+        lectures = Lecture.objects.filter(subject_offering__subject=subject)
         
         # Get theory and practical lectures separately
         theory_lectures = lectures.count()  # Assume all are theory for now
@@ -311,7 +341,7 @@ def attendance_summary(request):
         # Get attendance records for theory
         theory_attendance = Attendance.objects.filter(
             student=student,
-            lecture__subject=subject
+            lecture__subject_offering__subject=subject
         )
         
         theory_conducted = theory_lectures
@@ -361,16 +391,26 @@ def view_timetable(request):
     except Student.DoesNotExist:
         messages.error(request, "Student profile not found.")
         return redirect("student_app:student_dashboard")
+
+    if not student.degree_program:
+        messages.warning(request, "Degree program not set. Please contact the administrator.")
+        return redirect("student_app:student_dashboard")
     
     # Get selected semester or default to current
-    selected_semester = request.GET.get('semester', 1)
-    selected_semester = int(selected_semester)
+    selected_semester = student.semester
     
     # Get timetable for student's department and semester
+    from django.db.models import Q
+
+    division_value = student.division
+    batch_value = student.batch or student.division
     timetable = Timetable.objects.filter(
-        department=student.degree,
-        semester=selected_semester
-    ).order_by('day', 'start_time')
+        subject_offering__subject__semester=selected_semester,
+        subject_offering__subject__department=student.degree_program.department,
+    ).filter(
+        Q(lecture_type__in=['theory', 'tutorial'], subject_offering__division=division_value) |
+        Q(lecture_type='practical', subject_offering__division=batch_value)
+    ).select_related("subject_offering__subject", "subject_offering__faculty").order_by('day', 'start_time')
     
     # Organize by day
     days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
@@ -378,9 +418,31 @@ def view_timetable(request):
     
     for day in days:
         organized_timetable[day] = timetable.filter(day=day)
+
+    # Build grid-friendly time slots
+    time_slot_keys = set()
+    for slot in timetable:
+        time_slot_keys.add(f"{slot.start_time.strftime('%H:%M')}-{slot.end_time.strftime('%H:%M')}")
+
+    def _slot_sort_key(key):
+        return key.split('-')[0]
+
+    time_slots = []
+    for key in sorted(time_slot_keys, key=_slot_sort_key):
+        start_str, end_str = key.split('-')
+        time_slots.append({
+            'key': key,
+            'start': start_str,
+            'end': end_str,
+        })
+
+    timetable_grid = {day: {slot['key']: [] for slot in time_slots} for day in days}
+    for slot in timetable:
+        key = f"{slot.start_time.strftime('%H:%M')}-{slot.end_time.strftime('%H:%M')}"
+        timetable_grid[slot.day][key].append(slot)
     
-    # Get all semesters (1-8)
-    all_semesters = range(1, 9)
+    # Only show the student's current semester
+    all_semesters = [student.semester]
     
     context = {
         'student': student,
@@ -388,6 +450,9 @@ def view_timetable(request):
         'days': days,
         'selected_semester': selected_semester,
         'all_semesters': all_semesters,
+        'has_slots': timetable.exists(),
+        'time_slots': time_slots,
+        'timetable_grid': timetable_grid,
     }
     
     return render(request, "student_app/timetable.html", context)
@@ -473,7 +538,7 @@ def payment_success(request):
             
             # Determine payment mode based on method
             payment_mode_map = {
-                'card': 'card',
+                'card': 'online',
                 'upi': 'online',
                 'netbanking': 'online',
             }
@@ -483,14 +548,12 @@ def payment_success(request):
             FeeReceipt.objects.create(
                 student=student,
                 fee_structure=fee_structure,
-                receipt_no=receipt_no,
-                date=datetime.now().date(),
-                semester=semester,
+                receipt_number=receipt_no,
+                payment_date=datetime.now().date(),
                 payment_mode=payment_mode,
-                reference_no=txn_id,
-                reference_date=datetime.now().date(),
-                reference_bank='College Payment Gateway',
-                amount=amount
+                transaction_id=txn_id,
+                bank_name='College Payment Gateway',
+                amount=amount,
             )
             
             messages.success(request, f"✓ Payment Successful! Amount: ₹{amount:,.0f} | Receipt: {receipt_no} | Transaction: {txn_id}")
@@ -676,7 +739,7 @@ def download_receipt(request, receipt_id):
         
         # Return PDF response
         response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="Receipt_{receipt.receipt_no}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="Receipt_{receipt.receipt_number}.pdf"'
         return response
         
     except Student.DoesNotExist:
@@ -693,18 +756,26 @@ def download_receipt(request, receipt_id):
 @student_required
 def view_marks(request):
     """View exam marks for all subjects in all semesters"""
-    from admin_app.models import StudentExamMarks, Exam
+    from admin_app.models import ExamMarks
     
     try:
         student = Student.objects.get(user=request.user)
         
         # Get all marks for this student organized by semester
-        all_marks = StudentExamMarks.objects.filter(student=student).select_related('exam').order_by('-exam__semester', 'exam__subject', 'exam__exam_type')
+        all_marks = ExamMarks.objects.filter(student=student).select_related(
+            'exam_schedule',
+            'exam_schedule__subject',
+            'exam_schedule__exam_type'
+        ).order_by(
+            '-exam_schedule__subject__semester',
+            'exam_schedule__subject__name',
+            'exam_schedule__exam_type__name'
+        )
         
         # Organize by semester
         marks_by_semester = {}
         for mark in all_marks:
-            sem = mark.exam.semester
+            sem = mark.exam_schedule.subject.semester
             if sem not in marks_by_semester:
                 marks_by_semester[sem] = []
             marks_by_semester[sem].append(mark)
@@ -730,32 +801,25 @@ def view_marks(request):
 @student_required
 def view_results(request):
     """View semester results with grades"""
-    from admin_app.models import StudentResult
+    from admin_app.models import SemesterResult
     
     try:
         student = Student.objects.get(user=request.user)
         
-        # Get all results for this student
-        results = StudentResult.objects.filter(student=student).order_by('-semester', 'subject')
-        
+        # Get all semester results for this student
+        semester_results = SemesterResult.objects.filter(student=student).prefetch_related(
+            'subject_results',
+            'subject_results__subject'
+        ).order_by('-semester')
+
         # Organize by semester
         results_by_semester = {}
-        for result in results:
-            sem = result.semester
-            if sem not in results_by_semester:
-                results_by_semester[sem] = {
-                    'subjects': [],
-                    'semester_gpa': 0,
-                    'total_subjects': 0,
-                }
-            results_by_semester[sem]['subjects'].append(result)
-        
-        # Calculate semester GPA
-        for sem, data in results_by_semester.items():
-            if data['subjects']:
-                total_gpa = sum(r.gpa for r in data['subjects'])
-                data['semester_gpa'] = round(total_gpa / len(data['subjects']), 2)
-                data['total_subjects'] = len(data['subjects'])
+        for sem_result in semester_results:
+            results_by_semester[sem_result.semester] = {
+                'subjects': list(sem_result.subject_results.all()),
+                'semester_gpa': sem_result.sgpa,
+                'total_subjects': sem_result.subject_results.count(),
+            }
         
         semesters = sorted(results_by_semester.keys(), reverse=True)
         current_semester = student.semester
@@ -777,7 +841,7 @@ def view_results(request):
 @student_required
 def download_result(request, semester):
     """Download semester result as PDF"""
-    from admin_app.models import StudentResult
+    from admin_app.models import SemesterResult
     from reportlab.lib.pagesizes import letter
     from reportlab.lib import colors
     from reportlab.lib.units import inch
@@ -788,9 +852,12 @@ def download_result(request, semester):
     
     try:
         student = Student.objects.get(user=request.user)
-        results = StudentResult.objects.filter(student=student, semester=semester).order_by('subject')
-        
-        if not results.exists():
+        sem_result = SemesterResult.objects.filter(student=student, semester=semester).prefetch_related(
+            'subject_results',
+            'subject_results__subject'
+        ).first()
+
+        if not sem_result or not sem_result.subject_results.exists():
             messages.error(request, "No results found for this semester.")
             return redirect("student_app:view_results")
         
@@ -820,7 +887,7 @@ def download_result(request, semester):
         data = [['Subject', 'Internal', 'External', 'Practical', 'Total', 'Grade', 'GPA']]
         
         total_gpa = 0
-        for result in results:
+        for result in sem_result.subject_results.all():
             internal = f"{result.internal_marks:.1f}" if result.internal_marks else "-"
             external = f"{result.external_marks:.1f}" if result.external_marks else "-"
             practical = f"{result.practical_marks:.1f}" if result.practical_marks else "-"
@@ -837,7 +904,8 @@ def download_result(request, semester):
             total_gpa += result.gpa
         
         # Add GPA row
-        avg_gpa = round(total_gpa / len(results), 2) if results else 0
+        total_subjects = sem_result.subject_results.count()
+        avg_gpa = round(total_gpa / total_subjects, 2) if total_subjects else 0
         data.append(['', '', '', '', 'Average GPA:', '', str(avg_gpa)])
         
         table = Table(data, colWidths=[2*inch, 0.8*inch, 0.8*inch, 0.8*inch, 0.8*inch, 0.8*inch, 0.8*inch])

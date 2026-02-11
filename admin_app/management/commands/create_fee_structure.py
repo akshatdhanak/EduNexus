@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from admin_app.models import Student, FeeStructure
 from decimal import Decimal
+from datetime import date
 
 class Command(BaseCommand):
     help = 'Create sample fee structure for all students'
@@ -15,6 +16,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         amount = Decimal(str(options['amount']))
+        today = date.today()
+        academic_year = f"{today.year}-{str(today.year + 1)[-2:]}"
         
         students = Student.objects.all()
         
@@ -44,6 +47,7 @@ class Command(BaseCommand):
                 FeeStructure.objects.create(
                     student=student,
                     semester=semester,
+                    academic_year=academic_year,
                     fees_to_be_collected=amount,
                     refunded=0,
                     previously_paid=0,

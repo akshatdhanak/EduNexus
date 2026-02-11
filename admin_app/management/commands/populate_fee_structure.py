@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from admin_app.models import Student, FeeStructure
 from decimal import Decimal
+from datetime import date
 
 
 class Command(BaseCommand):
@@ -17,6 +18,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         base_amount = Decimal(str(options['amount']))
         students = Student.objects.all()
+        today = date.today()
+        academic_year = f"{today.year}-{str(today.year + 1)[-2:]}"
         
         if not students.exists():
             self.stdout.write(self.style.WARNING("No students found in database."))
@@ -34,6 +37,7 @@ class Command(BaseCommand):
                 fee_structure, created = FeeStructure.objects.get_or_create(
                     student=student,
                     semester=sem,
+                    academic_year=academic_year,
                     defaults={
                         'fees_to_be_collected': base_amount,
                         'refunded': Decimal('0'),

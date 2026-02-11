@@ -13,7 +13,7 @@ class StudentProfileForm(forms.ModelForm):
     class Meta:
         model = Student
         fields = [
-            'name', 'image', 'phone', 'semester', 'division', 'batch',
+            'name', 'image', 'phone',
             'date_of_birth', 'blood_group',
             'address', 'city', 'state', 'pincode',
             'father_name', 'father_contact',
@@ -26,7 +26,6 @@ class StudentProfileForm(forms.ModelForm):
             'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '10-digit mobile number'}),
             'semester': forms.NumberInput(attrs={'class': 'form-control'}),
             'division': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Division'}),
-            'batch': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Batch Year'}),
             'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'blood_group': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Blood Group'}),
             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Full Address'}),

@@ -175,7 +175,7 @@
             <div class="semester-content" id="semester-{{ semester }}" style="{% if not forloop.first %}display: none;{% endif %}">
                 {% with marks=marks_by_semester|get_item:semester %}
                     {% if marks %}
-                        {% regroup marks by exam.subject as marks_by_subject %}
+                        {% regroup marks by exam_schedule.subject as marks_by_subject %}
                         
                         {% for subject_group in marks_by_subject %}
                             <div class="marks-card">
@@ -195,17 +195,13 @@
                                         {% for mark in subject_group.list %}
                                             <tr>
                                                 <td>
-                                                    <span class="exam-type-badge {% if mark.exam.exam_type == 'internal' %}internal-badge{% elif mark.exam.exam_type == 'external' %}external-badge{% else %}practical-badge{% endif %}">
-                                                        {% if mark.exam.exam_type == 'internal' %}
-                                                            <i class="bi bi-lightning"></i> Internal
-                                                        {% elif mark.exam.exam_type == 'external' %}
-                                                            <i class="bi bi-clipboard-check"></i> External
-                                                        {% else %}
-                                                            <i class="bi bi-hammer"></i> Practical
-                                                        {% endif %}
+                                                    {% with type_name=mark.exam_schedule.exam_type.name|lower %}
+                                                    <span class="exam-type-badge {% if 'internal' in type_name %}internal-badge{% elif 'external' in type_name %}external-badge{% elif 'practical' in type_name %}practical-badge{% else %}external-badge{% endif %}">
+                                                        {{ mark.exam_schedule.exam_type.name }}
                                                     </span>
+                                                    {% endwith %}
                                                 </td>
-                                                <td class="marks-value">{{ mark.exam.max_marks }}</td>
+                                                <td class="marks-value">{{ mark.exam_schedule.max_marks }}</td>
                                                 <td>
                                                     {% if mark.marks_obtained is not None %}
                                                         <span class="marks-value">{{ mark.marks_obtained|floatformat:1 }}</span>
@@ -215,7 +211,7 @@
                                                 </td>
                                                 <td>
                                                     {% if mark.marks_obtained is not None %}
-                                                        {% with percentage=mark.marks_obtained|multiply:100|divide:mark.exam.max_marks %}
+                                                        {% with percentage=mark.marks_obtained|multiply:100|divide:mark.exam_schedule.max_marks %}
                                                             <span class="marks-value">{{ percentage|floatformat:0 }}%</span>
                                                         {% endwith %}
                                                     {% else %}

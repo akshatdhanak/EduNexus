@@ -18,20 +18,6 @@
 {% endif %}
 
 <div class="fee-dashboard-container">
-    <!-- Payment Methods Info Banner -->
-    <div class="alert alert-info shadow-sm mb-4">
-        <div class="d-flex align-items-center">
-            <span class="material-icons me-3" style="font-size: 36px;">payment</span>
-            <div>
-                <h5 class="mb-1"><strong>Quick & Secure Payment via Razorpay</strong></h5>
-                <p class="mb-0">
-                    Pay using: <strong>Credit/Debit Cards</strong> | <strong>Net Banking</strong> | 
-                    <strong>UPI</strong> (GPay, PhonePe, Paytm) | <strong>Wallets</strong>
-                </p>
-            </div>
-        </div>
-    </div>
-
     <!-- Summary Cards -->
     <div class="row mb-4">
         <div class="col-md-3">
@@ -134,7 +120,7 @@
                                     <td>{{ fee.semester }}</td>
                                     <td>₹{{ fee.fees_to_be_collected|floatformat:0 }}</td>
                                     <td class="text-muted">₹{{ fee.refunded|floatformat:0 }}</td>
-                                    <td class="text-info">₹{{ fee.previously_paid|floatformat:0 }}</td>
+                                    <td class="text-info">₹{{ fee.display_previously_paid|default:fee.previously_paid|floatformat:0 }}</td>
                                     <td class="text-success">₹{{ fee.paid|floatformat:0 }}</td>
                                     <td class="text-danger">₹{{ fee.outstanding|floatformat:0 }}</td>
                                     <td>
@@ -191,9 +177,9 @@
                                     <th>Receipt No.</th>
                                     <th>Semester</th>
                                     <th>Payment Mode</th>
-                                    <th>Ref. No.</th>
-                                    <th>Ref. Date</th>
-                                    <th>Ref. Bank</th>
+                                    <th>Transaction ID</th>
+                                    <th>Payment Date</th>
+                                    <th>Bank</th>
                                     <th>Amount</th>
                                     <th>Action</th>
                                 </tr>
@@ -202,13 +188,13 @@
                                 {% for receipt in receipts %}
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
-                                    <td>{{ receipt.date|date:"d-m-Y" }}</td>
-                                    <td>{{ receipt.receipt_no }}</td>
-                                    <td>{{ receipt.semester }}</td>
+                                    <td>{{ receipt.payment_date|date:"d-m-Y" }}</td>
+                                    <td>{{ receipt.receipt_number }}</td>
+                                    <td>{{ receipt.fee_structure.semester }}</td>
                                     <td>{{ receipt.get_payment_mode_display }}</td>
-                                    <td>{{ receipt.reference_no|default:"-" }}</td>
-                                    <td>{{ receipt.reference_date|date:"d-m-Y"|default:"-" }}</td>
-                                    <td>{{ receipt.reference_bank|default:"-" }}</td>
+                                    <td>{{ receipt.transaction_id|default:"-" }}</td>
+                                    <td>{{ receipt.payment_date|date:"d-m-Y"|default:"-" }}</td>
+                                    <td>{{ receipt.bank_name|default:"-" }}</td>
                                     <td class="text-success fw-bold">₹{{ receipt.amount|floatformat:0 }}</td>
                                     <td>
                                         <a href="{% url 'student_app:download_receipt' receipt.id %}" class="btn btn-sm btn-outline-primary" title="Download Receipt">

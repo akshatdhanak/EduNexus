@@ -9,9 +9,6 @@ class StudentForm(forms.ModelForm):
         ("", "Select division"),
         ("A", "A"),
         ("B", "B"),
-        ("C", "C"),
-        ("D", "D"),
-        ("E", "E"),
     ]
     BATCH_SUFFIXES = ["1", "2", "3", "4"]
 
@@ -26,7 +23,7 @@ class StudentForm(forms.ModelForm):
     
     class Meta:
         model = Student
-        fields = ["username", "email", "password", "name", "image", "phone", "semester", "division", "batch", "degree_program", "date_of_birth"]
+        fields = ["username", "email", "password", "name", "image", "phone", "semester", "division", "batch", "degree_program", "date_of_birth", "graduation_date"]
         widgets = {
             'username': forms.Select(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
@@ -37,6 +34,7 @@ class StudentForm(forms.ModelForm):
             'division': forms.Select(attrs={'class': 'form-control'}),
             'batch': forms.Select(attrs={'class': 'form-control'}),
             'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'graduation_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
     
     def __init__(self, *args, **kwargs):

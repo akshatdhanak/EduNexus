@@ -95,6 +95,16 @@ class Student(models.Model):
         ('suspended', 'Suspended'),
         ('dropped', 'Dropped'),
     ]
+    BATCH_CHOICES = [
+        ('A1', 'A1'),
+        ('A2', 'A2'),
+        ('A3', 'A3'),
+        ('A4', 'A4'),
+        ('B1', 'B1'),
+        ('B2', 'B2'),
+        ('B3', 'B3'),
+        ('B4', 'B4'),
+    ]
     
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='student_profile')
     roll_number = models.CharField(max_length=20, unique=True)
@@ -102,7 +112,8 @@ class Student(models.Model):
     degree_program = models.ForeignKey(DegreeProgram, on_delete=models.PROTECT, related_name='enrolled_students', null=True, blank=True)
     semester = models.IntegerField(choices=[(i, f"Semester {i}") for i in range(1, 9)], default=1)
     division = models.CharField(max_length=5)  # A, B, C, etc.
-    batch = models.CharField(max_length=10)  # e.g., "2023-24"
+    batch = models.CharField(max_length=10, choices=BATCH_CHOICES)
+    graduation_date = models.DateField(blank=True, null=True)
     
     # Contact
     phone = models.CharField(max_length=15)
