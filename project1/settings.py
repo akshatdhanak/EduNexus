@@ -53,6 +53,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Custom session handling middleware
+    'project1.middleware.SessionTimeoutMiddleware',
+    'project1.middleware.SingleSessionMiddleware',
+    'project1.middleware.RoleBasedAccessMiddleware',
 ]
 
 ROOT_URLCONF = 'project1.urls'
@@ -68,6 +72,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'project1.context_processors.session_timeout',
             ],
         },
     },
@@ -142,6 +147,13 @@ AUTH_USER_MODEL = "registration.CustomUser"
 CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
 CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
 CSRF_COOKIE_HTTPONLY = False  # JavaScript needs access for AJAX
+CSRF_USE_SESSIONS = False
+
+# ── Session Settings ──
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 1800  # 30 minutes (in seconds)
+SESSION_SAVE_EVERY_REQUEST = True  # Reset expiry on every request (sliding window)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session ends when browser closes
 SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
 SESSION_COOKIE_HTTPONLY = True
-CSRF_USE_SESSIONS = False
+SESSION_COOKIE_SAMESITE = 'Lax'
