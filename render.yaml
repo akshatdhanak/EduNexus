@@ -25,9 +25,9 @@ services:
       - key: DEBUG
         value: "0"
       - key: ALLOWED_HOSTS
-        value: ".onrender.com"
+        value: "edunexus-hgae.onrender.com"
       - key: CSRF_TRUSTED_ORIGINS
-        value: "https://edunexus.onrender.com"
+        value: "https://edunexus-hgae.onrender.com"
       - key: GEMINI_API_KEY
         sync: false  # Set manually in Render dashboard
       - key: PYTHON_VERSION
