@@ -1,0 +1,52 @@
+# ───────────────────────────────────────────────────────────
+# EduNexus — Docker Compose (local production simulation)
+# ───────────────────────────────────────────────────────────
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: edunexus
+      POSTGRES_USER: edunexus
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-edunexus_secret}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edunexus"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - media_data:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://edunexus:${DB_PASSWORD:-edunexus_secret}@db:5432/edunexus
+    command: >
+      sh -c "
+        python manage.py migrate --noinput &&
+        python manage.py collectstatic --noinput &&
+        gunicorn project1.wsgi:application
+          --bind 0.0.0.0:8000
+          --workers 3
+          --timeout 120
+          --access-logfile -
+          --error-logfile -
+      "
+
+volumes:
+  postgres_data:
+  media_data:

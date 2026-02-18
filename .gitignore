@@ -1,0 +1,53 @@
+# ───────────────────────────────────────────────────────────
+# EduNexus — .gitignore
+# ───────────────────────────────────────────────────────────
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Database
+db.sqlite3
+jet_bridge_store.sqlite3
+
+# Static files (generated)
+staticfiles/
+
+# Media uploads
+media/student_photos/*
+media/faculty_photos/*
+media/photos/*
+!media/student_photos/.gitkeep
+!media/faculty_photos/.gitkeep
+!media/photos/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp/scripts
+validate_templates.py
