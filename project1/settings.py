@@ -157,3 +157,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session ends when browser closes
 SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
+
+# ── Gemini AI API Key ──
+# Get your free key from: https://aistudio.google.com/apikey
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyCTU4td1It9MfqktRvSgYR7gWaKRO-GmmM')

@@ -64,6 +64,10 @@ def student_add(request):
             student.user = user
             student.save()
 
+            # Auto-enroll in semester subjects
+            from .models import assign_subjects_by_semester
+            assign_subjects_by_semester(student)
+
             messages.success(request, "Student added successfully!")
             return redirect("admin_app:student_info")
     else:
@@ -85,7 +89,11 @@ def student_edit(request, s_id):
                 student.user.set_password(form.cleaned_data["password"])
                 student.user.save()
             student_obj.save()
-            
+
+            # Re-enroll if semester changed
+            from .models import assign_subjects_by_semester
+            assign_subjects_by_semester(student_obj)
+
             return redirect("admin_app:student_info")
     else:
         form = StudentForm(instance=student)
@@ -352,10 +360,6 @@ def mark_faculty_attendance(request):
 
 @staff_member_required
 def manage_timetable(request):
-    """View and manage timetables for all departments and semesters"""
-    from .models import Timetable
-@staff_member_required
-def manage_timetable(request):
     """Manage class timetables by department and semester"""
     
     # Get filter parameters
@@ -471,7 +475,6 @@ def add_timetable(request):
 
 
 # Subject Management Views
-@staff_member_required
 @staff_member_required
 def manage_subjects(request):
     """View all subjects organized by semester"""

@@ -307,16 +307,24 @@
           <span class="material-icons">arrow_back</span>
           <span>Back</span>
         </button>
-        {% if user.is_authenticated %} {% if user.is_superuser or user.role ==
-        "admin" %}
+        {% if user.is_authenticated %}
+        {% if user.is_superuser or user.role == "admin" %}
         <a href="{% url 'admin_app:admin_dashboard' %}" class="nav-pill">
           <span class="material-icons">dashboard</span>
           <span>Dashboard</span>
+        </a>
+        <a href="{% url 'admin_app:database_chat' %}" class="nav-pill">
+          <span class="material-icons">smart_toy</span>
+          <span>DB Chat</span>
         </a>
         {% elif user.role == "faculty" %}
         <a href="{% url 'faculty_app:faculty_dashboard' %}" class="nav-pill">
           <span class="material-icons">dashboard</span>
           <span>Dashboard</span>
+        </a>
+        <a href="{% url 'admin_app:database_chat' %}" class="nav-pill">
+          <span class="material-icons">smart_toy</span>
+          <span>DB Chat</span>
         </a>
         {% elif user.role == "student" %}
         <a href="{% url 'student_app:student_dashboard' %}" class="nav-pill">
@@ -361,7 +369,8 @@
         </div>
         {% endfor %}
       </div>
-      {% endif %} {% block container %} {% endblock %}
+      {% endif %}
+      {% block container %}{% endblock %}
     </div>
 
     <!-- Bootstrap JavaScript -->
@@ -499,6 +508,7 @@
         };
       })();
     </script>
-    {% endif %} {% block extra_js %} {% endblock %}
+    {% endif %}
+    {% block extra_js %}{% endblock %}
   </body>
 </html>

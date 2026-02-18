@@ -90,7 +90,7 @@ class SingleSessionMiddleware(MiddlewareMixin):
 class RoleBasedAccessMiddleware(MiddlewareMixin):
     """
     Restricts URL paths by user role:
-    - /admin_app/* → admin/superuser only
+    - /admin_app/* → admin/superuser only (except shared routes like database-chat)
     - /faculty_app/* → faculty only
     - /student_app/* → student only
 
@@ -110,8 +110,17 @@ class RoleBasedAccessMiddleware(MiddlewareMixin):
         'student': 'student_app:student_dashboard',
     }
 
+    # Paths accessible to ALL authenticated users regardless of role
+    SHARED_PATHS = [
+        '/admin_app/database-chat/',
+    ]
+
     def process_request(self, request):
         if not request.user.is_authenticated:
+            return None
+
+        # Allow shared paths for any authenticated user
+        if any(request.path.startswith(p) for p in self.SHARED_PATHS):
             return None
 
         user = request.user

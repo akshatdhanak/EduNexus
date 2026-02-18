@@ -76,7 +76,6 @@ def faculty_dashboard(request):
     })
 
 @faculty_required
-@faculty_required
 def profile(request):
     faculty = Faculty.objects.get(user=request.user)
     return render(request, "profile.html", {"obj": faculty})
@@ -254,16 +253,31 @@ def mark_student_attendance2(request, lecture_id):
                 user = CustomUser.objects.get(username=student_username)
                 student = Student.objects.get(user=user)
                 
-                # Check if student is enrolled in this subject offering
+                # Auto-enroll if student is in the correct semester
+                subject = lecture.subject_offering.subject
                 if not student.enrollments.filter(
                     subject_offering=lecture.subject_offering,
                     status='active'
                 ).exists():
-                    messages.error(
-                        request,
-                        f"✗ {student.name} is not enrolled in {lecture.subject_offering.subject.name}"
-                    )
-                else:
+                    # Check if student's semester matches the subject's semester
+                    if student.semester == subject.semester:
+                        # Auto-enroll the student
+                        StudentEnrollment.objects.get_or_create(
+                            student=student,
+                            subject_offering=lecture.subject_offering,
+                            defaults={'status': 'active'}
+                        )
+                    else:
+                        messages.error(
+                            request,
+                            f"✗ {student.name} is in semester {student.semester}, "
+                            f"but {subject.name} is a semester {subject.semester} subject"
+                        )
+
+                if student.enrollments.filter(
+                    subject_offering=lecture.subject_offering,
+                    status='active'
+                ).exists():
                     attendance, created = Attendance.objects.get_or_create(
                         lecture=lecture,
                         student=student,
@@ -408,19 +422,9 @@ def show_notification(request):
 
 @faculty_required
 def request_leave(request):
-    if request.method == 'POST':
-        form = LeaveForm(request.POST)
-        if form.is_valid():
-            leave = form.save(commit=False)
-            leave.user = request.user
-            leave.save()
-
-            messages.success(request, "Leave request submitted successfully!")
-            return redirect("faculty_app:faculty_dashboard")  
-    else:
-        form = LeaveForm()
-
-    return render(request, "request_leave.html", {"form": form})
+    # LeaveRequest model is for students; faculty cannot submit leave via this form
+    messages.info(request, "Leave requests are currently only available for students.")
+    return redirect("faculty_app:faculty_dashboard")
 
 @faculty_required
 def view_leave(request):
@@ -447,8 +451,8 @@ def view_timetable(request):
     
     # Get timetable entries for this faculty member
     timetable = Timetable.objects.filter(
-        faculty=faculty
-    ).select_related('subject').order_by('day', 'start_time')
+        subject_offering__faculty=faculty
+    ).select_related('subject_offering', 'subject_offering__subject').order_by('day', 'start_time')
     
     # Organize by day
     days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
@@ -613,4 +617,4 @@ def enter_marks(request):
 
     except Faculty.DoesNotExist:
         messages.error(request, "Faculty profile not found.")
-        return redirect("faculty_app:dashboard")
+        return redirect("faculty_app:faculty_dashboard")

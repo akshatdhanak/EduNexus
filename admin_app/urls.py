@@ -2,6 +2,7 @@ from django.urls import path, include
 
 from . import views
 from . import exam_views
+from . import chat_views
 
 app_name = "admin_app" 
 
@@ -37,5 +38,10 @@ urlpatterns = [
     path("admin_dashboard/manage_exams/", exam_views.manage_exams, name="manage_exams"),
     path("admin_dashboard/manage_exams/add/", exam_views.add_exam, name="add_exam"),
     path("admin_dashboard/manage_exams/<int:exam_id>/delete/", exam_views.delete_exam, name="delete_exam"),
+
+    # Database Chat Assistant
+    path("database-chat/", chat_views.database_chat, name="database_chat"),
+    path("database-chat/api/", chat_views.chat_api, name="chat_api"),
+    path("database-chat/clear/", chat_views.chat_clear, name="chat_clear"),
 
 ]

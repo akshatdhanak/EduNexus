@@ -90,11 +90,11 @@ def daily_attendance(request):
 
     daily_attendance = {}
     for record in attendance_records:
-        date_key = record.lecture.date.date()
+        date_key = record.lecture.date
         if date_key not in daily_attendance:
             daily_attendance[date_key] = []
         daily_attendance[date_key].append({
-            "subject": record.lecture.subject.name,
+            "subject": record.lecture.subject_offering.subject.name,
             "status": record.status
         })
 
@@ -155,8 +155,8 @@ def generate_report(request):
 
     for record in attendance_records:
         writer.writerow([
-            localtime(record.lecture.date).strftime("%Y-%m-%d"),  # Format date
-            record.lecture.subject.name,
+            record.lecture.date.strftime("%Y-%m-%d"),  # Format date
+            record.lecture.subject_offering.subject.name,
             record.status.capitalize(),
         ])
 
@@ -176,7 +176,7 @@ def request_leave(request):
         form = LeaveForm(request.POST)
         if form.is_valid():
             leave = form.save(commit=False)
-            leave.user = request.user
+            leave.student = Student.objects.get(user=request.user)
             leave.save()
 
             messages.success(request, "Leave request submitted successfully!")
@@ -641,10 +641,10 @@ def download_receipt(request, receipt_id):
         
         # Receipt details table
         data = [
-            ['Receipt Number:', receipt.receipt_no, 'Transaction ID:', receipt.reference_no],
+            ['Receipt Number:', receipt.receipt_number, 'Transaction ID:', receipt.transaction_id or 'N/A'],
             ['Student Name:', student.name, 'Student ID:', student.user.username],
-            ['Semester:', f'Semester {receipt.semester}', 'Payment Date:', receipt.date.strftime('%d %B %Y')],
-            ['Payment Mode:', receipt.get_payment_mode_display(), 'Payment Gateway:', receipt.reference_bank],
+            ['Semester:', f'Semester {receipt.fee_structure.semester}', 'Payment Date:', receipt.payment_date.strftime('%d %B %Y')],
+            ['Payment Mode:', receipt.get_payment_mode_display(), 'Payment Gateway:', receipt.bank_name or 'N/A'],
         ]
         
         table = Table(data, colWidths=[1.5*inch, 2.5*inch, 1.5*inch, 2.5*inch])

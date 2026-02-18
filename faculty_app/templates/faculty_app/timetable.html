@@ -1,187 +1,176 @@
 {% extends 'layout.html' %}
 {% load static %}
 {% load custom_filters %}
-
 {% block title %}My Timetable{% endblock %}
-
-{% block content %}
+{% block container %}
 <style>
-    .timetable-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 30px;
-        border-radius: 12px;
-        margin-bottom: 30px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    
-    .timetable-day {
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .day-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 12px 20px;
-        border-radius: 6px;
-        margin-bottom: 15px;
-        font-weight: 600;
-        font-size: 18px;
-    }
-    
-    .slot-card {
-        border-left: 4px solid #667eea;
-        background: #f8f9fa;
-        padding: 15px;
-        margin-bottom: 10px;
-        border-radius: 6px;
-        transition: all 0.3s;
-    }
-    
-    .slot-card:hover {
-        transform: translateX(5px);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .slot-card.theory {
-        border-left-color: #667eea;
-    }
-    
-    .slot-card.practical {
-        border-left-color: #28a745;
-    }
-    
-    .slot-card.tutorial {
-        border-left-color: #ffc107;
-    }
-    
-    .slot-time {
-        font-weight: 600;
-        color: #495057;
-        font-size: 16px;
-    }
-    
-    .slot-subject {
-        font-size: 18px;
-        font-weight: 600;
-        color: #212529;
-        margin: 5px 0;
-    }
-    
-    .slot-info {
-        color: #6c757d;
-        font-size: 14px;
-    }
-    
-    .slot-type-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        margin-top: 5px;
-    }
-    
-    .badge-theory {
-        background: #e7e9fc;
-        color: #667eea;
-    }
-    
-    .badge-practical {
-        background: #e8f5e9;
-        color: #28a745;
-    }
-    
-    .badge-tutorial {
-        background: #fff3e0;
-        color: #ff9800;
-    }
-    
-    .empty-day {
-        text-align: center;
-        padding: 30px;
-        color: #6c757d;
-        font-style: italic;
-    }
-    
-    .no-timetable {
-        background: #fff3cd;
-        border: 1px solid #ffc107;
-        color: #856404;
-        padding: 20px;
-        border-radius: 8px;
-        text-align: center;
-    }
+  .timetable-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .timetable-day {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .day-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+  .slot-card {
+    border-left: 4px solid #667eea;
+    background: #f8f9fa;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    transition: all 0.3s;
+  }
+
+  .slot-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .slot-card.theory {
+    border-left-color: #667eea;
+  }
+
+  .slot-card.practical {
+    border-left-color: #28a745;
+  }
+
+  .slot-card.tutorial {
+    border-left-color: #ffc107;
+  }
+
+  .slot-time {
+    font-weight: 600;
+    color: #495057;
+    font-size: 16px;
+  }
+
+  .slot-subject {
+    font-size: 18px;
+    font-weight: 600;
+    color: #212529;
+    margin: 5px 0;
+  }
+
+  .slot-info {
+    color: #6c757d;
+    font-size: 14px;
+  }
+
+  .slot-type-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 5px;
+  }
+
+  .badge-theory {
+    background: #e7e9fc;
+    color: #667eea;
+  }
+
+  .badge-practical {
+    background: #e8f5e9;
+    color: #28a745;
+  }
+
+  .badge-tutorial {
+    background: #fff3e0;
+    color: #ff9800;
+  }
+
+  .empty-day {
+    text-align: center;
+    padding: 30px;
+    color: #6c757d;
+    font-style: italic;
+  }
+
+  .no-timetable {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    color: #856404;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+  }
 </style>
 
 <div class="timetable-header">
-    <h2>My Timetable</h2>
-    <p>{{ faculty.name }} - {{ faculty.get_department_display }}</p>
+  <h2>My Timetable</h2>
+  <p>{{ faculty.name }} - {{ faculty.department }}</p>
 </div>
 
 {% if timetable_entries %}
-    <div class="container-fluid">
-        {% for day in days %}
-            {% if organized_timetable|get_item:day %}
-                <div class="timetable-day">
-                    <div class="day-header">
-                        📅 {{ day|upper }}
-                    </div>
-                    
-                    {% for slot in organized_timetable|get_item:day %}
-                        <div class="slot-card {{ slot.slot_type }}">
-                            <div class="slot-time">
-                                ⏰ {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
-                            </div>
-                            <div class="slot-subject">
-                                {{ slot.subject.name }}
-                            </div>
-                            <div class="slot-info">
-                                <strong>Semester:</strong> {{ slot.semester }}<br>
-                                <strong>Department:</strong> {{ slot.get_department_display }}<br>
-                                {% if slot.room_number %}
-                                    <strong>Room:</strong> {{ slot.room_number }}<br>
-                                {% endif %}
-                            </div>
-                            <span class="slot-type-badge badge-{{ slot.slot_type }}">
-                                {{ slot.get_slot_type_display }}
-                            </span>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="timetable-day">
-                    <div class="day-header">
-                        📅 {{ day|upper }}
-                    </div>
-                    <div class="empty-day">
-                        No classes scheduled
-                    </div>
-                </div>
-            {% endif %}
-        {% endfor %}
+<div class="container-fluid">
+  {% for day in days %}
+  {% if organized_timetable|get_item:day %}
+  <div class="timetable-day">
+    <div class="day-header">📅 {{ day|upper }}</div>
+
+    {% for slot in organized_timetable|get_item:day %}
+    <div class="slot-card {{ slot.lecture_type }}">
+      <div class="slot-time">
+        ⏰ {{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}
+      </div>
+      <div class="slot-subject">{{ slot.subject_offering.subject.name }}</div>
+      <div class="slot-info">
+        <strong>Semester:</strong> {{ slot.subject_offering.subject.semester
+        }}<br />
+        <strong>Division:</strong> {{ slot.subject_offering.division }}<br />
+        {% if slot.room_number %}
+        <strong>Room:</strong> {{ slot.room_number }}<br />
+        {% endif %}
+      </div>
+      <span class="slot-type-badge badge-{{ slot.lecture_type }}">
+        {{ slot.get_lecture_type_display }}
+      </span>
     </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="timetable-day">
+    <div class="day-header">📅 {{ day|upper }}</div>
+    <div class="empty-day">No classes scheduled</div>
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
 {% else %}
-    <div class="no-timetable">
-        <h5>No Timetable Assigned</h5>
-        <p>Your timetable has not been created yet. Please contact administration.</p>
-    </div>
+<div class="no-timetable">
+  <h5>No Timetable Assigned</h5>
+  <p>Your timetable has not been created yet. Please contact administration.</p>
+</div>
 {% endif %}
-
 {% endblock %}
-
 {% block extra_js %}
 <script>
-    // Add custom filters
-    if (!Jinja) {
-        var Jinja = {};
-    }
-    
-    Jinja.filters = Jinja.filters || {};
+  // Add custom filters
+  if (!Jinja) {
+    var Jinja = {};
+  }
+
+  Jinja.filters = Jinja.filters || {};
 </script>
 {% endblock %}
