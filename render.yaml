@@ -16,7 +16,7 @@ services:
     plan: free
     buildCommand: chmod +x build.sh && ./build.sh
     preDeployCommand: python manage.py migrate --noinput
-    startCommand: python manage.py migrate --noinput && gunicorn project1.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120
+    startCommand: python manage.py migrate --noinput && python manage.py create_superuser_if_missing && gunicorn project1.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -31,6 +31,12 @@ services:
       - key: CSRF_TRUSTED_ORIGINS
         value: "https://edunexus-hgae.onrender.com"
       - key: GEMINI_API_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: DJANGO_SUPERUSER_USERNAME
+        sync: false  # Set manually in Render dashboard
+      - key: DJANGO_SUPERUSER_PASSWORD
+        sync: false  # Set manually in Render dashboard
+      - key: DJANGO_SUPERUSER_EMAIL
         sync: false  # Set manually in Render dashboard
       - key: PYTHON_VERSION
         value: "3.13.0"
