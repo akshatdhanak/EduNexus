@@ -28,6 +28,7 @@ class SessionTimeoutMiddleware(MiddlewareMixin):
         '/accounts/login/',
         '/accounts/logout/',
         '/admin/',
+        '/health/',
     ]
 
     def _is_exempt(self, path):
@@ -65,6 +66,7 @@ class SingleSessionMiddleware(MiddlewareMixin):
         '/accounts/login/',
         '/accounts/logout/',
         '/admin/',
+        '/health/',
     ]
 
     def _is_exempt(self, path):

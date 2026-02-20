@@ -12,9 +12,11 @@ databases:
 services:
   - type: web
     name: edunexus
-    runtime: docker
+    runtime: python
     plan: free
-    dockerfilePath: ./Dockerfile
+    buildCommand: chmod +x build.sh && ./build.sh
+    preDeployCommand: python manage.py migrate --noinput
+    startCommand: python manage.py migrate --noinput && gunicorn project1.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -32,10 +34,4 @@ services:
         sync: false  # Set manually in Render dashboard
       - key: PYTHON_VERSION
         value: "3.13.0"
-    buildFilter:
-      paths:
-        - "**/*.py"
-        - requirements.txt
-        - Dockerfile
     healthCheckPath: /health/
-    initialDeployHook: python manage.py migrate --noinput && python manage.py collectstatic --noinput

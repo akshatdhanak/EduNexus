@@ -12,7 +12,8 @@ pip install -r requirements.txt
 echo "📂 Collecting static files..."
 python manage.py collectstatic --noinput
 
-echo "🗃️  Running migrations..."
-python manage.py migrate --noinput
+# NOTE: Migrations are NOT run here because DATABASE_URL from
+# Render's managed PostgreSQL may not be available during the build phase.
+# Migrations run via preDeployCommand and startCommand in render.yaml instead.
 
 echo "✅ Build complete!"
