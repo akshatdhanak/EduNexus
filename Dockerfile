@@ -52,16 +52,16 @@ RUN DJANGO_SETTINGS_MODULE=project1.settings \
 
 USER edunexus
 
-EXPOSE 8000
+EXPOSE 10000
 
-# Health check
+# Health check (uses PORT env var, Render defaults to 10000)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/accounts/login/')" || exit 1
+    CMD python -c "import os,urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"PORT\",10000)}/accounts/login/')" || exit 1
 
-# Start with gunicorn (production WSGI server)
-CMD ["gunicorn", "project1.wsgi:application", \
-     "--bind", "0.0.0.0:8000", \
-     "--workers", "3", \
-     "--timeout", "120", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-"]
+# Start with gunicorn — use $PORT from Render (default 10000)
+CMD gunicorn project1.wsgi:application \
+    --bind 0.0.0.0:${PORT:-10000} \
+    --workers 3 \
+    --timeout 120 \
+    --access-logfile - \
+    --error-logfile -
