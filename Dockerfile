@@ -54,9 +54,9 @@ USER edunexus
 
 EXPOSE 10000
 
-# Health check (uses PORT env var, Render defaults to 10000)
+# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import os,urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"PORT\",10000)}/accounts/login/')" || exit 1
+    CMD python -c "import os,urllib.request; urllib.request.urlopen(f'http://localhost:{os.environ.get(\"PORT\",10000)}/health/')" || exit 1
 
 # Start with gunicorn — use $PORT from Render (default 10000)
 CMD gunicorn project1.wsgi:application \

@@ -37,5 +37,5 @@ services:
         - "**/*.py"
         - requirements.txt
         - Dockerfile
-    healthCheckPath: /accounts/login/
+    healthCheckPath: /health/
     initialDeployHook: python manage.py migrate --noinput && python manage.py collectstatic --noinput
