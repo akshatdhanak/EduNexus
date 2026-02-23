@@ -135,6 +135,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 
 # Use CompressedStaticFilesStorage (NOT Manifest) — Manifest variant crashes
 # with 500 if any template references a static file not in the manifest.
