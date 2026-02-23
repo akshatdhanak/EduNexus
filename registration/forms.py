@@ -19,3 +19,13 @@ class CustomUserForm(UserCreationForm):
     class Meta:
         model = CustomUser
         fields = ["username", "email", "password1", "password2", "role"]
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in ['password1', 'password2', 'username', 'email']:
+            if field_name in self.fields:
+                self.fields[field_name].widget.attrs.setdefault('class', 'form-control')

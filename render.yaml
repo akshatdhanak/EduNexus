@@ -31,7 +31,7 @@ services:
       - key: CSRF_TRUSTED_ORIGINS
         value: "https://edunexus-hgae.onrender.com"
       - key: GEMINI_API_KEY
-        sync: false  # Set manually in Render dashboard
+        value: "AIzaSyCTU4td1It9MfqktRvSgYR7gWaKRO-GmmM"
       - key: DJANGO_SUPERUSER_USERNAME
         sync: false  # Set manually in Render dashboard
       - key: DJANGO_SUPERUSER_PASSWORD

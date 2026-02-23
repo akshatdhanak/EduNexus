@@ -31,6 +31,7 @@ class StudentForm(forms.ModelForm):
         widgets = {
             'username': forms.Select(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'roll_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 2024001'}),
             'name': forms.TextInput(attrs={'class': 'form-control'}),
             'image': forms.FileInput(attrs={'class': 'form-control'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
@@ -43,6 +44,12 @@ class StudentForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(StudentForm, self).__init__(*args, **kwargs)
+        # Ensure all fields have form-control class
+        for field_name, field in self.fields.items():
+            if 'class' not in field.widget.attrs:
+                field.widget.attrs['class'] = 'form-control'
+            elif 'form-control' not in field.widget.attrs.get('class', ''):
+                field.widget.attrs['class'] += ' form-control'
         if self.instance and self.instance.pk:
             self.fields['username'].initial = self.instance.user.username
             self.fields['email'].initial = self.instance.user.email
@@ -138,6 +145,12 @@ class FacultyForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(FacultyForm, self).__init__(*args, **kwargs)
+        # Ensure all fields have form-control class (except checkboxes)
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, forms.CheckboxSelectMultiple):
+                continue
+            if 'class' not in field.widget.attrs:
+                field.widget.attrs['class'] = 'form-control'
         if self.instance and self.instance.pk:
             self.fields['username'].initial = self.instance.user.username
             self.fields['email'].initial = self.instance.user.email
