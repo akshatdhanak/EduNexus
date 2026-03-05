@@ -928,16 +928,18 @@ def _build_response(raw_result, query_code, explanation, display_type,
 
 @authenticated_required
 def database_chat(request):
-    """Render the chat interface — accessible to all authenticated users."""
-    user_role = getattr(request.user, "role", "admin")
-    return render(request, "admin_app/database_chat.html", {
-        "user_role": user_role,
-    })
+    """Render the chat interface — admin only."""
+    if not (request.user.is_superuser or getattr(request.user, 'role', '') == 'admin'):
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("Access restricted to administrators.")
+    return render(request, "admin_app/database_chat.html", {})
 
 
 @authenticated_required
 def chat_api(request):
-    """API endpoint for chat messages."""
+    """API endpoint for chat messages — admin only."""
+    if not (request.user.is_superuser or getattr(request.user, 'role', '') == 'admin'):
+        return JsonResponse({"error": "Access restricted to administrators."}, status=403)
     if request.method != "POST":
         return JsonResponse({"error": "POST required"}, status=405)
 

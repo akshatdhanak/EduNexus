@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+{% block title %}Assignments{% endblock %}
+{% block nav_title %}My Assignments{% endblock %}
+
+{% block style %}
+.assign-container { max-width: 1000px; margin: 0 auto; }
+.assign-header { margin-bottom: 32px; }
+.assign-header h1 { font-size: 28px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+.assign-header p { color: #666; font-size: 14px; }
+
+.assignment-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+.assign-card {
+    background: #fff; border-radius: 12px; padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 4px solid #1a73e8;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.assign-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+.assign-card.submitted { border-left-color: #1e8e3e; }
+.assign-card .title { font-size: 16px; font-weight: 600; color: #202124; margin-bottom: 4px; }
+.assign-card .subject { font-size: 13px; color: #5f6368; margin-bottom: 12px; }
+.assign-card .meta { font-size: 13px; color: #5f6368; line-height: 1.8; }
+.assign-card .actions { margin-top: 16px; }
+
+.btn-submit-assign {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    text-decoration: none; cursor: pointer; border: none;
+}
+.btn-submit-assign.primary { background: #1a73e8; color: #fff; }
+.btn-submit-assign.primary:hover { background: #1765cc; }
+.btn-submit-assign.success { background: #e6f4ea; color: #1e8e3e; }
+
+.status-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
+}
+.status-badge.submitted { background: #e6f4ea; color: #1e8e3e; }
+.status-badge.pending { background: #fef7e0; color: #e37400; }
+.status-badge.flagged { background: #fce8e6; color: #d93025; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: #5f6368; }
+.empty-state .material-icons { font-size: 64px; color: #dadce0; margin-bottom: 16px; }
+{% endblock %}
+
+{% block container %}
+<div class="assign-container">
+    <div class="assign-header">
+        <h1>My Assignments</h1>
+        <p>{{ student.name }} · Submit your assignment text for plagiarism checking</p>
+    </div>
+
+    {% if assignments %}
+    <div class="assignment-grid">
+        {% for item in assignments %}
+        <div class="assign-card {% if item.submitted %}submitted{% endif %}">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div class="title">{{ item.assignment.title }}</div>
+                {% if item.submitted %}
+                    {% if item.submission.is_flagged %}
+                    <span class="status-badge flagged">⚠ Flagged</span>
+                    {% else %}
+                    <span class="status-badge submitted">✓ Submitted</span>
+                    {% endif %}
+                {% else %}
+                <span class="status-badge pending">● Pending</span>
+                {% endif %}
+            </div>
+            <div class="subject">{{ item.assignment.subject.name }} ({{ item.assignment.subject.code }})</div>
+            {% if item.assignment.description %}
+            <div style="font-size: 13px; color: #5f6368; margin-bottom: 12px; line-height: 1.5;">{{ item.assignment.description|truncatewords:30 }}</div>
+            {% endif %}
+            <div class="meta">
+                📅 Due: {{ item.assignment.due_date|date:"d M Y, H:i" }}<br>
+                📊 Max Marks: {{ item.assignment.max_marks }}<br>
+                👤 By: {{ item.assignment.created_by.name }}
+            </div>
+            {% if item.submitted and item.submission.plagiarism_score %}
+            <div class="meta" style="margin-top: 8px;">
+                🔍 Similarity Score: <strong style="color: {% if item.submission.is_flagged %}#d93025{% else %}#1e8e3e{% endif %};">{{ item.submission.plagiarism_score }}%</strong>
+            </div>
+            {% endif %}
+            <div class="actions">
+                <a href="{% url 'student_app:submit_assignment_text' item.assignment.id %}" class="btn-submit-assign {% if item.submitted %}success{% else %}primary{% endif %}">
+                    {% if item.submitted %}✏ Edit Submission{% else %}📝 Submit{% endif %}
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="material-icons">assignment</span>
+        <h3>No Open Assignments</h3>
+        <p>There are no open assignments for your enrolled subjects.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

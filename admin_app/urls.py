@@ -44,4 +44,6 @@ urlpatterns = [
     path("database-chat/api/", chat_views.chat_api, name="chat_api"),
     path("database-chat/clear/", chat_views.chat_clear, name="chat_clear"),
 
+    # Timetable Conflict Optimizer
+    path("admin_dashboard/timetable_conflicts/", views.timetable_conflicts, name="timetable_conflicts"),
 ]

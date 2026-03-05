@@ -10,7 +10,7 @@ from django.urls import reverse
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.utils import timezone
-from admin_app.models import Attendance, AttendanceFaculty, Faculty, Leave, Lecture, Notification, Student, Subject, Timetable, SubjectOffering, StudentEnrollment, ExamSchedule, ExamMarks
+from admin_app.models import Attendance, AttendanceFaculty, Faculty, Leave, Lecture, Notification, Student, Subject, Timetable, SubjectOffering, StudentEnrollment, ExamSchedule, ExamMarks, Assignment, AssignmentSubmission
 from admin_app.forms import AttendanceEditForm, LeaveForm, LectureForm, AttendanceFilterForm
 from django.contrib import messages
 
@@ -618,3 +618,222 @@ def enter_marks(request):
     except Faculty.DoesNotExist:
         messages.error(request, "Faculty profile not found.")
         return redirect("faculty_app:faculty_dashboard")
+
+
+# ============================================================================
+# ASSIGNMENT MANAGEMENT & PLAGIARISM CHECKER
+# ============================================================================
+
+def _preprocess_text(text):
+    """Preprocess text for plagiarism comparison: lowercase, remove punctuation, split into words."""
+    import re
+    text = text.lower()
+    text = re.sub(r'[^\w\s]', '', text)  # remove punctuation
+    words = text.split()
+    # Remove common stop words for better comparison
+    stop_words = {
+        'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+        'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+        'should', 'may', 'might', 'shall', 'can', 'to', 'of', 'in', 'for',
+        'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through', 'during',
+        'before', 'after', 'above', 'below', 'between', 'and', 'but', 'or',
+        'nor', 'not', 'so', 'yet', 'both', 'either', 'neither', 'each',
+        'every', 'all', 'any', 'few', 'more', 'most', 'some', 'such', 'no',
+        'only', 'own', 'same', 'than', 'too', 'very', 'just', 'because',
+        'if', 'then', 'else', 'when', 'while', 'where', 'how', 'what',
+        'which', 'who', 'whom', 'this', 'that', 'these', 'those', 'i', 'me',
+        'my', 'we', 'our', 'you', 'your', 'he', 'him', 'his', 'she', 'her',
+        'it', 'its', 'they', 'them', 'their',
+    }
+    words = [w for w in words if w not in stop_words and len(w) > 1]
+    return words
+
+
+def _jaccard_similarity(words_a, words_b):
+    """Calculate Jaccard similarity between two word sets."""
+    set_a = set(words_a)
+    set_b = set(words_b)
+    if not set_a and not set_b:
+        return 0.0
+    intersection = set_a & set_b
+    union = set_a | set_b
+    return round(len(intersection) / len(union) * 100, 2) if union else 0.0
+
+
+def _find_common_phrases(text_a, text_b, min_length=4):
+    """Find common n-gram phrases between two texts."""
+    words_a = _preprocess_text(text_a)
+    words_b = _preprocess_text(text_b)
+    common = []
+
+    for n in range(min_length, min(len(words_a), len(words_b)) + 1):
+        ngrams_a = set()
+        for i in range(len(words_a) - n + 1):
+            ngrams_a.add(tuple(words_a[i:i + n]))
+        for i in range(len(words_b) - n + 1):
+            ngram = tuple(words_b[i:i + n])
+            if ngram in ngrams_a:
+                common.append(' '.join(ngram))
+
+    # Deduplicate: keep only phrases that aren't substrings of longer ones
+    common.sort(key=len, reverse=True)
+    filtered = []
+    for phrase in common:
+        if not any(phrase in longer for longer in filtered):
+            filtered.append(phrase)
+    return filtered[:10]  # top 10
+
+
+@faculty_required
+def manage_assignments(request):
+    """List and create assignments."""
+    try:
+        faculty = Faculty.objects.get(user=request.user)
+    except Faculty.DoesNotExist:
+        messages.error(request, "Faculty profile not found.")
+        return redirect("faculty_app:faculty_dashboard")
+
+    assignments = Assignment.objects.filter(created_by=faculty).select_related('subject')
+
+    context = {
+        'faculty': faculty,
+        'assignments': assignments,
+    }
+    return render(request, 'faculty_app/manage_assignments.html', context)
+
+
+@faculty_required
+def create_assignment(request):
+    """Create a new assignment."""
+    try:
+        faculty = Faculty.objects.get(user=request.user)
+    except Faculty.DoesNotExist:
+        messages.error(request, "Faculty profile not found.")
+        return redirect("faculty_app:faculty_dashboard")
+
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        subject_id = request.POST.get('subject')
+        due_date = request.POST.get('due_date')
+        max_marks = request.POST.get('max_marks', 100)
+
+        if not title or not subject_id or not due_date:
+            messages.error(request, "Title, subject, and due date are required.")
+            return redirect("faculty_app:create_assignment")
+
+        # Verify faculty teaches this subject
+        faculty_subject_ids = SubjectOffering.objects.filter(
+            faculty=faculty
+        ).values_list('subject_id', flat=True).distinct()
+        try:
+            subject = Subject.objects.get(id=subject_id, id__in=faculty_subject_ids)
+        except Subject.DoesNotExist:
+            messages.error(request, "Invalid subject.")
+            return redirect("faculty_app:create_assignment")
+
+        Assignment.objects.create(
+            title=title,
+            description=description,
+            subject=subject,
+            created_by=faculty,
+            due_date=due_date,
+            max_marks=int(max_marks),
+        )
+        messages.success(request, f"Assignment '{title}' created successfully!")
+        return redirect("faculty_app:manage_assignments")
+
+    # Get distinct subjects this faculty teaches
+    faculty_subject_ids = SubjectOffering.objects.filter(
+        faculty=faculty
+    ).values_list('subject_id', flat=True).distinct()
+    subjects = Subject.objects.filter(id__in=faculty_subject_ids).order_by('semester', 'name')
+    context = {
+        'faculty': faculty,
+        'subjects': subjects,
+    }
+    return render(request, 'faculty_app/create_assignment.html', context)
+
+
+@faculty_required
+def check_plagiarism(request, assignment_id):
+    """Run plagiarism check on all submissions for an assignment."""
+    try:
+        faculty = Faculty.objects.get(user=request.user)
+    except Faculty.DoesNotExist:
+        messages.error(request, "Faculty profile not found.")
+        return redirect("faculty_app:faculty_dashboard")
+
+    assignment = get_object_or_404(Assignment, id=assignment_id, created_by=faculty)
+    submissions = list(
+        AssignmentSubmission.objects.filter(assignment=assignment).select_related('student')
+    )
+
+    PLAGIARISM_THRESHOLD = 70  # percentage
+
+    # Compare every pair using Jaccard similarity
+    results = []
+    flagged_ids = set()
+
+    for i in range(len(submissions)):
+        words_i = _preprocess_text(submissions[i].content)
+        for j in range(i + 1, len(submissions)):
+            words_j = _preprocess_text(submissions[j].content)
+            similarity = _jaccard_similarity(words_i, words_j)
+            common_phrases = _find_common_phrases(submissions[i].content, submissions[j].content)
+
+            is_flagged = similarity >= PLAGIARISM_THRESHOLD
+            if is_flagged:
+                flagged_ids.add(submissions[i].id)
+                flagged_ids.add(submissions[j].id)
+
+            results.append({
+                'student_a': submissions[i].student.name,
+                'roll_a': submissions[i].student.roll_number,
+                'student_b': submissions[j].student.name,
+                'roll_b': submissions[j].student.roll_number,
+                'similarity': similarity,
+                'is_flagged': is_flagged,
+                'common_phrases': common_phrases,
+            })
+
+    # Update submission flags
+    for sub in submissions:
+        sub.plagiarism_score = 0
+        sub.is_flagged = sub.id in flagged_ids
+        max_sim = 0
+        for r in results:
+            if sub.student.roll_number in (r['roll_a'], r['roll_b']):
+                max_sim = max(max_sim, r['similarity'])
+        sub.plagiarism_score = max_sim
+        sub.save()
+
+    # Sort by similarity descending
+    results.sort(key=lambda x: x['similarity'], reverse=True)
+
+    context = {
+        'faculty': faculty,
+        'assignment': assignment,
+        'submissions': submissions,
+        'results': results,
+        'threshold': PLAGIARISM_THRESHOLD,
+        'total_submissions': len(submissions),
+        'flagged_count': len(flagged_ids),
+    }
+    return render(request, 'faculty_app/plagiarism_results.html', context)
+
+
+@faculty_required
+def close_assignment(request, assignment_id):
+    """Close an assignment so no more submissions are accepted."""
+    try:
+        faculty = Faculty.objects.get(user=request.user)
+    except Faculty.DoesNotExist:
+        messages.error(request, "Faculty profile not found.")
+        return redirect("faculty_app:faculty_dashboard")
+
+    assignment = get_object_or_404(Assignment, id=assignment_id, created_by=faculty)
+    assignment.status = 'closed'
+    assignment.save()
+    messages.success(request, f"Assignment '{assignment.title}' closed.")
+    return redirect("faculty_app:manage_assignments")

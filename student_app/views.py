@@ -1,11 +1,17 @@
 import csv  
+import math
+from datetime import date, datetime, timedelta
 from functools import wraps
 from django.contrib import messages
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
-from admin_app.models import Leave, Student, Attendance, Lecture, Faculty, Subject, Notification, Timetable
-from django.http import HttpResponse
+from admin_app.models import (
+    Leave, Student, Attendance, Lecture, Faculty, Subject, Notification,
+    Timetable, SubjectOffering, StudentEnrollment, Assignment, AssignmentSubmission,
+)
+from django.http import HttpResponse, JsonResponse
 from django.utils.timezone import localtime
+from django.utils import timezone
 from admin_app.forms import LeaveForm
 from .forms import StudentProfileForm
 from django.db.models import Sum, Count, Q
@@ -939,3 +945,341 @@ def download_result(request, semester):
     except Exception as e:
         messages.error(request, f"Error generating result: {str(e)}")
         return redirect("student_app:view_results")
+
+
+# ============================================================================
+# ATTENDANCE RISK PREDICTOR
+# ============================================================================
+
+@student_required
+def attendance_risk(request):
+    """Attendance Risk Predictor – shows risk levels per subject and predictions."""
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        messages.error(request, "Student profile not found.")
+        return redirect("student_app:student_dashboard")
+
+    MIN_ATTENDANCE = 75  # minimum attendance percentage required
+    skip_next = int(request.GET.get('skip', 5))  # predict if student skips X more classes
+
+    enrollments = student.enrollments.select_related(
+        "subject_offering__subject"
+    ).filter(status="active")
+
+    risk_data = []
+    overall_total = 0
+    overall_present = 0
+
+    # Group enrollments by subject to merge theory + practical into one card
+    subject_enrollments = {}
+    for enrollment in enrollments:
+        subject = enrollment.subject_offering.subject
+        if subject.id not in subject_enrollments:
+            subject_enrollments[subject.id] = {
+                "subject": subject,
+                "offerings": [],
+            }
+        subject_enrollments[subject.id]["offerings"].append(enrollment.subject_offering)
+
+    for subj_id, data in subject_enrollments.items():
+        subject = data["subject"]
+        offerings = data["offerings"]
+
+        # Collect lectures and attendance across all offerings (theory + practical)
+        total_classes = 0
+        attended = 0
+        type_breakdown = []
+
+        for offering in offerings:
+            lectures = Lecture.objects.filter(subject_offering=offering)
+            offering_total = lectures.count()
+            offering_attended = Attendance.objects.filter(
+                student=student,
+                lecture__in=lectures,
+                status="present",
+            ).count()
+
+            if offering_total > 0:
+                # Determine type from the offering's division vs student batch
+                if offering.division == (student.batch or student.division) and offering.division != student.division:
+                    slot_type = "Practical"
+                else:
+                    slot_type = "Theory"
+                type_breakdown.append({
+                    "type": slot_type,
+                    "total": offering_total,
+                    "attended": offering_attended,
+                    "percentage": round((offering_attended / offering_total) * 100, 2),
+                })
+
+            total_classes += offering_total
+            attended += offering_attended
+
+        if total_classes == 0:
+            continue
+
+        percentage = round((attended / total_classes) * 100, 2)
+
+        # Risk level
+        if percentage >= 80:
+            risk_level = "safe"
+            risk_label = "Safe"
+        elif percentage >= 75:
+            risk_level = "warning"
+            risk_label = "Warning"
+        else:
+            risk_level = "critical"
+            risk_label = "Critical"
+
+        # Classes required to reach 75%
+        required = max(0, math.ceil(0.75 * total_classes) - attended)
+
+        # Prediction: what happens if student skips next `skip_next` classes
+        future_total = total_classes + skip_next
+        future_percentage = round((attended / future_total) * 100, 2)
+
+        if future_percentage >= 80:
+            future_risk = "safe"
+        elif future_percentage >= 75:
+            future_risk = "warning"
+        else:
+            future_risk = "critical"
+
+        # How many more classes can the student skip and still stay at 75%?
+        # attended / (total + X) >= 0.75  → X <= attended/0.75 - total
+        can_skip = max(0, int(attended / 0.75 - total_classes))
+
+        risk_data.append({
+            "subject": subject.name,
+            "subject_code": subject.code,
+            "total_classes": total_classes,
+            "attended": attended,
+            "absent": total_classes - attended,
+            "percentage": percentage,
+            "risk_level": risk_level,
+            "risk_label": risk_label,
+            "required_to_recover": required,
+            "future_percentage": future_percentage,
+            "future_risk": future_risk,
+            "can_skip": can_skip,
+            "type_breakdown": type_breakdown,
+        })
+
+        overall_total += total_classes
+        overall_present += attended
+
+    # Overall stats
+    overall_pct = round((overall_present / overall_total) * 100, 2) if overall_total else 0
+    if overall_pct >= 80:
+        overall_risk = "safe"
+    elif overall_pct >= 75:
+        overall_risk = "warning"
+    else:
+        overall_risk = "critical"
+
+    context = {
+        "student": student,
+        "risk_data": risk_data,
+        "skip_next": skip_next,
+        "min_attendance": MIN_ATTENDANCE,
+        "overall_total": overall_total,
+        "overall_present": overall_present,
+        "overall_percentage": overall_pct,
+        "overall_risk": overall_risk,
+    }
+
+    return render(request, "student_app/attendance_risk.html", context)
+
+
+# ============================================================================
+# TIMETABLE CONFLICT OPTIMIZER
+# ============================================================================
+
+@student_required
+def timetable_conflicts(request):
+    """Detect overlapping timetable slots for the student's current schedule."""
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        messages.error(request, "Student profile not found.")
+        return redirect("student_app:student_dashboard")
+
+    if not student.degree_program:
+        messages.warning(request, "Degree program not set.")
+        return redirect("student_app:student_dashboard")
+
+    division_value = student.division
+    batch_value = student.batch or student.division
+
+    timetable = Timetable.objects.filter(
+        subject_offering__subject__semester=student.semester,
+        subject_offering__subject__department=student.degree_program.department,
+    ).filter(
+        Q(lecture_type__in=['theory', 'tutorial'], subject_offering__division=division_value) |
+        Q(lecture_type='practical', subject_offering__division=batch_value)
+    ).select_related("subject_offering__subject", "subject_offering__faculty").order_by('day', 'start_time')
+
+    days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+    conflicts = []
+    day_schedules = {}
+
+    for day in days:
+        slots = list(timetable.filter(day=day))
+        day_schedules[day] = slots
+
+        # Check every pair for overlaps: startA < endB and startB < endA
+        for i in range(len(slots)):
+            for j in range(i + 1, len(slots)):
+                a = slots[i]
+                b = slots[j]
+                if a.start_time < b.end_time and b.start_time < a.end_time:
+                    conflicts.append({
+                        "day": day.capitalize(),
+                        "slot_a": {
+                            "subject": a.subject_offering.subject.name,
+                            "code": a.subject_offering.subject.code,
+                            "time": f"{a.start_time.strftime('%H:%M')} – {a.end_time.strftime('%H:%M')}",
+                            "type": a.get_lecture_type_display(),
+                            "room": a.room_number or "N/A",
+                            "faculty": a.subject_offering.faculty.name,
+                        },
+                        "slot_b": {
+                            "subject": b.subject_offering.subject.name,
+                            "code": b.subject_offering.subject.code,
+                            "time": f"{b.start_time.strftime('%H:%M')} – {b.end_time.strftime('%H:%M')}",
+                            "type": b.get_lecture_type_display(),
+                            "room": b.room_number or "N/A",
+                            "faculty": b.subject_offering.faculty.name,
+                        },
+                    })
+
+    # Build a gap analysis: for each day, compute total gaps between classes
+    gap_analysis = {}
+    for day in days:
+        slots = sorted(day_schedules[day], key=lambda s: s.start_time)
+        gaps = []
+        total_gap_minutes = 0
+        for k in range(1, len(slots)):
+            prev_end = slots[k - 1].end_time
+            curr_start = slots[k].start_time
+            from datetime import datetime, timedelta
+            end_dt = datetime.combine(date(2000, 1, 1), prev_end)
+            start_dt = datetime.combine(date(2000, 1, 1), curr_start)
+            gap_min = int((start_dt - end_dt).total_seconds() / 60)
+            if gap_min > 0:
+                gaps.append({
+                    "after": slots[k - 1].subject_offering.subject.name,
+                    "before": slots[k].subject_offering.subject.name,
+                    "minutes": gap_min,
+                })
+                total_gap_minutes += gap_min
+        if slots:
+            gap_analysis[day.capitalize()] = {
+                "num_classes": len(slots),
+                "gaps": gaps,
+                "total_gap_minutes": total_gap_minutes,
+            }
+
+    context = {
+        "student": student,
+        "conflicts": conflicts,
+        "conflict_count": len(conflicts),
+        "day_schedules": day_schedules,
+        "gap_analysis": gap_analysis,
+        "days": days,
+    }
+
+    return render(request, "student_app/timetable_conflicts.html", context)
+
+
+# ============================================================================
+# STUDENT ASSIGNMENT SUBMISSION
+# ============================================================================
+
+@student_required
+def submit_assignment(request):
+    """List assignments and submit text for plagiarism checking."""
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        messages.error(request, "Student profile not found.")
+        return redirect("student_app:student_dashboard")
+
+    # Get open assignments for subjects the student is enrolled in (any division)
+    enrolled_subject_ids = SubjectOffering.objects.filter(
+        enrollments__student=student,
+        enrollments__status='active',
+    ).values_list('subject_id', flat=True).distinct()
+    assignments = Assignment.objects.filter(
+        subject_id__in=enrolled_subject_ids,
+        status='open',
+    ).select_related('subject', 'created_by')
+
+    # Get existing submissions by this student
+    submitted_ids = set(
+        AssignmentSubmission.objects.filter(student=student).values_list('assignment_id', flat=True)
+    )
+
+    assignment_list = []
+    for a in assignments:
+        submission = None
+        if a.id in submitted_ids:
+            submission = AssignmentSubmission.objects.get(assignment=a, student=student)
+        assignment_list.append({
+            'assignment': a,
+            'submitted': a.id in submitted_ids,
+            'submission': submission,
+        })
+
+    context = {
+        'student': student,
+        'assignments': assignment_list,
+    }
+    return render(request, 'student_app/assignments.html', context)
+
+
+@student_required
+def submit_assignment_text(request, assignment_id):
+    """Submit or update assignment text."""
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        messages.error(request, "Student profile not found.")
+        return redirect("student_app:student_dashboard")
+
+    assignment = get_object_or_404(Assignment, id=assignment_id, status='open')
+
+    # Verify student is enrolled in this subject (any division)
+    enrolled_subject_ids = SubjectOffering.objects.filter(
+        enrollments__student=student, enrollments__status='active'
+    ).values_list('subject_id', flat=True)
+    if assignment.subject_id not in set(enrolled_subject_ids):
+        messages.error(request, "You are not enrolled in this subject.")
+        return redirect("student_app:submit_assignment")
+
+    if request.method == 'POST':
+        content = request.POST.get('content', '').strip()
+        if not content:
+            messages.error(request, "Submission cannot be empty.")
+            return redirect("student_app:submit_assignment_text", assignment_id=assignment_id)
+
+        submission, created = AssignmentSubmission.objects.update_or_create(
+            assignment=assignment,
+            student=student,
+            defaults={'content': content},
+        )
+        if created:
+            messages.success(request, f"Assignment '{assignment.title}' submitted successfully!")
+        else:
+            messages.success(request, f"Assignment '{assignment.title}' updated successfully!")
+        return redirect("student_app:submit_assignment")
+
+    # GET – show form
+    existing = AssignmentSubmission.objects.filter(assignment=assignment, student=student).first()
+    context = {
+        'student': student,
+        'assignment': assignment,
+        'existing_content': existing.content if existing else '',
+    }
+    return render(request, 'student_app/submit_assignment_text.html', context)

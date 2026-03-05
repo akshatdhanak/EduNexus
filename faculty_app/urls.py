@@ -19,4 +19,10 @@ urlpatterns = [
     path("mark_student_attendance/", views.mark_student_attendance, name="mark_student_attendance"),
     path("mark_student_attendance2/<int:lecture_id>/", views.mark_student_attendance2, name="mark_student_attendance2"),
     path("enter_marks/", views.enter_marks, name="enter_marks"),
+    
+    # Assignment & Plagiarism Checker
+    path("assignments/", views.manage_assignments, name="manage_assignments"),
+    path("assignments/create/", views.create_assignment, name="create_assignment"),
+    path("assignments/<int:assignment_id>/plagiarism/", views.check_plagiarism, name="check_plagiarism"),
+    path("assignments/<int:assignment_id>/close/", views.close_assignment, name="close_assignment"),
 ]

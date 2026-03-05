@@ -25,4 +25,14 @@ urlpatterns = [
     path("view_marks/", views.view_marks, name="view_marks"),
     path("view_results/", views.view_results, name="view_results"),
     path("download_result/<int:semester>/", views.download_result, name="download_result"),
+    
+    # Attendance Risk Predictor
+    path("attendance_risk/", views.attendance_risk, name="attendance_risk"),
+    
+    # Timetable Conflict Optimizer
+    path("timetable_conflicts/", views.timetable_conflicts, name="timetable_conflicts"),
+    
+    # Assignment Submission (Plagiarism Checker - Student Side)
+    path("assignments/", views.submit_assignment, name="submit_assignment"),
+    path("assignments/<int:assignment_id>/submit/", views.submit_assignment_text, name="submit_assignment_text"),
 ]

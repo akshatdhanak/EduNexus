@@ -1,0 +1,210 @@
+{% extends "layout.html" %}
+{% block title %}Attendance Risk Predictor{% endblock %}
+{% block nav_title %}Attendance Risk Predictor{% endblock %}
+
+{% block style %}
+.risk-container { max-width: 1100px; margin: 0 auto; }
+.risk-header { margin-bottom: 32px; }
+.risk-header h1 { font-size: 28px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+.risk-header p { color: #666; font-size: 14px; }
+
+/* Overall Stats */
+.overall-card {
+    display: flex; gap: 24px; padding: 24px;
+    background: #fff; border-radius: 12px; margin-bottom: 32px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    align-items: center; flex-wrap: wrap;
+}
+.overall-stat { text-align: center; flex: 1; min-width: 120px; }
+.overall-stat .number { font-size: 36px; font-weight: 700; }
+.overall-stat .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* Risk Indicators */
+.risk-safe .number { color: #1e8e3e; }
+.risk-warning .number { color: #f9ab00; }
+.risk-critical .number { color: #d93025; }
+
+.risk-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+}
+.risk-badge.safe { background: #e6f4ea; color: #1e8e3e; }
+.risk-badge.warning { background: #fef7e0; color: #e37400; }
+.risk-badge.critical { background: #fce8e6; color: #d93025; }
+
+/* Subject Cards */
+.subject-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+.subject-card {
+    background: #fff; border-radius: 12px; padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 4px solid;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.subject-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+.subject-card.safe { border-left-color: #1e8e3e; }
+.subject-card.warning { border-left-color: #f9ab00; }
+.subject-card.critical { border-left-color: #d93025; }
+
+.subject-name { font-size: 16px; font-weight: 600; color: #202124; margin-bottom: 4px; }
+.subject-code { font-size: 12px; color: #5f6368; margin-bottom: 16px; }
+
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+.stat-row:last-child { border-bottom: none; }
+.stat-label { font-size: 13px; color: #5f6368; }
+.stat-value { font-size: 13px; font-weight: 600; color: #202124; }
+
+/* Progress Bar */
+.progress-bar-container { width: 100%; height: 8px; background: #e8eaed; border-radius: 4px; margin: 12px 0; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+.progress-fill.safe { background: #1e8e3e; }
+.progress-fill.warning { background: #f9ab00; }
+.progress-fill.critical { background: #d93025; }
+
+/* Prediction Box */
+.prediction-box {
+    margin-top: 12px; padding: 12px; border-radius: 8px; font-size: 13px;
+}
+.prediction-box.safe { background: #e6f4ea; color: #137333; }
+.prediction-box.warning { background: #fef7e0; color: #e37400; }
+.prediction-box.critical { background: #fce8e6; color: #c5221f; }
+
+/* Skip Selector */
+.skip-selector {
+    display: flex; align-items: center; gap: 12px;
+    background: #fff; padding: 16px 24px; border-radius: 12px;
+    margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.skip-selector label { font-size: 14px; font-weight: 500; color: #202124; }
+.skip-selector select {
+    padding: 8px 16px; border: 1px solid #dadce0; border-radius: 8px;
+    font-size: 14px; background: #fff; cursor: pointer;
+}
+.skip-selector .btn-apply {
+    padding: 8px 20px; background: #1a73e8; color: #fff; border: none;
+    border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;
+}
+.skip-selector .btn-apply:hover { background: #1765cc; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: #5f6368; }
+.empty-state .material-icons { font-size: 64px; color: #dadce0; margin-bottom: 16px; }
+{% endblock %}
+
+{% block container %}
+<div class="risk-container">
+    <div class="risk-header">
+        <h1>Attendance Risk Predictor</h1>
+        <p>{{ student.name }} · Semester {{ student.semester }} · Min required: {{ min_attendance }}%</p>
+    </div>
+
+    {% if risk_data %}
+    <!-- Overall Status -->
+    <div class="overall-card">
+        <div class="overall-stat risk-{{ overall_risk }}">
+            <div class="number">{{ overall_percentage }}%</div>
+            <div class="label">Overall Attendance</div>
+        </div>
+        <div class="overall-stat">
+            <div class="number" style="color: #1a73e8;">{{ overall_present }}</div>
+            <div class="label">Classes Attended</div>
+        </div>
+        <div class="overall-stat">
+            <div class="number" style="color: #5f6368;">{{ overall_total }}</div>
+            <div class="label">Total Classes</div>
+        </div>
+        <div class="overall-stat">
+            <span class="risk-badge {{ overall_risk }}">
+                {% if overall_risk == "safe" %}● Safe{% elif overall_risk == "warning" %}⚠ Warning{% else %}✖ Critical{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <!-- Skip Predictor -->
+    <form method="get" class="skip-selector">
+        <label>Predict if you skip the next</label>
+        <select name="skip">
+            {% for val in "1 2 3 5 7 10 15 20"|make_list %}{% endfor %}
+            <option value="1" {% if skip_next == 1 %}selected{% endif %}>1 class</option>
+            <option value="2" {% if skip_next == 2 %}selected{% endif %}>2 classes</option>
+            <option value="3" {% if skip_next == 3 %}selected{% endif %}>3 classes</option>
+            <option value="5" {% if skip_next == 5 %}selected{% endif %}>5 classes</option>
+            <option value="7" {% if skip_next == 7 %}selected{% endif %}>7 classes</option>
+            <option value="10" {% if skip_next == 10 %}selected{% endif %}>10 classes</option>
+            <option value="15" {% if skip_next == 15 %}selected{% endif %}>15 classes</option>
+            <option value="20" {% if skip_next == 20 %}selected{% endif %}>20 classes</option>
+        </select>
+        <button type="submit" class="btn-apply">Predict</button>
+    </form>
+
+    <!-- Subject Cards -->
+    <div class="subject-grid">
+        {% for item in risk_data %}
+        <div class="subject-card {{ item.risk_level }}">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <div class="subject-name">{{ item.subject }}</div>
+                    <div class="subject-code">{{ item.subject_code }}</div>
+                </div>
+                <span class="risk-badge {{ item.risk_level }}">
+                    {% if item.risk_level == "safe" %}● Safe{% elif item.risk_level == "warning" %}⚠ Warning{% else %}✖ Critical{% endif %}
+                </span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress-bar-container">
+                <div class="progress-fill {{ item.risk_level }}" style="width: {{ item.percentage }}%;"></div>
+            </div>
+
+            <div class="stat-row">
+                <span class="stat-label">Current Attendance</span>
+                <span class="stat-value" style="color: {% if item.risk_level == 'safe' %}#1e8e3e{% elif item.risk_level == 'warning' %}#e37400{% else %}#d93025{% endif %};">{{ item.percentage }}%</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Classes Attended / Total</span>
+                <span class="stat-value">{{ item.attended }} / {{ item.total_classes }}</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Classes Absent</span>
+                <span class="stat-value" style="color: #d93025;">{{ item.absent }}</span>
+            </div>
+
+            {% if item.type_breakdown|length > 1 %}
+            <div style="margin: 8px 0; padding: 8px 12px; background: #f8f9fa; border-radius: 8px;">
+                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #5f6368; margin-bottom: 6px; font-weight: 600;">Breakdown</div>
+                {% for tb in item.type_breakdown %}
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 3px 0; {% if not forloop.last %}border-bottom: 1px solid #e8eaed;{% endif %}">
+                    <span style="color: #5f6368;">{{ tb.type }}</span>
+                    <span style="font-weight: 600; color: #202124;">{{ tb.attended }}/{{ tb.total }} <span style="color: {% if tb.percentage >= 75 %}#1e8e3e{% elif tb.percentage >= 60 %}#e37400{% else %}#d93025{% endif %};">({{ tb.percentage }}%)</span></span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if item.risk_level == "critical" %}
+            <div class="stat-row">
+                <span class="stat-label">Classes Needed to Reach 75%</span>
+                <span class="stat-value" style="color: #d93025;">{{ item.required_to_recover }} more</span>
+            </div>
+            {% endif %}
+
+            <div class="stat-row">
+                <span class="stat-label">Can Still Skip</span>
+                <span class="stat-value">{{ item.can_skip }} class{{ item.can_skip|pluralize:"es" }}</span>
+            </div>
+
+            <!-- Prediction -->
+            <div class="prediction-box {{ item.future_risk }}">
+                <strong>Prediction:</strong> If you skip the next {{ skip_next }} class{{ skip_next|pluralize:"es" }}, your attendance will drop to <strong>{{ item.future_percentage }}%</strong>
+                {% if item.future_risk == "critical" %} — You will fall below the minimum requirement!{% elif item.future_risk == "warning" %} — Dangerously close to the limit.{% else %} — Still safe.{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <span class="material-icons">school</span>
+        <h3>No Attendance Data</h3>
+        <p>No attendance records found for your current semester subjects.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

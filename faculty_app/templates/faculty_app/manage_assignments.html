@@ -1,0 +1,116 @@
+{% extends "layout.html" %}
+{% block title %}Manage Assignments{% endblock %}
+{% block nav_title %}Manage Assignments{% endblock %}
+
+{% block style %}
+.assign-container { max-width: 1100px; margin: 0 auto; }
+.assign-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+.assign-header h1 { font-size: 28px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+.assign-header p { color: #666; font-size: 14px; }
+
+.btn-create {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 24px; background: #1a73e8; color: #fff;
+    border-radius: 8px; font-size: 14px; font-weight: 500;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-create:hover { background: #1765cc; color: #fff; }
+
+.assignment-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.assignment-table th { background: #f8f9fa; padding: 14px 16px; text-align: left; font-size: 13px; font-weight: 600; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px; }
+.assignment-table td { padding: 16px; border-top: 1px solid #f0f0f0; font-size: 14px; color: #202124; }
+.assignment-table tr:hover td { background: #f8f9fa; }
+
+.status-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
+}
+.status-badge.open { background: #e6f4ea; color: #1e8e3e; }
+.status-badge.closed { background: #e8eaed; color: #5f6368; }
+
+.action-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 500;
+    text-decoration: none; cursor: pointer; border: 1px solid; transition: all 0.2s;
+}
+.action-btn.check { background: #e8f0fe; color: #1a73e8; border-color: #d2e3fc; }
+.action-btn.check:hover { background: #d2e3fc; }
+.action-btn.close-btn { background: #fce8e6; color: #d93025; border-color: #f5c6cb; }
+.action-btn.close-btn:hover { background: #f5c6cb; }
+
+.submission-count { font-weight: 600; color: #1a73e8; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: #5f6368; }
+.empty-state .material-icons { font-size: 64px; color: #dadce0; margin-bottom: 16px; }
+{% endblock %}
+
+{% block container %}
+<div class="assign-container">
+    <div class="assign-header">
+        <div>
+            <h1>Assignments & Plagiarism Checker</h1>
+            <p>{{ faculty.name }} · Create assignments and check for plagiarism</p>
+        </div>
+        <a href="{% url 'faculty_app:create_assignment' %}" class="btn-create">
+            <span class="material-icons" style="font-size: 18px;">add</span>
+            Create Assignment
+        </a>
+    </div>
+
+    {% if assignments %}
+    <table class="assignment-table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Subject</th>
+                <th>Due Date</th>
+                <th>Submissions</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in assignments %}
+            <tr>
+                <td><strong>{{ a.title }}</strong></td>
+                <td>{{ a.subject.name }} ({{ a.subject.code }})</td>
+                <td>{{ a.due_date|date:"d M Y, H:i" }}</td>
+                <td><span class="submission-count">{{ a.submissions.count }}</span></td>
+                <td>
+                    <span class="status-badge {{ a.status }}">
+                        {% if a.status == "open" %}● Open{% else %}● Closed{% endif %}
+                    </span>
+                </td>
+                <td>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        {% if a.submissions.count >= 2 %}
+                        <a href="{% url 'faculty_app:check_plagiarism' a.id %}" class="action-btn check">
+                            🔍 Check Plagiarism
+                        </a>
+                        {% endif %}
+                        {% if a.status == "open" %}
+                        <a href="{% url 'faculty_app:close_assignment' a.id %}" class="action-btn close-btn"
+                           onclick="return confirm('Close this assignment? Students will not be able to submit.');">
+                            ✕ Close
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <span class="material-icons">assignment</span>
+        <h3>No Assignments Yet</h3>
+        <p>Create your first assignment to get started with plagiarism checking.</p>
+        <a href="{% url 'faculty_app:create_assignment' %}" class="btn-create" style="margin-top: 16px;">
+            <span class="material-icons" style="font-size: 18px;">add</span>
+            Create Assignment
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -2,142 +2,152 @@
 {% block title %}Faculty Dashboard{% endblock %}
 {% block nav_title %}Faculty Dashboard{% endblock %}
 {% block container %}
-<div class="dashboard-container">
-  <div class="dashboard-header">
-    <div>
-      <h1>Dashboard</h1>
-      <p class="subtitle">{{ faculty.name }} · {{ user.email }}</p>
-    </div>
-    <a href="{% url 'registration:logout' %}" class="logout-btn">Logout</a>
-  </div>
-
-  <!-- Faculty Functions -->
-  <div class="functions-section">
-    <h2>Functions</h2>
-    <div class="functions-grid">
-      <a href="{% url 'faculty_app:profile' %}" class="function-card">
-        <div class="function-title">Profile</div>
-        <div class="function-desc">View and edit your profile</div>
-        <div class="function-arrow">→</div>
-      </a>
-
-      <a
-        href="{% url 'faculty_app:mark_student_attendance' %}"
-        class="function-card"
-      >
-        <div class="function-title">Mark Attendance</div>
-        <div class="function-desc">Record student attendance</div>
-        <div class="function-arrow">→</div>
-      </a>
-
-      <a
-        href="{% url 'faculty_app:show_student_attendance' %}"
-        class="function-card"
-      >
-        <div class="function-title">Edit Attendance</div>
-        <div class="function-desc">Modify attendance records</div>
-        <div class="function-arrow">→</div>
-      </a>
-
-      <a href="{% url 'faculty_app:view_attendance' %}" class="function-card">
-        <div class="function-title">View Attendance</div>
-        <div class="function-desc">Review your attendance</div>
-        <div class="function-arrow">→</div>
-      </a>
-
-      <a href="{% url 'faculty_app:generate_report' %}" class="function-card">
-        <div class="function-title">Generate Report</div>
-        <div class="function-desc">Download attendance report</div>
-        <div class="function-arrow">→</div>
-      </a>
-
-      <a href="{% url 'faculty_app:show_notification' %}" class="function-card">
-        <div class="function-title">
-          Notifications {% if new_notifications > 0 %}<span class="badge"
-            >{{ new_notifications }}</span
-          >{% endif %}
+<div class="sd">
+    <header class="sd-header">
+        <div>
+            <h1>Welcome back, {{ faculty.name|default:"Faculty" }}</h1>
+            <p>{{ faculty.department.name|default:"" }} · {{ user.email }}</p>
         </div>
-        <div class="function-desc">View messages from admin</div>
-        <div class="function-arrow">→</div>
-      </a>
+    </header>
 
-      <a href="{% url 'faculty_app:request_leave' %}" class="function-card">
-        <div class="function-title">Request Leave</div>
-        <div class="function-desc">Submit leave request</div>
-        <div class="function-arrow">→</div>
-      </a>
-
-      <a href="{% url 'faculty_app:view_leave' %}" class="function-card">
-        <div class="function-title">
-          Leave Status {% if new_leave_updates > 0 %}<span class="badge"
-            >{{ new_leave_updates }}</span
-          >{% endif %}
+    <!-- Teaching -->
+    <section class="sd-section">
+        <div class="sd-section-head">
+            <h2>Teaching</h2>
+            <span class="sd-section-line"></span>
         </div>
-        <div class="function-desc">Check request approvals</div>
-        <div class="function-arrow">→</div>
-      </a>
-
-      <a
-        href="{% url 'faculty_app:enter_marks' %}"
-        class="function-card"
-        style="
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-        "
-      >
-        <div class="function-title" style="color: white">📝 Enter Marks</div>
-        <div class="function-desc" style="color: rgba(255, 255, 255, 0.9)">
-          Enter exam marks for students
+        <div class="sd-list">
+            <a href="{% url 'faculty_app:mark_student_attendance' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">how_to_reg</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Mark Attendance</div>
+                    <div class="sd-row-sub">Record student attendance for your lectures</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'faculty_app:show_student_attendance' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">edit_note</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Edit Attendance</div>
+                    <div class="sd-row-sub">Modify previously recorded attendance</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'faculty_app:enter_marks' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">grading</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Enter Marks</div>
+                    <div class="sd-row-sub">Enter exam marks for students</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'faculty_app:generate_report' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">download</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Generate Report</div>
+                    <div class="sd-row-sub">Download attendance report as PDF</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
         </div>
-        <div class="function-arrow" style="color: white">→</div>
-      </a>
+    </section>
 
-      <a
-        href="{% url 'admin_app:database_chat' %}"
-        class="function-card"
-        style="
-          background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-          color: #1a1a1a;
-        "
-      >
-        <div class="function-title">🤖 Database Assistant</div>
-        <div class="function-desc">
-          Chat with the database — explore schemas, stats & records
+    <!-- Tools -->
+    <section class="sd-section">
+        <div class="sd-section-head">
+            <h2>Tools</h2>
+            <span class="sd-section-line"></span>
         </div>
-        <div class="function-arrow">→</div>
-      </a>
-    </div>
-  </div>
+        <div class="sd-list">
+            <a href="{% url 'faculty_app:manage_assignments' %}" class="sd-row">
+                <div class="sd-row-icon sd-icon-rose"><span class="material-icons">plagiarism</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Plagiarism Checker</div>
+                    <div class="sd-row-sub">Create assignments and detect copied submissions</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+
+        </div>
+    </section>
+
+    <!-- Account -->
+    <section class="sd-section">
+        <div class="sd-section-head">
+            <h2>Account</h2>
+            <span class="sd-section-line"></span>
+        </div>
+        <div class="sd-list">
+            <a href="{% url 'faculty_app:profile' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">person_outline</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Profile</div>
+                    <div class="sd-row-sub">View and edit your profile</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'faculty_app:view_attendance' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">fact_check</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">My Attendance</div>
+                    <div class="sd-row-sub">Review your own attendance records</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'faculty_app:show_notification' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">notifications_none</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Notifications{% if new_notifications > 0 %}<span class="sd-badge">{{ new_notifications }}</span>{% endif %}</div>
+                    <div class="sd-row-sub">Messages from administration</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'faculty_app:request_leave' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">event_busy</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Request Leave</div>
+                    <div class="sd-row-sub">Submit a leave application</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'faculty_app:view_leave' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">pending_actions</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Leave Status{% if new_leave_updates > 0 %}<span class="sd-badge">{{ new_leave_updates }}</span>{% endif %}</div>
+                    <div class="sd-row-sub">Track request approvals</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+        </div>
+    </section>
 </div>
 {% endblock %}
+
 {% block style %}
-* { font-family: -apple-system,
-BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
-sans-serif; } .dashboard-container { max-width: 1000px; margin: 0 auto; padding:
-0 20px; } .dashboard-header { display: flex; justify-content: space-between;
-align-items: flex-start; margin-bottom: 48px; padding-top: 20px; }
-.dashboard-header h1 { font-size: 36px; font-weight: 600; color: #1a1a1a;
-margin: 0 0 4px 0; letter-spacing: -0.5px; } .subtitle { font-size: 14px; color:
-#666; margin: 0; } .logout-btn { padding: 8px 16px; background: #f0f0f0; color:
-#1a1a1a; border: none; border-radius: 6px; text-decoration: none; font-size:
-14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-.logout-btn:hover { background: #e0e0e0; } /* Functions Section */
-.functions-section h2 { font-size: 18px; font-weight: 600; color: #1a1a1a;
-margin: 0 0 24px 0; } .functions-grid { display: grid; grid-template-columns:
-repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 40px; }
-.function-card { display: block; background: #ffffff; border: 1px solid #e5e5e5;
-border-radius: 8px; padding: 24px; text-decoration: none; transition: all 0.2s
-cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
-.function-card::before { content: ''; position: absolute; left: 0; top: 0;
-height: 2px; width: 0; background: #1a1a1a; transition: width 0.3s; }
-.function-card:hover { border-color: #d0d0d0; background: #f9f9f9; box-shadow: 0
-2px 8px rgba(0, 0, 0, 0.08); } .function-card:hover::before { width: 100%; }
-.function-title { font-size: 15px; font-weight: 600; color: #1a1a1a;
-margin-bottom: 8px; display: flex; justify-content: space-between; align-items:
-center; } .badge { display: inline-flex; align-items: center; justify-content:
-center; width: 24px; height: 24px; background: #dc2626; color: white;
-border-radius: 50%; font-size: 11px; font-weight: 700; flex-shrink: 0; }
-.function-desc { font-size: 13px; color: #666; line-height: 1.4; }
-.function-arrow { font-size: 20px; color: #999; transition: all 0.2s; }
-.function-card:hover .function-arrow { color: #1a1a1a; transform:
-translateX(4px); } {% endblock %}
+.sd { max-width: 720px; margin: 0 auto; padding: 32px 20px 80px; }
+.sd-header { margin-bottom: 40px; }
+.sd-header h1 { font-size: 22px; font-weight: 600; color: #111; margin: 0 0 2px; letter-spacing: -0.3px; }
+.sd-header p { font-size: 13px; color: #888; margin: 0; font-weight: 400; }
+.sd-section { margin-bottom: 32px; }
+.sd-section-head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+.sd-section-head h2 { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: #999; margin: 0; white-space: nowrap; }
+.sd-section-line { flex: 1; height: 1px; background: #eee; }
+.sd-list { border: 1px solid #e8e8e8; border-radius: 10px; background: #fff; overflow: hidden; }
+.sd-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; text-decoration: none; color: inherit; transition: background 0.15s; border-bottom: 1px solid #f2f2f2; }
+.sd-row:last-child { border-bottom: none; }
+.sd-row:hover { background: #fafafa; }
+.sd-row:active { background: #f4f4f4; }
+.sd-row-icon { width: 36px; height: 36px; border-radius: 8px; background: #f3f3f3; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sd-row-icon .material-icons { font-size: 18px; color: #555; }
+.sd-icon-rose { background: #fff1f2; }
+.sd-icon-rose .material-icons { color: #e11d48; }
+.sd-icon-violet { background: #f5f3ff; }
+.sd-icon-violet .material-icons { color: #8b5cf6; }
+.sd-row-body { flex: 1; min-width: 0; }
+.sd-row-title { font-size: 14px; font-weight: 500; color: #1a1a1a; line-height: 1.3; display: flex; align-items: center; gap: 8px; }
+.sd-row-sub { font-size: 12px; color: #999; margin-top: 1px; }
+.sd-row-arrow { font-size: 18px; color: #ccc; flex-shrink: 0; transition: color 0.15s, transform 0.15s; }
+.sd-row:hover .sd-row-arrow { color: #888; transform: translateX(2px); }
+.sd-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; background: #ef4444; color: #fff; border-radius: 9px; font-size: 10px; font-weight: 600; line-height: 1; }
+@media (max-width: 600px) { .sd { padding: 20px 16px 60px; } .sd-header h1 { font-size: 19px; } .sd-row { padding: 12px 14px; gap: 12px; } .sd-row-icon { width: 32px; height: 32px; } .sd-row-icon .material-icons { font-size: 16px; } }
+{% endblock %}

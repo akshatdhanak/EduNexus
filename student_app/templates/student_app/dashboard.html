@@ -4,238 +4,343 @@
 {% block nav_title %}Student Dashboard{% endblock %}
 
 {% block container %}
+<div class="sd">
+    <!-- Header -->
+    <header class="sd-header">
+        <div class="sd-header-left">
+            <h1>Welcome back, {{ student.name|default:"Student" }}</h1>
+            <p>Semester {{ student.semester }} · {{ student.degree_program.name|default:"" }} · {{ user.email }}</p>
+        </div>
+    </header>
 
-<div class="dashboard-container">
-    <div class="dashboard-header">
-        <div>
-            <h1>Dashboard</h1>
-            <p class="subtitle">{{ student.name }} · {{ user.email }}</p>
-        </div>
-    </div>
-    
     {% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+    <div class="sd-alerts">
+        {% for message in messages %}
+        <div class="sd-alert sd-alert-{{ message.tags }}">
             {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <button onclick="this.parentElement.remove()" class="sd-alert-close">&times;</button>
         </div>
-    {% endfor %}
+        {% endfor %}
+    </div>
     {% endif %}
 
-    <!-- Student Functions -->
-    <div class="functions-section">
-        <h2>Functions</h2>
-        <div class="functions-grid">
-            <a href="{% url "student_app:profile" %}" class="function-card">
-                <div class="function-title">Profile</div>
-                <div class="function-desc">View your profile information</div>
-                <div class="function-arrow">→</div>
-            </a>
-
-            <a href="{% url "student_app:daily_attendance" %}" class="function-card">
-                <div class="function-title">Daily Attendance</div>
-                <div class="function-desc">View overall attendance records</div>
-                <div class="function-arrow">→</div>
-            </a>
-
-            <a href="{% url "student_app:attendance_summary" %}" class="function-card">
-                <div class="function-title">Attendance Summary</div>
-                <div class="function-desc">Semester-wise attendance analysis</div>
-                <div class="function-arrow">→</div>
-            </a>
-
-            <a href="{% url "student_app:subject_wise_attendance" %}" class="function-card">
-                <div class="function-title">Subject Attendance</div>
-                <div class="function-desc">Check attendance for each subject</div>
-                <div class="function-arrow">→</div>
-            </a>
-
-            <a href="{% url "student_app:fee_dashboard" %}" class="function-card">
-                <div class="function-title">Fee Dashboard</div>
-                <div class="function-desc">View fee details and receipts</div>
-                <div class="function-arrow">→</div>
-            </a>
-
-            <a href="{% url "student_app:view_timetable" %}" class="function-card">
-                <div class="function-title">Timetable</div>
-                <div class="function-desc">View semester-wise timetable</div>
-                <div class="function-arrow">→</div>
-            </a>
-
-            <a href="{% url "student_app:generate_report" %}" class="function-card">
-                <div class="function-title">Generate Report</div>
-                <div class="function-desc">Download attendance report</div>
-                <div class="function-arrow">→</div>
-            </a>
-
-            <a href="{% url "student_app:show_notification" %}" class="function-card">
-                <div class="function-title">
-                    Notifications
-                    {% if new_notifications > 0 %}<span class="badge">{{ new_notifications }}</span>{% endif %}
+    <!-- Academics -->
+    <section class="sd-section">
+        <div class="sd-section-head">
+            <h2>Academics</h2>
+            <span class="sd-section-line"></span>
+        </div>
+        <div class="sd-list">
+            <a href="{% url 'student_app:daily_attendance' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">fact_check</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Daily Attendance</div>
+                    <div class="sd-row-sub">View day-by-day attendance records</div>
                 </div>
-                <div class="function-desc">View messages from admin</div>
-                <div class="function-arrow">→</div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
             </a>
-
-            <a href="{% url "student_app:request_leave" %}" class="function-card">
-                <div class="function-title">Request Leave</div>
-                <div class="function-desc">Submit leave request</div>
-                <div class="function-arrow">→</div>
-            </a>
-
-            <a href="{% url "student_app:view_leave" %}" class="function-card">
-                <div class="function-title">
-                    Leave Status
-                    {% if new_leave_updates > 0 %}<span class="badge">{{ new_leave_updates }}</span>{% endif %}
+            <a href="{% url 'student_app:subject_wise_attendance' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">menu_book</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Subject Attendance</div>
+                    <div class="sd-row-sub">Per-subject attendance breakdown</div>
                 </div>
-                <div class="function-desc">Check request approvals</div>
-                <div class="function-arrow">→</div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
             </a>
-
-            <a href="{% url "student_app:view_marks" %}" class="function-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                <div class="function-title" style="color: white;">📊 View Marks</div>
-                <div class="function-desc" style="color: rgba(255,255,255,0.9);">Check your exam marks</div>
-                <div class="function-arrow" style="color: white;">→</div>
+            <a href="{% url 'student_app:attendance_summary' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">insert_chart_outlined</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Attendance Summary</div>
+                    <div class="sd-row-sub">Semester-wise attendance analysis</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
             </a>
-
-            <a href="{% url "student_app:view_results" %}" class="function-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
-                <div class="function-title" style="color: white;">🎓 View Results</div>
-                <div class="function-desc" style="color: rgba(255,255,255,0.9);">View grades and download result PDF</div>
-                <div class="function-arrow" style="color: white;">→</div>
+            <a href="{% url 'student_app:view_timetable' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">calendar_today</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Timetable</div>
+                    <div class="sd-row-sub">View your class schedule</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
             </a>
-
-            <a href="{% url 'admin_app:database_chat' %}" class="function-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                <div class="function-title" style="color: white;">🧠 AI Assistant</div>
-                <div class="function-desc" style="color: rgba(255,255,255,0.9);">Ask questions about your data in plain English</div>
-                <div class="function-arrow" style="color: white;">→</div>
+            <a href="{% url 'student_app:view_marks' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">grading</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Exam Marks</div>
+                    <div class="sd-row-sub">View internal and external marks</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'student_app:view_results' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">workspace_premium</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Results</div>
+                    <div class="sd-row-sub">View grades and download result PDF</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'student_app:submit_assignment' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">assignment</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Assignments</div>
+                    <div class="sd-row-sub">Submit assignments for review</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
             </a>
         </div>
-    </div>
-</div>
+    </section>
 
+    <!-- Tools & Insights -->
+    <section class="sd-section">
+        <div class="sd-section-head">
+            <h2>Tools & Insights</h2>
+            <span class="sd-section-line"></span>
+        </div>
+        <div class="sd-list">
+            <a href="{% url 'student_app:attendance_risk' %}" class="sd-row">
+                <div class="sd-row-icon sd-icon-amber"><span class="material-icons">trending_down</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Attendance Risk Predictor</div>
+                    <div class="sd-row-sub">Predict if you'll fall below 75% and plan skips</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'student_app:timetable_conflicts' %}" class="sd-row">
+                <div class="sd-row-icon sd-icon-blue"><span class="material-icons">compare_arrows</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Timetable Conflict Optimizer</div>
+                    <div class="sd-row-sub">Detect scheduling overlaps and gap analysis</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'student_app:generate_report' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">download</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Generate Report</div>
+                    <div class="sd-row-sub">Download attendance report as PDF</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+
+        </div>
+    </section>
+
+    <!-- Account -->
+    <section class="sd-section">
+        <div class="sd-section-head">
+            <h2>Account</h2>
+            <span class="sd-section-line"></span>
+        </div>
+        <div class="sd-list">
+            <a href="{% url 'student_app:profile' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">person_outline</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Profile</div>
+                    <div class="sd-row-sub">View and manage your profile</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'student_app:show_notification' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">notifications_none</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Notifications{% if new_notifications > 0 %}<span class="sd-badge">{{ new_notifications }}</span>{% endif %}</div>
+                    <div class="sd-row-sub">Messages from administration</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'student_app:fee_dashboard' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">account_balance_wallet</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Fee Dashboard</div>
+                    <div class="sd-row-sub">View fee details and payment receipts</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'student_app:request_leave' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">event_busy</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Request Leave</div>
+                    <div class="sd-row-sub">Submit a leave application</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+            <a href="{% url 'student_app:view_leave' %}" class="sd-row">
+                <div class="sd-row-icon"><span class="material-icons">pending_actions</span></div>
+                <div class="sd-row-body">
+                    <div class="sd-row-title">Leave Status{% if new_leave_updates > 0 %}<span class="sd-badge">{{ new_leave_updates }}</span>{% endif %}</div>
+                    <div class="sd-row-sub">Track request approvals</div>
+                </div>
+                <span class="material-icons sd-row-arrow">chevron_right</span>
+            </a>
+        </div>
+    </section>
+</div>
 {% endblock %}
 
-
 {% block style %}
-* {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-}
-
-.dashboard-container {
-    max-width: 1000px;
+/* ── Student Dashboard ─────────────────────────────────────── */
+.sd {
+    max-width: 720px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 32px 20px 80px;
 }
 
-.dashboard-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 48px;
-    padding-top: 20px;
-}
-
-.dashboard-header h1 {
-    font-size: 36px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0 0 4px 0;
-    letter-spacing: -0.5px;
-}
-
-.subtitle {
-    font-size: 14px;
-    color: #666;
-    margin: 0;
-}
-
-/* Functions Section */
-.functions-section h2 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin: 0 0 24px 0;
-}
-
-.functions-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
+/* Header */
+.sd-header {
     margin-bottom: 40px;
 }
-
-.function-card {
-    display: block;
-    background: #ffffff;
-    border: 1px solid #e5e5e5;
-    border-radius: 8px;
-    padding: 24px;
-    text-decoration: none;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.function-card::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 2px;
-    width: 0;
-    background: #1a1a1a;
-    transition: width 0.3s;
-}
-
-.function-card:hover {
-    border-color: #d0d0d0;
-    background: #f9f9f9;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.function-card:hover::before {
-    width: 100%;
-}
-
-.function-title {
-    font-size: 15px;
+.sd-header h1 {
+    font-size: 22px;
     font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 8px;
+    color: #111;
+    margin: 0 0 2px;
+    letter-spacing: -0.3px;
+}
+.sd-header p {
+    font-size: 13px;
+    color: #888;
+    margin: 0;
+    font-weight: 400;
+}
+
+/* Alerts */
+.sd-alerts { margin-bottom: 24px; }
+.sd-alert {
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    background: #f0f4ff;
+    color: #1a3a6b;
+    border: 1px solid #d5dff5;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 8px;
+}
+.sd-alert-error { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+.sd-alert-success { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+.sd-alert-close { background: none; border: none; font-size: 18px; cursor: pointer; color: inherit; opacity: 0.5; padding: 0 0 0 12px; }
+.sd-alert-close:hover { opacity: 1; }
+
+/* Sections */
+.sd-section {
+    margin-bottom: 32px;
+}
+.sd-section-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+.sd-section-head h2 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #999;
+    margin: 0;
+    white-space: nowrap;
+}
+.sd-section-line {
+    flex: 1;
+    height: 1px;
+    background: #eee;
 }
 
-.badge {
+/* List Rows */
+.sd-list {
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    background: #fff;
+    overflow: hidden;
+}
+.sd-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s;
+    border-bottom: 1px solid #f2f2f2;
+}
+.sd-row:last-child { border-bottom: none; }
+.sd-row:hover { background: #fafafa; }
+.sd-row:active { background: #f4f4f4; }
+
+/* Row Icon */
+.sd-row-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #f3f3f3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.sd-row-icon .material-icons {
+    font-size: 18px;
+    color: #555;
+}
+.sd-icon-amber { background: #fff8e1; }
+.sd-icon-amber .material-icons { color: #f59e0b; }
+.sd-icon-blue { background: #eff6ff; }
+.sd-icon-blue .material-icons { color: #3b82f6; }
+.sd-icon-violet { background: #f5f3ff; }
+.sd-icon-violet .material-icons { color: #8b5cf6; }
+
+/* Row Body */
+.sd-row-body { flex: 1; min-width: 0; }
+.sd-row-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1a1a1a;
+    line-height: 1.3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.sd-row-sub {
+    font-size: 12px;
+    color: #999;
+    margin-top: 1px;
+}
+
+/* Arrow */
+.sd-row-arrow {
+    font-size: 18px;
+    color: #ccc;
+    flex-shrink: 0;
+    transition: color 0.15s, transform 0.15s;
+}
+.sd-row:hover .sd-row-arrow {
+    color: #888;
+    transform: translateX(2px);
+}
+
+/* Badge */
+.sd-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
-    background: #dc2626;
-    color: white;
-    border-radius: 50%;
-    font-size: 11px;
-    font-weight: 700;
-    flex-shrink: 0;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: #ef4444;
+    color: #fff;
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
 }
 
-.function-desc {
-    font-size: 13px;
-    color: #666;
-    line-height: 1.4;
+/* Mobile */
+@media (max-width: 600px) {
+    .sd { padding: 20px 16px 60px; }
+    .sd-header h1 { font-size: 19px; }
+    .sd-row { padding: 12px 14px; gap: 12px; }
+    .sd-row-icon { width: 32px; height: 32px; }
+    .sd-row-icon .material-icons { font-size: 16px; }
 }
-
-.function-arrow {
-    font-size: 20px;
-    color: #999;
-    transition: all 0.2s;
-}
-
-.function-card:hover .function-arrow {
-    color: #1a1a1a;
-    transform: translateX(4px);
-}
-
 {% endblock %}

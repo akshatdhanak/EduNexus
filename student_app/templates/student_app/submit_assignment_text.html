@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+{% block title %}Submit Assignment{% endblock %}
+{% block nav_title %}Submit Assignment{% endblock %}
+
+{% block style %}
+.submit-container { max-width: 800px; margin: 0 auto; }
+.submit-header { margin-bottom: 32px; }
+.submit-header h1 { font-size: 28px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+.submit-header p { color: #666; font-size: 14px; }
+
+.assignment-info {
+    background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 24px;
+    border: 1px solid #e8eaed;
+}
+.assignment-info .title { font-size: 18px; font-weight: 600; color: #202124; margin-bottom: 8px; }
+.assignment-info .meta { font-size: 13px; color: #5f6368; line-height: 1.8; }
+
+.submit-form textarea {
+    width: 100%; min-height: 300px; padding: 16px; border: 1px solid #dadce0;
+    border-radius: 8px; font-size: 14px; font-family: inherit; line-height: 1.6;
+    resize: vertical; transition: border-color 0.2s;
+}
+.submit-form textarea:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.2); }
+
+.char-count { font-size: 12px; color: #5f6368; text-align: right; margin-top: 4px; }
+
+.submit-actions { display: flex; gap: 12px; margin-top: 20px; }
+.btn-submit {
+    padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 500;
+    cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-submit.primary { background: #1a73e8; color: #fff; }
+.btn-submit.primary:hover { background: #1765cc; }
+.btn-submit.secondary { background: #f0f0f0; color: #202124; }
+.btn-submit.secondary:hover { background: #e0e0e0; }
+{% endblock %}
+
+{% block container %}
+<div class="submit-container">
+    <div class="submit-header">
+        <h1>Submit Assignment</h1>
+        <p>{{ student.name }} · Paste your assignment text below</p>
+    </div>
+
+    <div class="assignment-info">
+        <div class="title">{{ assignment.title }}</div>
+        {% if assignment.description %}
+        <div style="font-size: 14px; color: #5f6368; margin-bottom: 8px;">{{ assignment.description }}</div>
+        {% endif %}
+        <div class="meta">
+            📚 {{ assignment.subject_offering.subject.name }}<br>
+            📅 Due: {{ assignment.due_date|date:"d M Y, H:i" }}<br>
+            📊 Max Marks: {{ assignment.max_marks }}
+        </div>
+    </div>
+
+    <form method="post" class="submit-form">
+        {% csrf_token %}
+        <label style="font-size: 14px; font-weight: 500; color: #202124; display: block; margin-bottom: 8px;">
+            Assignment Content
+        </label>
+        <textarea name="content" placeholder="Paste or type your assignment text here..." required>{{ existing_content }}</textarea>
+        <div class="char-count" id="charCount">0 characters</div>
+
+        <div class="submit-actions">
+            <button type="submit" class="btn-submit primary">
+                <span class="material-icons" style="font-size: 18px;">send</span>
+                {% if existing_content %}Update Submission{% else %}Submit Assignment{% endif %}
+            </button>
+            <a href="{% url 'student_app:submit_assignment' %}" class="btn-submit secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const textarea = document.querySelector('textarea[name="content"]');
+    const charCount = document.getElementById('charCount');
+    function updateCount() {
+        const len = textarea.value.length;
+        const words = textarea.value.trim() ? textarea.value.trim().split(/\s+/).length : 0;
+        charCount.textContent = len + ' characters · ' + words + ' words';
+    }
+    textarea.addEventListener('input', updateCount);
+    updateCount();
+</script>
+{% endblock %}

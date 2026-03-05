@@ -1,0 +1,222 @@
+{% extends "layout.html" %}
+{% block title %}Plagiarism Check Results{% endblock %}
+{% block nav_title %}Plagiarism Results{% endblock %}
+
+{% block style %}
+.plag-container { max-width: 1200px; margin: 0 auto; }
+.plag-header { margin-bottom: 32px; }
+.plag-header h1 { font-size: 28px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+.plag-header p { color: #666; font-size: 14px; }
+
+/* Summary Cards */
+.plag-summary { display: flex; gap: 20px; margin-bottom: 32px; flex-wrap: wrap; }
+.plag-stat {
+    flex: 1; min-width: 180px; background: #fff; border-radius: 12px; padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: center;
+}
+.plag-stat .number { font-size: 40px; font-weight: 700; margin-bottom: 4px; }
+.plag-stat .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+.plag-stat.submissions .number { color: #1a73e8; }
+.plag-stat.flagged .number { color: #d93025; }
+.plag-stat.clean .number { color: #1e8e3e; }
+.plag-stat.threshold .number { color: #f9ab00; font-size: 28px; }
+
+/* Results Table */
+.results-section { margin-top: 32px; }
+.results-section h2 { font-size: 20px; font-weight: 600; color: #202124; margin-bottom: 20px; }
+
+.pair-card {
+    background: #fff; border-radius: 12px; padding: 20px 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 16px;
+    border-left: 4px solid; transition: transform 0.2s;
+}
+.pair-card:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+.pair-card.flagged { border-left-color: #d93025; }
+.pair-card.clean { border-left-color: #1e8e3e; }
+
+.pair-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+.pair-students { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.student-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; background: #f8f9fa; border-radius: 20px;
+    font-size: 13px; font-weight: 500; color: #202124;
+}
+.student-chip .roll { font-size: 11px; color: #5f6368; }
+.vs-label { font-size: 13px; font-weight: 700; color: #5f6368; }
+
+/* Similarity Bar */
+.sim-bar-container { display: flex; align-items: center; gap: 12px; }
+.sim-bar { width: 200px; height: 10px; background: #e8eaed; border-radius: 5px; overflow: hidden; }
+.sim-fill { height: 100%; border-radius: 5px; transition: width 0.5s ease; }
+.sim-fill.high { background: #d93025; }
+.sim-fill.medium { background: #f9ab00; }
+.sim-fill.low { background: #1e8e3e; }
+.sim-value {
+    font-size: 18px; font-weight: 700; min-width: 60px;
+}
+.sim-value.high { color: #d93025; }
+.sim-value.medium { color: #f9ab00; }
+.sim-value.low { color: #1e8e3e; }
+
+.flag-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;
+}
+.flag-badge.flagged { background: #fce8e6; color: #d93025; }
+.flag-badge.clean { background: #e6f4ea; color: #1e8e3e; }
+
+/* Common Phrases */
+.common-phrases { margin-top: 12px; }
+.common-phrases h4 { font-size: 13px; font-weight: 600; color: #5f6368; margin-bottom: 8px; }
+.phrase-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.phrase-tag {
+    display: inline-block; padding: 4px 10px; background: #fef7e0;
+    border-radius: 4px; font-size: 12px; color: #e37400;
+    font-family: 'Courier New', monospace;
+}
+
+/* Individual Submissions Table */
+.sub-section { margin-top: 40px; }
+.sub-section h2 { font-size: 20px; font-weight: 600; color: #202124; margin-bottom: 20px; }
+.sub-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.sub-table th { background: #f8f9fa; padding: 14px 16px; text-align: left; font-size: 13px; font-weight: 600; color: #5f6368; }
+.sub-table td { padding: 14px 16px; border-top: 1px solid #f0f0f0; font-size: 14px; }
+.sub-table tr:hover td { background: #f8f9fa; }
+
+.score-cell { font-weight: 600; }
+.score-cell.high { color: #d93025; }
+.score-cell.medium { color: #f9ab00; }
+.score-cell.low { color: #1e8e3e; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: #5f6368; }
+.empty-state .material-icons { font-size: 64px; color: #dadce0; margin-bottom: 16px; }
+{% endblock %}
+
+{% block container %}
+<div class="plag-container">
+    <div class="plag-header">
+        <h1>🔍 Plagiarism Check Results</h1>
+        <p><strong>{{ assignment.title }}</strong> · {{ assignment.subject.name }} ({{ assignment.subject.code }})</p>
+    </div>
+
+    <!-- Summary -->
+    <div class="plag-summary">
+        <div class="plag-stat submissions">
+            <div class="number">{{ total_submissions }}</div>
+            <div class="label">Total Submissions</div>
+        </div>
+        <div class="plag-stat flagged">
+            <div class="number">{{ flagged_count }}</div>
+            <div class="label">Flagged</div>
+        </div>
+        <div class="plag-stat clean">
+            <div class="number">{{ total_submissions|add:"-"|add:flagged_count }}</div>
+            <div class="label">Clean</div>
+        </div>
+        <div class="plag-stat threshold">
+            <div class="number">{{ threshold }}%</div>
+            <div class="label">Similarity Threshold</div>
+        </div>
+    </div>
+
+    {% if results %}
+    <!-- Pairwise Comparison Results -->
+    <div class="results-section">
+        <h2>Pairwise Comparison</h2>
+        {% for r in results %}
+        <div class="pair-card {% if r.is_flagged %}flagged{% else %}clean{% endif %}">
+            <div class="pair-header">
+                <div class="pair-students">
+                    <span class="student-chip">
+                        👤 {{ r.student_a }} <span class="roll">({{ r.roll_a }})</span>
+                    </span>
+                    <span class="vs-label">VS</span>
+                    <span class="student-chip">
+                        👤 {{ r.student_b }} <span class="roll">({{ r.roll_b }})</span>
+                    </span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="sim-bar-container">
+                        <div class="sim-bar">
+                            <div class="sim-fill {% if r.similarity >= 70 %}high{% elif r.similarity >= 40 %}medium{% else %}low{% endif %}" 
+                                 style="width: {{ r.similarity }}%;"></div>
+                        </div>
+                        <span class="sim-value {% if r.similarity >= 70 %}high{% elif r.similarity >= 40 %}medium{% else %}low{% endif %}">
+                            {{ r.similarity }}%
+                        </span>
+                    </div>
+                    {% if r.is_flagged %}
+                    <span class="flag-badge flagged">⚠ Plagiarism Detected</span>
+                    {% else %}
+                    <span class="flag-badge clean">✓ Clean</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if r.common_phrases %}
+            <div class="common-phrases">
+                <h4>Common Phrases Found:</h4>
+                <div class="phrase-list">
+                    {% for phrase in r.common_phrases %}
+                    <span class="phrase-tag">"{{ phrase }}"</span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="material-icons">find_in_page</span>
+        <h3>Not Enough Submissions</h3>
+        <p>Need at least 2 submissions to run plagiarism comparison.</p>
+    </div>
+    {% endif %}
+
+    {% if submissions %}
+    <!-- Individual Submission Scores -->
+    <div class="sub-section">
+        <h2>Individual Submission Scores</h2>
+        <table class="sub-table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Roll Number</th>
+                    <th>Submitted At</th>
+                    <th>Max Similarity</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in submissions %}
+                <tr>
+                    <td><strong>{{ sub.student.name }}</strong></td>
+                    <td>{{ sub.student.roll_number }}</td>
+                    <td>{{ sub.submitted_at|date:"d M Y, H:i" }}</td>
+                    <td>
+                        <span class="score-cell {% if sub.plagiarism_score >= 70 %}high{% elif sub.plagiarism_score >= 40 %}medium{% else %}low{% endif %}">
+                            {{ sub.plagiarism_score }}%
+                        </span>
+                    </td>
+                    <td>
+                        {% if sub.is_flagged %}
+                        <span class="flag-badge flagged">⚠ Flagged</span>
+                        {% else %}
+                        <span class="flag-badge clean">✓ Clean</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <div style="margin-top: 24px;">
+        <a href="{% url 'faculty_app:manage_assignments' %}" style="color: #1a73e8; text-decoration: none; font-size: 14px;">
+            ← Back to Assignments
+        </a>
+    </div>
+</div>
+{% endblock %}

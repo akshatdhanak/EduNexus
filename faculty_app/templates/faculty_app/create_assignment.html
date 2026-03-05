@@ -1,0 +1,94 @@
+{% extends "layout.html" %}
+{% block title %}Create Assignment{% endblock %}
+{% block nav_title %}Create Assignment{% endblock %}
+
+{% block style %}
+.create-container { max-width: 700px; margin: 0 auto; }
+.create-header { margin-bottom: 32px; }
+.create-header h1 { font-size: 28px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+.create-header p { color: #666; font-size: 14px; }
+
+.form-card {
+    background: #fff; border-radius: 12px; padding: 32px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.form-field { margin-bottom: 20px; }
+.form-field label { display: block; font-size: 14px; font-weight: 500; color: #202124; margin-bottom: 6px; }
+.form-field input, .form-field select, .form-field textarea {
+    width: 100%; padding: 10px 14px; border: 1px solid #dadce0; border-radius: 8px;
+    font-size: 14px; font-family: inherit; transition: border-color 0.2s;
+}
+.form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+    outline: none; border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.2);
+}
+.form-field textarea { min-height: 100px; resize: vertical; }
+.form-field .hint { font-size: 12px; color: #5f6368; margin-top: 4px; }
+
+.form-row { display: flex; gap: 16px; }
+.form-row .form-field { flex: 1; }
+
+.form-actions { display: flex; gap: 12px; margin-top: 24px; }
+.btn-form {
+    padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 500;
+    cursor: pointer; border: none; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-form.primary { background: #1a73e8; color: #fff; }
+.btn-form.primary:hover { background: #1765cc; }
+.btn-form.secondary { background: #f0f0f0; color: #202124; }
+.btn-form.secondary:hover { background: #e0e0e0; }
+{% endblock %}
+
+{% block container %}
+<div class="create-container">
+    <div class="create-header">
+        <h1>Create Assignment</h1>
+        <p>Students will be able to submit text for this assignment</p>
+    </div>
+
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="form-field">
+                <label for="title">Assignment Title *</label>
+                <input type="text" id="title" name="title" required placeholder="e.g., Write a report on Data Normalization">
+            </div>
+
+            <div class="form-field">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" placeholder="Describe the assignment requirements..."></textarea>
+            </div>
+
+            <div class="form-field">
+                <label for="subject">Subject *</label>
+                <select id="subject" name="subject" required>
+                    <option value="">Select a subject</option>
+                    {% for s in subjects %}
+                    <option value="{{ s.id }}">{{ s.name }} ({{ s.code }}) — Sem {{ s.semester }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-field">
+                    <label for="due_date">Due Date *</label>
+                    <input type="datetime-local" id="due_date" name="due_date" required>
+                </div>
+                <div class="form-field">
+                    <label for="max_marks">Max Marks</label>
+                    <input type="number" id="max_marks" name="max_marks" value="100" min="1" max="1000">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-form primary">
+                    <span class="material-icons" style="font-size: 18px;">add_task</span>
+                    Create Assignment
+                </button>
+                <a href="{% url 'faculty_app:manage_assignments' %}" class="btn-form secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

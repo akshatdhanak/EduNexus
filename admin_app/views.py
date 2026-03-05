@@ -3,7 +3,8 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import authenticate, login, logout
-from datetime import date
+from django.db.models import Q
+from datetime import date, datetime
 
 
 from registration.models import CustomUser
@@ -78,22 +79,17 @@ def student_add(request):
 @staff_member_required
 def student_edit(request, s_id):
     student = get_object_or_404(Student, pk=s_id)
-    user = get_object_or_404(CustomUser, pk=student.user.id)
-    student.user = user
     
     if request.method == "POST":
         form = StudentForm(request.POST, request.FILES, instance=student)
         if form.is_valid():
-            student_obj = form.save(commit=False)
-            if form.cleaned_data.get("password"):
-                student.user.set_password(form.cleaned_data["password"])
-                student.user.save()
-            student_obj.save()
+            student_obj = form.save(commit=True)
 
             # Re-enroll if semester changed
             from .models import assign_subjects_by_semester
             assign_subjects_by_semester(student_obj)
 
+            messages.success(request, f"Student '{student_obj.name}' updated successfully!")
             return redirect("admin_app:student_info")
     else:
         form = StudentForm(instance=student)
@@ -152,24 +148,13 @@ def faculty_add(request):
 @staff_member_required
 def faculty_edit(request, f_id):
     faculty = get_object_or_404(Faculty, pk=f_id)
-    user = get_object_or_404(CustomUser, pk=faculty.user.id)
-    faculty.user = user
     
     if request.method == "POST":
         form = FacultyForm(request.POST, request.FILES, instance=faculty)
         if form.is_valid():
-            faculty_obj = form.save(commit=False)
-            
-            # Update user email and password
-            faculty_obj.user.email = form.cleaned_data['email']
-            if form.cleaned_data.get("password"):
-                faculty_obj.user.set_password(form.cleaned_data["password"])
-            faculty_obj.user.save()
-            
-            # Save faculty and many-to-many relationships
-            faculty_obj.save()
-            faculty_obj.subjects.set(form.cleaned_data.get("subjects", []))
-            
+            faculty_obj = form.save(commit=True)
+
+            messages.success(request, f"Faculty '{faculty_obj.name}' updated successfully!")
             return redirect("admin_app:faculty_info")
     else:
         form = FacultyForm(instance=faculty)
@@ -541,3 +526,146 @@ def delete_subject(request, subject_id):
         return redirect('admin_app:manage_subjects')
     
     return render(request, 'admin_app/delete_subject.html', {'subject': subject})
+
+
+# ============================================================================
+# TIMETABLE CONFLICT OPTIMIZER (ADMIN-WIDE)
+# ============================================================================
+
+@staff_member_required
+def timetable_conflicts(request):
+    """Detect overlapping timetable slots across all departments / divisions."""
+
+    # Optional filters from GET params
+    dept_id = request.GET.get('department')
+    semester = request.GET.get('semester')
+
+    timetable_qs = Timetable.objects.select_related(
+        'subject_offering__subject',
+        'subject_offering__subject__department',
+        'subject_offering__faculty',
+    ).order_by('day', 'start_time')
+
+    if dept_id:
+        timetable_qs = timetable_qs.filter(
+            subject_offering__subject__department_id=dept_id
+        )
+    if semester:
+        timetable_qs = timetable_qs.filter(
+            subject_offering__subject__semester=int(semester)
+        )
+
+    days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+    conflicts = []
+    day_schedules = {}
+
+    for day in days:
+        slots = list(timetable_qs.filter(day=day))
+        day_schedules[day] = slots
+
+        # Group by division to catch real in-division clashes
+        from collections import defaultdict
+        by_div = defaultdict(list)
+        for s in slots:
+            by_div[s.subject_offering.division].append(s)
+
+        for div, div_slots in by_div.items():
+            for i in range(len(div_slots)):
+                for j in range(i + 1, len(div_slots)):
+                    a = div_slots[i]
+                    b = div_slots[j]
+                    if a.start_time < b.end_time and b.start_time < a.end_time:
+                        conflicts.append({
+                            'day': day.capitalize(),
+                            'division': div,
+                            'slot_a': {
+                                'subject': a.subject_offering.subject.name,
+                                'code': a.subject_offering.subject.code,
+                                'department': a.subject_offering.subject.department.name if a.subject_offering.subject.department else 'N/A',
+                                'time': f"{a.start_time.strftime('%H:%M')} – {a.end_time.strftime('%H:%M')}",
+                                'type': a.get_lecture_type_display(),
+                                'room': a.room_number or 'N/A',
+                                'faculty': a.subject_offering.faculty.name if a.subject_offering.faculty else 'N/A',
+                            },
+                            'slot_b': {
+                                'subject': b.subject_offering.subject.name,
+                                'code': b.subject_offering.subject.code,
+                                'department': b.subject_offering.subject.department.name if b.subject_offering.subject.department else 'N/A',
+                                'time': f"{b.start_time.strftime('%H:%M')} – {b.end_time.strftime('%H:%M')}",
+                                'type': b.get_lecture_type_display(),
+                                'room': b.room_number or 'N/A',
+                                'faculty': b.subject_offering.faculty.name if b.subject_offering.faculty else 'N/A',
+                            },
+                        })
+
+    # Room collision detection: same room, overlapping time
+    room_conflicts = []
+    for day in days:
+        slots = day_schedules[day]
+        room_slots = [s for s in slots if s.room_number]
+        for i in range(len(room_slots)):
+            for j in range(i + 1, len(room_slots)):
+                a = room_slots[i]
+                b = room_slots[j]
+                if a.room_number == b.room_number and a.start_time < b.end_time and b.start_time < a.end_time:
+                    room_conflicts.append({
+                        'day': day.capitalize(),
+                        'room': a.room_number,
+                        'slot_a': {
+                            'subject': a.subject_offering.subject.name,
+                            'code': a.subject_offering.subject.code,
+                            'division': a.subject_offering.division,
+                            'time': f"{a.start_time.strftime('%H:%M')} – {a.end_time.strftime('%H:%M')}",
+                            'type': a.get_lecture_type_display(),
+                        },
+                        'slot_b': {
+                            'subject': b.subject_offering.subject.name,
+                            'code': b.subject_offering.subject.code,
+                            'division': b.subject_offering.division,
+                            'time': f"{b.start_time.strftime('%H:%M')} – {b.end_time.strftime('%H:%M')}",
+                            'type': b.get_lecture_type_display(),
+                        },
+                    })
+
+    # Gap analysis per day
+    gap_analysis = {}
+    for day in days:
+        slots = sorted(day_schedules[day], key=lambda s: s.start_time)
+        gaps = []
+        total_gap_minutes = 0
+        for k in range(1, len(slots)):
+            prev_end = slots[k - 1].end_time
+            curr_start = slots[k].start_time
+            end_dt = datetime.combine(date(2000, 1, 1), prev_end)
+            start_dt = datetime.combine(date(2000, 1, 1), curr_start)
+            gap_min = int((start_dt - end_dt).total_seconds() / 60)
+            if gap_min > 0:
+                gaps.append({
+                    'after': slots[k - 1].subject_offering.subject.name,
+                    'before': slots[k].subject_offering.subject.name,
+                    'minutes': gap_min,
+                })
+                total_gap_minutes += gap_min
+        if slots:
+            gap_analysis[day.capitalize()] = {
+                'num_classes': len(slots),
+                'gaps': gaps,
+                'total_gap_minutes': total_gap_minutes,
+            }
+
+    departments = Department.objects.all()
+    total_slots = timetable_qs.count()
+
+    context = {
+        'conflicts': conflicts,
+        'conflict_count': len(conflicts),
+        'room_conflicts': room_conflicts,
+        'room_conflict_count': len(room_conflicts),
+        'gap_analysis': gap_analysis,
+        'days': days,
+        'departments': departments,
+        'total_slots': total_slots,
+        'selected_department': dept_id,
+        'selected_semester': semester,
+    }
+    return render(request, 'admin_app/timetable_conflicts.html', context)

@@ -1,0 +1,175 @@
+{% extends "layout.html" %}
+{% block title %}Timetable Conflict Optimizer{% endblock %}
+{% block nav_title %}Timetable Conflict Optimizer{% endblock %}
+
+{% block style %}
+.conflict-container { max-width: 1100px; margin: 0 auto; }
+.conflict-header { margin-bottom: 32px; }
+.conflict-header h1 { font-size: 28px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+.conflict-header p { color: #666; font-size: 14px; }
+
+/* Summary Cards */
+.summary-row { display: flex; gap: 20px; margin-bottom: 32px; flex-wrap: wrap; }
+.summary-card {
+    flex: 1; min-width: 200px; background: #fff; border-radius: 12px; padding: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08); text-align: center;
+}
+.summary-card .number { font-size: 40px; font-weight: 700; margin-bottom: 4px; }
+.summary-card .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+.summary-card.no-conflict .number { color: #1e8e3e; }
+.summary-card.has-conflict .number { color: #d93025; }
+
+/* Conflict Alert */
+.conflict-alert {
+    display: flex; align-items: flex-start; gap: 16px;
+    background: #fce8e6; border: 1px solid #f5c6cb; border-radius: 12px;
+    padding: 20px 24px; margin-bottom: 16px;
+}
+.conflict-alert .icon { font-size: 32px; color: #d93025; flex-shrink: 0; }
+.conflict-alert .details { flex: 1; }
+.conflict-alert .day-label { font-size: 14px; font-weight: 600; color: #d93025; margin-bottom: 8px; }
+
+.clash-pair {
+    display: flex; gap: 16px; align-items: stretch; flex-wrap: wrap;
+}
+.clash-item {
+    flex: 1; min-width: 200px; background: #fff; border-radius: 8px; padding: 16px;
+    border: 1px solid #e8eaed;
+}
+.clash-item .subj { font-size: 15px; font-weight: 600; color: #202124; }
+.clash-item .code { font-size: 12px; color: #5f6368; margin-bottom: 8px; }
+.clash-item .meta { font-size: 13px; color: #5f6368; line-height: 1.6; }
+.clash-vs {
+    display: flex; align-items: center; font-size: 18px; font-weight: 700;
+    color: #d93025; padding: 0 8px;
+}
+
+/* No Conflict */
+.no-conflict-box {
+    text-align: center; padding: 48px 20px; background: #e6f4ea;
+    border-radius: 12px; margin-bottom: 32px;
+}
+.no-conflict-box .material-icons { font-size: 56px; color: #1e8e3e; margin-bottom: 12px; }
+.no-conflict-box h3 { color: #1e8e3e; font-weight: 600; margin-bottom: 4px; }
+.no-conflict-box p { color: #137333; font-size: 14px; }
+
+/* Gap Analysis */
+.gap-section h2 { font-size: 20px; font-weight: 600; color: #202124; margin-bottom: 20px; margin-top: 40px; }
+.gap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.gap-card {
+    background: #fff; border-radius: 12px; padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.gap-card .day-name { font-size: 16px; font-weight: 600; color: #1a73e8; margin-bottom: 12px; }
+.gap-card .class-count { font-size: 13px; color: #5f6368; margin-bottom: 12px; }
+.gap-entry { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+.gap-entry:last-child { border-bottom: none; }
+.gap-entry .gap-label { color: #5f6368; }
+.gap-entry .gap-value { font-weight: 600; color: #202124; }
+.gap-total { margin-top: 8px; padding-top: 8px; border-top: 2px solid #e8eaed; font-size: 13px; font-weight: 600; color: #1a73e8; text-align: right; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: #5f6368; }
+.empty-state .material-icons { font-size: 64px; color: #dadce0; margin-bottom: 16px; }
+{% endblock %}
+
+{% block container %}
+<div class="conflict-container">
+    <div class="conflict-header">
+        <h1>Timetable Conflict Optimizer</h1>
+        <p>{{ student.name }} · Semester {{ student.semester }} · Division {{ student.division }}</p>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-row">
+        <div class="summary-card {% if conflict_count == 0 %}no-conflict{% else %}has-conflict{% endif %}">
+            <div class="number">{{ conflict_count }}</div>
+            <div class="label">Conflicts Detected</div>
+        </div>
+        <div class="summary-card">
+            <div class="number" style="color: #1a73e8;">
+                {% widthratio gap_analysis|length 1 1 %}
+            </div>
+            <div class="label">Days with Classes</div>
+        </div>
+    </div>
+
+    {% if conflict_count > 0 %}
+    <!-- Conflict Details -->
+    <h2 style="font-size: 20px; font-weight: 600; color: #d93025; margin-bottom: 20px;">
+        <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">warning</span>
+        Scheduling Conflicts
+    </h2>
+    {% for c in conflicts %}
+    <div class="conflict-alert">
+        <span class="material-icons icon">schedule</span>
+        <div class="details">
+            <div class="day-label">{{ c.day }}</div>
+            <div class="clash-pair">
+                <div class="clash-item">
+                    <div class="subj">{{ c.slot_a.subject }}</div>
+                    <div class="code">{{ c.slot_a.code }} · {{ c.slot_a.type }}</div>
+                    <div class="meta">
+                        🕐 {{ c.slot_a.time }}<br>
+                        📍 Room {{ c.slot_a.room }}<br>
+                        👤 {{ c.slot_a.faculty }}
+                    </div>
+                </div>
+                <div class="clash-vs">VS</div>
+                <div class="clash-item">
+                    <div class="subj">{{ c.slot_b.subject }}</div>
+                    <div class="code">{{ c.slot_b.code }} · {{ c.slot_b.type }}</div>
+                    <div class="meta">
+                        🕐 {{ c.slot_b.time }}<br>
+                        📍 Room {{ c.slot_b.room }}<br>
+                        👤 {{ c.slot_b.faculty }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    {% else %}
+    <div class="no-conflict-box">
+        <span class="material-icons">check_circle</span>
+        <h3>No Conflicts Found</h3>
+        <p>Your timetable is conflict-free. All classes are scheduled without overlaps.</p>
+    </div>
+    {% endif %}
+
+    {% if gap_analysis %}
+    <!-- Gap Analysis -->
+    <div class="gap-section">
+        <h2>
+            <span class="material-icons" style="vertical-align: middle; margin-right: 8px;">timeline</span>
+            Schedule Gap Analysis
+        </h2>
+        <div class="gap-grid">
+            {% for day, info in gap_analysis.items %}
+            <div class="gap-card">
+                <div class="day-name">{{ day }}</div>
+                <div class="class-count">{{ info.num_classes }} class{{ info.num_classes|pluralize:"es" }}</div>
+                {% if info.gaps %}
+                    {% for gap in info.gaps %}
+                    <div class="gap-entry">
+                        <span class="gap-label">{{ gap.after }} → {{ gap.before }}</span>
+                        <span class="gap-value">{{ gap.minutes }} min gap</span>
+                    </div>
+                    {% endfor %}
+                    <div class="gap-total">Total idle time: {{ info.total_gap_minutes }} min</div>
+                {% else %}
+                    <div style="font-size: 13px; color: #1e8e3e;">Back-to-back classes — no gaps!</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="material-icons">calendar_today</span>
+        <h3>No Timetable Data</h3>
+        <p>No timetable entries found for your current semester.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

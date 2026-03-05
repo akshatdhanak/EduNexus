@@ -33,11 +33,11 @@ services:
       - key: GEMINI_API_KEY
         value: "AIzaSyCTU4td1It9MfqktRvSgYR7gWaKRO-GmmM"
       - key: DJANGO_SUPERUSER_USERNAME
-        sync: false  # Set manually in Render dashboard
+        sync: false # Set manually in Render dashboard
       - key: DJANGO_SUPERUSER_PASSWORD
-        sync: false  # Set manually in Render dashboard
+        sync: false # Set manually in Render dashboard
       - key: DJANGO_SUPERUSER_EMAIL
-        sync: false  # Set manually in Render dashboard
+        sync: false # Set manually in Render dashboard
       - key: PYTHON_VERSION
         value: "3.13.0"
     healthCheckPath: /health/

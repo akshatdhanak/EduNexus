@@ -1,0 +1,267 @@
+why is this not working?{% extends "layout.html" %}
+{% block title %}Timetable Conflict Optimizer{% endblock %}
+{% block nav_title %}Timetable Conflict Optimizer{% endblock %}
+
+{% block style %}
+* { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+
+.tc-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+.tc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; padding-top: 20px; flex-wrap: wrap; gap: 16px; }
+.tc-header h1 { font-size: 28px; font-weight: 600; color: #1a1a1a; margin: 0 0 4px 0; }
+.tc-header p { color: #666; font-size: 14px; margin: 0; }
+.tc-header .back-link { padding: 8px 16px; background: #f0f0f0; border-radius: 6px; color: #333; text-decoration: none; font-size: 13px; font-weight: 500; }
+.tc-header .back-link:hover { background: #e0e0e0; }
+
+/* Filters */
+.filter-bar {
+    display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; align-items: flex-end;
+}
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-group label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #5f6368; font-weight: 600; }
+.filter-group select {
+    padding: 8px 12px; border: 1px solid #dadce0; border-radius: 6px;
+    font-size: 13px; color: #202124; background: #fff; min-width: 180px;
+}
+.filter-btn { padding: 8px 20px; background: #1a73e8; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; }
+.filter-btn:hover { background: #1557b0; }
+.filter-clear { padding: 8px 16px; background: #f0f0f0; color: #333; border: none; border-radius: 6px; font-size: 13px; cursor: pointer; text-decoration: none; }
+
+/* Summary Row */
+.summary-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 36px; }
+.summary-card {
+    background: #fff; border-radius: 12px; padding: 24px; text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.summary-card .number { font-size: 36px; font-weight: 700; margin-bottom: 4px; }
+.summary-card .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+.summary-card.ok .number { color: #1e8e3e; }
+.summary-card.warn .number { color: #d93025; }
+.summary-card.info .number { color: #1a73e8; }
+.summary-card.room-warn .number { color: #e37400; }
+
+/* Section */
+.section-title {
+    font-size: 18px; font-weight: 600; color: #202124; margin: 0 0 20px 0;
+    display: flex; align-items: center; gap: 8px;
+}
+.section-title .material-icons { color: #d93025; font-size: 22px; }
+.section-title.room .material-icons { color: #e37400; }
+.section-title.gap .material-icons { color: #1a73e8; }
+
+/* Conflict Alert */
+.conflict-alert {
+    display: flex; align-items: flex-start; gap: 16px;
+    background: #fce8e6; border: 1px solid #f5c6cb; border-radius: 12px;
+    padding: 20px 24px; margin-bottom: 12px;
+}
+.conflict-alert.room-alert { background: #fef7e0; border-color: #fdd835; }
+.conflict-icon { font-size: 28px; color: #d93025; flex-shrink: 0; }
+.room-alert .conflict-icon { color: #e37400; }
+.conflict-details { flex: 1; }
+.conflict-meta { font-size: 13px; font-weight: 600; margin-bottom: 8px; display: flex; gap: 12px; flex-wrap: wrap; }
+.conflict-meta .day-tag { color: #d93025; }
+.room-alert .conflict-meta .day-tag { color: #e37400; }
+.conflict-meta .div-tag { color: #5f6368; }
+
+.clash-pair { display: flex; gap: 12px; align-items: stretch; flex-wrap: wrap; }
+.clash-item {
+    flex: 1; min-width: 200px; background: #fff; border-radius: 8px;
+    padding: 14px 16px; border: 1px solid #e8eaed;
+}
+.clash-item .subj { font-size: 14px; font-weight: 600; color: #202124; }
+.clash-item .code { font-size: 12px; color: #5f6368; margin-bottom: 6px; }
+.clash-item .meta { font-size: 12px; color: #5f6368; line-height: 1.7; }
+.clash-vs {
+    display: flex; align-items: center; font-size: 16px; font-weight: 700;
+    color: #d93025; padding: 0 4px;
+}
+.room-alert .clash-vs { color: #e37400; }
+
+/* No-Conflict */
+.ok-box {
+    text-align: center; padding: 40px 20px; background: #e6f4ea;
+    border-radius: 12px; margin-bottom: 32px;
+}
+.ok-box .material-icons { font-size: 48px; color: #1e8e3e; margin-bottom: 8px; }
+.ok-box h3 { color: #1e8e3e; font-weight: 600; margin: 0 0 4px 0; }
+.ok-box p { color: #137333; font-size: 14px; margin: 0; }
+
+/* Gap Analysis */
+.gap-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-bottom: 40px; }
+.gap-card {
+    background: #fff; border-radius: 12px; padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.gap-card .day-name { font-size: 15px; font-weight: 600; color: #1a73e8; margin-bottom: 10px; }
+.gap-card .class-count { font-size: 12px; color: #5f6368; margin-bottom: 10px; }
+.gap-entry { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
+.gap-entry:last-child { border-bottom: none; }
+.gap-entry .gap-label { color: #5f6368; }
+.gap-entry .gap-value { font-weight: 600; color: #202124; }
+.gap-total { margin-top: 8px; padding-top: 8px; border-top: 2px solid #e8eaed; font-size: 12px; font-weight: 600; color: #1a73e8; text-align: right; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: #5f6368; }
+.empty-state .material-icons { font-size: 56px; color: #dadce0; margin-bottom: 12px; }
+{% endblock %}
+
+{% block container %}
+<div class="tc-container">
+    <!-- Header -->
+    <div class="tc-header">
+        <div>
+            <h1>Timetable Conflict Optimizer</h1>
+            <p>Detect scheduling overlaps, room collisions and idle gaps across all divisions</p>
+        </div>
+        <a href="{% url 'admin_app:admin_dashboard' %}" class="back-link">← Dashboard</a>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="filter-bar">
+        <div class="filter-group">
+            <label>Department</label>
+            <select name="department">
+                <option value="">All Departments</option>
+                {% for dept in departments %}
+                <option value="{{ dept.id }}" {% if selected_department == dept.id|stringformat:"d" %}selected{% endif %}>{{ dept.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Semester</label>
+            <select name="semester">
+                <option value="">All Semesters</option>
+                {% for s in "12345678" %}
+                <option value="{{ s }}" {% if selected_semester == s %}selected{% endif %}>Semester {{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="filter-btn">Apply</button>
+        <a href="{% url 'admin_app:timetable_conflicts' %}" class="filter-clear">Clear</a>
+    </form>
+
+    <!-- Summary -->
+    <div class="summary-row">
+        <div class="summary-card {% if conflict_count == 0 %}ok{% else %}warn{% endif %}">
+            <div class="number">{{ conflict_count }}</div>
+            <div class="label">Schedule Conflicts</div>
+        </div>
+        <div class="summary-card {% if room_conflict_count == 0 %}ok{% else %}room-warn{% endif %}">
+            <div class="number">{{ room_conflict_count }}</div>
+            <div class="label">Room Collisions</div>
+        </div>
+        <div class="summary-card info">
+            <div class="number">{{ total_slots }}</div>
+            <div class="label">Total Slots</div>
+        </div>
+        <div class="summary-card info">
+            <div class="number">{% widthratio gap_analysis|length 1 1 %}</div>
+            <div class="label">Teaching Days</div>
+        </div>
+    </div>
+
+    <!-- Schedule Conflicts -->
+    {% if conflict_count > 0 %}
+    <h2 class="section-title"><span class="material-icons">warning</span> Schedule Conflicts</h2>
+    {% for c in conflicts %}
+    <div class="conflict-alert">
+        <span class="material-icons conflict-icon">schedule</span>
+        <div class="conflict-details">
+            <div class="conflict-meta">
+                <span class="day-tag">{{ c.day }}</span>
+                <span class="div-tag">Division {{ c.division }}</span>
+            </div>
+            <div class="clash-pair">
+                <div class="clash-item">
+                    <div class="subj">{{ c.slot_a.subject }}</div>
+                    <div class="code">{{ c.slot_a.code }} · {{ c.slot_a.type }}</div>
+                    <div class="meta">
+                        🕐 {{ c.slot_a.time }}<br>
+                        📍 Room {{ c.slot_a.room }}<br>
+                        👤 {{ c.slot_a.faculty }}<br>
+                        🏛️ {{ c.slot_a.department }}
+                    </div>
+                </div>
+                <div class="clash-vs">VS</div>
+                <div class="clash-item">
+                    <div class="subj">{{ c.slot_b.subject }}</div>
+                    <div class="code">{{ c.slot_b.code }} · {{ c.slot_b.type }}</div>
+                    <div class="meta">
+                        🕐 {{ c.slot_b.time }}<br>
+                        📍 Room {{ c.slot_b.room }}<br>
+                        👤 {{ c.slot_b.faculty }}<br>
+                        🏛️ {{ c.slot_b.department }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="ok-box">
+        <span class="material-icons">check_circle</span>
+        <h3>No Schedule Conflicts</h3>
+        <p>All classes are scheduled without overlaps within each division.</p>
+    </div>
+    {% endif %}
+
+    <!-- Room Collisions -->
+    {% if room_conflict_count > 0 %}
+    <h2 class="section-title room"><span class="material-icons">meeting_room</span> Room Collisions</h2>
+    {% for c in room_conflicts %}
+    <div class="conflict-alert room-alert">
+        <span class="material-icons conflict-icon">meeting_room</span>
+        <div class="conflict-details">
+            <div class="conflict-meta">
+                <span class="day-tag">{{ c.day }}</span>
+                <span class="div-tag">Room {{ c.room }}</span>
+            </div>
+            <div class="clash-pair">
+                <div class="clash-item">
+                    <div class="subj">{{ c.slot_a.subject }}</div>
+                    <div class="code">{{ c.slot_a.code }} · {{ c.slot_a.type }} · Div {{ c.slot_a.division }}</div>
+                    <div class="meta">🕐 {{ c.slot_a.time }}</div>
+                </div>
+                <div class="clash-vs">VS</div>
+                <div class="clash-item">
+                    <div class="subj">{{ c.slot_b.subject }}</div>
+                    <div class="code">{{ c.slot_b.code }} · {{ c.slot_b.type }} · Div {{ c.slot_b.division }}</div>
+                    <div class="meta">🕐 {{ c.slot_b.time }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Gap Analysis -->
+    {% if gap_analysis %}
+    <h2 class="section-title gap" style="margin-top: 36px;"><span class="material-icons">timeline</span> Schedule Gap Analysis</h2>
+    <div class="gap-grid">
+        {% for day, info in gap_analysis.items %}
+        <div class="gap-card">
+            <div class="day-name">{{ day }}</div>
+            <div class="class-count">{{ info.num_classes }} slot{{ info.num_classes|pluralize:"s" }}</div>
+            {% if info.gaps %}
+                {% for gap in info.gaps %}
+                <div class="gap-entry">
+                    <span class="gap-label">{{ gap.after }} → {{ gap.before }}</span>
+                    <span class="gap-value">{{ gap.minutes }} min</span>
+                </div>
+                {% endfor %}
+                <div class="gap-total">Total idle: {{ info.total_gap_minutes }} min</div>
+            {% else %}
+                <div style="font-size: 12px; color: #1e8e3e;">Back-to-back — no gaps</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <span class="material-icons">calendar_today</span>
+        <h3>No Timetable Data</h3>
+        <p>No timetable entries found for the selected filters.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

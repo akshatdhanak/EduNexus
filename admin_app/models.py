@@ -714,6 +714,52 @@ class AcademicCalendar(models.Model):
 
 
 # ============================================================================
+# ASSIGNMENT & PLAGIARISM ENTITIES
+# ============================================================================
+
+class Assignment(models.Model):
+    """Assignments created by faculty for students"""
+    STATUS_CHOICES = [
+        ('open', 'Open'),
+        ('closed', 'Closed'),
+    ]
+
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, related_name='assignments')
+    created_by = models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name='created_assignments')
+    due_date = models.DateTimeField()
+    max_marks = models.IntegerField(default=100)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='open')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-due_date']
+
+    def __str__(self):
+        return f"{self.title} - {self.subject.code}"
+
+
+class AssignmentSubmission(models.Model):
+    """Student submissions for assignments"""
+    assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE, related_name='submissions')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='assignment_submissions')
+    content = models.TextField(help_text="Paste your assignment text here")
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    plagiarism_score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    is_flagged = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['assignment', 'student']
+        unique_together = ['assignment', 'student']
+
+    def __str__(self):
+        return f"{self.student.roll_number} - {self.assignment.title}"
+
+
+# ============================================================================
 # LEGACY COMPATIBILITY ALIASES
 # ============================================================================
 AttendanceFaculty = Attendance  # Alias for backward compatibility

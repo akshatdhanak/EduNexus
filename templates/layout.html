@@ -333,10 +333,6 @@
           <span class="material-icons">dashboard</span>
           <span>Dashboard</span>
         </a>
-        <a href="{% url 'admin_app:database_chat' %}" class="nav-pill">
-          <span class="material-icons">smart_toy</span>
-          <span>DB Chat</span>
-        </a>
         {% elif user.role == "student" %}
         <a href="{% url 'student_app:student_dashboard' %}" class="nav-pill">
           <span class="material-icons">dashboard</span>

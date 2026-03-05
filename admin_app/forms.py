@@ -72,6 +72,15 @@ class StudentForm(forms.ModelForm):
         # If department is selected in POST data, filter degree programs
         # (kept for JS-based filtering if needed later)
         
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        qs = CustomUser.objects.filter(username=username)
+        if self.instance and self.instance.pk and hasattr(self.instance, 'user'):
+            qs = qs.exclude(pk=self.instance.user.pk)
+        if qs.exists():
+            raise forms.ValidationError("This username is already taken.")
+        return username
+
     def clean_password(self):
         password = self.cleaned_data.get("password")
 
@@ -106,6 +115,7 @@ class StudentForm(forms.ModelForm):
 
         user.username = self.cleaned_data['username']
         user.email = self.cleaned_data['email']
+        user.role = 'student'
         if self.cleaned_data['password']:
             user.set_password(self.cleaned_data['password'])
         if commit:
@@ -155,6 +165,15 @@ class FacultyForm(forms.ModelForm):
             self.fields['username'].initial = self.instance.user.username
             self.fields['email'].initial = self.instance.user.email
             self.fields['subjects'].initial = self.instance.subjects.all()
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        qs = CustomUser.objects.filter(username=username)
+        if self.instance and self.instance.pk and hasattr(self.instance, 'user'):
+            qs = qs.exclude(pk=self.instance.user.pk)
+        if qs.exists():
+            raise forms.ValidationError("This username is already taken.")
+        return username
 
     def clean_password(self):
         password = self.cleaned_data.get("password")
