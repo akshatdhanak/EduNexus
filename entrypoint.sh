@@ -8,6 +8,9 @@ set -e
 echo "🗃️  Running database migrations..."
 python manage.py migrate --noinput
 
+echo "🏫 Seeding departments & programs..."
+python manage.py seed_departments
+
 echo "👤 Creating superuser if missing..."
 python manage.py create_superuser_if_missing
 

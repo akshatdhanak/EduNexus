@@ -16,7 +16,7 @@ services:
     plan: free
     buildCommand: chmod +x build.sh && ./build.sh
     preDeployCommand: python manage.py migrate --noinput
-    startCommand: python manage.py migrate --noinput && python manage.py create_superuser_if_missing && gunicorn project1.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120
+    startCommand: python manage.py migrate --noinput && python manage.py seed_departments && python manage.py create_superuser_if_missing && gunicorn project1.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120
     envVars:
       - key: DATABASE_URL
         fromDatabase:
