@@ -1,454 +1,251 @@
 {% extends "layout.html" %}
 
+{% block title %}Mark Attendance{% endblock %}
+
 {% block container %}
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
+<div class="att-select-page">
 
-    body {
-        background: #f8f9fa;
-    }
+  <div class="att-page-header">
+    <h1>Mark Attendance</h1>
+    <p>Select your subject, filter by type, and find sessions to mark</p>
+  </div>
 
-    .attendance-container {
-        max-width: 900px;
-        margin: 2rem auto;
-        padding: 0 1rem;
-    }
+  <div class="att-form-card">
+    <form method="POST" class="att-form">
+      {% csrf_token %}
 
-    .page-header {
-        text-align: center;
-        margin-bottom: 3rem;
-    }
+      {% if form.errors %}
+      <div class="att-alert att-alert-error">
+        <span class="material-icons">error_outline</span>
+        <span>Please correct the errors below.</span>
+      </div>
+      {% endif %}
 
-    .page-title {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #1a1a1a;
-        margin-bottom: 0.5rem;
-    }
+      <div class="att-field">
+        <label class="att-field-label">Subject</label>
+        <div class="att-select-wrap">
+          {{ form.subject }}
+        </div>
+      </div>
 
-    .page-subtitle {
-        font-size: 1rem;
-        color: #666;
-    }
+      <div class="att-field">
+        <label class="att-field-label">Session Type</label>
+        <div class="att-type-chips">
+          {% for value, label in form.session_type.field.choices %}
+          <label class="att-chip">
+            <input type="radio" name="session_type" value="{{ value }}"
+              {% if form.session_type.value == value %}checked{% endif %}>
+            <span class="att-chip-face">
+              {% if value == '' %}
+              <span class="material-icons" style="font-size:16px">select_all</span>
+              {% elif value == 'theory' %}
+              <span class="material-icons" style="font-size:16px">menu_book</span>
+              {% elif value == 'practical' %}
+              <span class="material-icons" style="font-size:16px">science</span>
+              {% else %}
+              <span class="material-icons" style="font-size:16px">school</span>
+              {% endif %}
+              {{ label }}
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
 
-    /* Form Card */
-    .form-wrapper {
-        background: white;
-        border-radius: 12px;
-        padding: 2.5rem;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    }
+      <div class="att-field">
+        <label class="att-field-label">Date <span class="att-optional">Optional</span></label>
+        <div class="att-input-wrap">
+          {{ form.date }}
+        </div>
+        <p class="att-hint">Leave empty to see all upcoming sessions</p>
+      </div>
 
-    .form-section {
-        margin-bottom: 2.5rem;
-    }
+      <button type="submit" class="att-submit-btn">
+        <span class="material-icons">search</span>
+        Find Sessions
+      </button>
+    </form>
+  </div>
 
-    .form-section:last-child {
-        margin-bottom: 1rem;
-    }
-
-    .form-section-label {
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: #999;
-        text-transform: uppercase;
-        letter-spacing: 0.8px;
-        margin-bottom: 1rem;
-    }
-
-    .form-group {
-        margin-bottom: 0;
-    }
-
-    .form-group label {
-        display: block;
-        font-weight: 600;
-        color: #1a1a1a;
-        margin-bottom: 0.6rem;
-        font-size: 0.95rem;
-    }
-
-    select, input[type="date"] {
-        width: 100%;
-        padding: 0.8rem 1rem;
-        border: 1.5px solid #ddd;
-        border-radius: 8px;
-        font-size: 1rem;
-        color: #1a1a1a;
-        background: white;
-        font-family: inherit;
-        transition: all 0.2s ease;
-    }
-
-    select:focus, input[type="date"]:focus {
-        outline: none;
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
-    }
-
-    select:hover {
-        border-color: #bbb;
-    }
-
-    /* Radio Buttons */
-    .radio-group {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 0.8rem;
-    }
-
-    .radio-wrapper {
-        position: relative;
-    }
-
-    .radio-wrapper input[type="radio"] {
-        position: absolute;
-        opacity: 0;
-        cursor: pointer;
-    }
-
-    .radio-label {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0.75rem 1rem;
-        border: 2px solid #ddd;
-        border-radius: 8px;
-        background: white;
-        cursor: pointer;
-        font-weight: 500;
-        color: #666;
-        transition: all 0.2s ease;
-        font-size: 0.9rem;
-    }
-
-    .radio-wrapper input[type="radio"]:checked + .radio-label {
-        background: #2563eb;
-        color: white;
-        border-color: #2563eb;
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
-    }
-
-    .helper-text {
-        font-size: 0.85rem;
-        color: #999;
-        margin-top: 0.5rem;
-    }
-
-    /* Button */
-    .submit-btn {
-        width: 100%;
-        padding: 1rem;
-        background: #2563eb;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-top: 1.5rem;
-        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
-    }
-
-    .submit-btn:hover {
-        background: #1d4ed8;
-        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
-        transform: translateY(-1px);
-    }
-
-    .submit-btn:active {
-        transform: translateY(0);
-    }
-
-    /* Results Section */
-    .results-wrapper {
-        margin-top: 3rem;
-    }
-
-    .results-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #1a1a1a;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #2563eb;
-    }
-
-    .day-group {
-        margin-bottom: 2rem;
-    }
-
-    .day-header {
-        font-weight: 600;
-        color: #2563eb;
-        margin-bottom: 1rem;
-        padding-left: 0.5rem;
-        font-size: 1.05rem;
-    }
-
-    .lecture-item {
-        background: white;
-        border-left: 4px solid #2563eb;
-        padding: 1.25rem;
-        margin-bottom: 0.8rem;
-        border-radius: 8px;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 1.5rem;
-        transition: all 0.2s ease;
-    }
-
-    .lecture-item:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        transform: translateY(-2px);
-    }
-
-    .lecture-details {
-        flex: 1;
-    }
-
-    .lecture-name {
-        font-weight: 700;
-        color: #1a1a1a;
-        margin-bottom: 0.6rem;
-        font-size: 1.05rem;
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-    }
-
-    .session-type {
-        display: inline-block;
-        padding: 0.3rem 0.7rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
-
-    .session-theory {
-        background: #dbeafe;
-        color: #0c4a6e;
-    }
-
-    .session-practical {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    .session-tutorial {
-        background: #fef3c7;
-        color: #92400e;
-    }
-
-    .lecture-meta {
-        display: flex;
-        gap: 1.5rem;
-        font-size: 0.9rem;
-        color: #666;
-        flex-wrap: wrap;
-    }
-
-    .meta-item {
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-    }
-
-    .mark-btn {
-        background: #2563eb;
-        color: white;
-        border: none;
-        padding: 0.7rem 1.2rem;
-        border-radius: 6px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        white-space: nowrap;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-size: 0.9rem;
-    }
-
-    .mark-btn:hover {
-        background: #1d4ed8;
-        transform: translateY(-1px);
-        text-decoration: none;
-    }
-
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 3rem 2rem;
-        background: white;
-        border-radius: 12px;
-        border: 2px dashed #ddd;
-        margin-top: 2rem;
-    }
-
-    .empty-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-    }
-
-    .empty-message {
-        font-size: 1.1rem;
-        color: #1a1a1a;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .empty-hint {
-        font-size: 0.9rem;
-        color: #999;
-    }
-
-    .error-message {
-        background: #fee2e2;
-        color: #c53030;
-        padding: 0.75rem 1rem;
-        border-radius: 6px;
-        margin-bottom: 1rem;
-        border-left: 4px solid #c53030;
-    }
-
-    @media (max-width: 768px) {
-        .attendance-container {
-            margin: 1rem auto;
-        }
-
-        .form-wrapper {
-            padding: 1.5rem;
-        }
-
-        .page-title {
-            font-size: 1.5rem;
-        }
-
-        .lecture-item {
-            flex-direction: column;
-        }
-
-        .mark-btn {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .radio-group {
-            grid-template-columns: 1fr;
-        }
-
-        .lecture-meta {
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-    }
-</style>
-
-<div class="attendance-container">
-    <!-- Header -->
-    <div class="page-header">
-        <h1 class="page-title">📋 Mark Attendance</h1>
-        <p class="page-subtitle">Select your subject and filter by session type</p>
+  {% if lectures_by_day %}
+  <div class="att-results">
+    <div class="att-results-header">
+      <h2>Available Sessions</h2>
     </div>
 
-    <!-- Form -->
-    <div class="form-wrapper">
-        <form method="POST">
-            {% csrf_token %}
+    {% for day, lectures in lectures_by_day.items %}
+    <div class="att-day-group">
+      <div class="att-day-label">{{ day|title }}</div>
 
-            <!-- Subject Section -->
-            <div class="form-section">
-                <div class="form-section-label">Step 1: Select Subject</div>
-                <div class="form-group">
-                    {{ form.subject }}
-                </div>
-            </div>
-
-            <!-- Session Type Section -->
-            <div class="form-section">
-                <div class="form-section-label">Step 2: Filter by Type (Optional)</div>
-                <div class="radio-group">
-                    {% for value, label in form.session_type.field.choices %}
-                        <div class="radio-wrapper">
-                            <input type="radio" id="id_session_type_{{ forloop.counter }}" name="session_type" value="{{ value }}"
-                                {% if form.session_type.value == value %}checked{% endif %}>
-                            <label for="id_session_type_{{ forloop.counter }}" class="radio-label">{{ label }}</label>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- Date Section -->
-            <div class="form-section">
-                <div class="form-section-label">Step 3: Pick Date (Optional)</div>
-                <div class="form-group">
-                    {{ form.date }}
-                    <p class="helper-text">📅 Leave empty to see all your classes</p>
-                </div>
-            </div>
-
-            <button type="submit" class="submit-btn">🔍 Find Lectures</button>
-        </form>
+      {% for lecture in lectures %}
+      <div class="att-session-row">
+        <div class="att-session-info">
+          <div class="att-session-top">
+            {% if lecture.lecture_type == 'theory' %}
+            <span class="att-tag att-tag-theory">Lecture</span>
+            {% elif lecture.lecture_type == 'practical' %}
+            <span class="att-tag att-tag-practical">Lab</span>
+            {% else %}
+            <span class="att-tag att-tag-tutorial">Tutorial</span>
+            {% endif %}
+            <span class="att-session-name">{{ lecture.subject_offering.subject.name }}</span>
+          </div>
+          <div class="att-session-meta">
+            <span><span class="material-icons">event</span>{{ lecture.date|date:"M d, Y" }}</span>
+            <span><span class="material-icons">schedule</span>{{ lecture.start_time|time:"H:i" }} – {{ lecture.end_time|time:"H:i" }}</span>
+            <span><span class="material-icons">room</span>{{ lecture.room_number|default:"—" }}</span>
+            <span><span class="material-icons">groups</span>Sem {{ lecture.subject_offering.subject.semester }} · Div {{ lecture.subject_offering.division }}</span>
+          </div>
+        </div>
+        <a href="{% url 'faculty_app:mark_student_attendance2' lecture.id %}" class="att-mark-btn">
+          <span class="material-icons">check_circle</span>
+          Mark
+        </a>
+      </div>
+      {% endfor %}
     </div>
+    {% endfor %}
+  </div>
 
-    <!-- Results -->
-    {% if lectures_by_day %}
-        <div class="results-wrapper">
-            <h2 class="results-title">📅 Available Sessions</h2>
+  {% elif form.is_bound and selected_subject %}
+  <div class="att-empty">
+    <span class="material-icons">event_busy</span>
+    <h3>No sessions found</h3>
+    <p>Try selecting a different subject, type, or date</p>
+  </div>
+  {% endif %}
 
-            {% for day, lectures in lectures_by_day.items %}
-                <div class="day-group">
-                    <div class="day-header">{{ day|title }}</div>
-                    
-                    {% for lecture in lectures %}
-                        <div class="lecture-item">
-                            <div class="lecture-details">
-                                <div class="lecture-name">
-                                    {% if lecture.lecture_type == 'theory' %}
-                                        <span class="session-type session-theory">📖 LECTURE</span>
-                                    {% elif lecture.lecture_type == 'practical' %}
-                                        <span class="session-type session-practical">🔬 LAB</span>
-                                    {% else %}
-                                        <span class="session-type session-tutorial">📝 TUTORIAL</span>
-                                    {% endif %}
-                                    {{ lecture.subject_offering.subject.name }}
-                                </div>
-                                <div class="lecture-meta">
-                                    <div class="meta-item">📅 {{ lecture.date|date:"M d, Y" }}</div>
-                                    <div class="meta-item">🕐 {{ lecture.start_time|time:"H:i" }} - {{ lecture.end_time|time:"H:i" }}</div>
-                                    <div class="meta-item">🏫 Room {{ lecture.room_number|default:"—" }}</div>
-                                    <div class="meta-item">👥 Sem {{ lecture.subject_offering.subject.semester }}</div>
-                                    <div class="meta-item">
-                                        {% if lecture.lecture_type == 'theory' %}
-                                            👥 Division {{ lecture.subject_offering.division }}
-                                        {% else %}
-                                            👥 Batch {{ lecture.subject_offering.division }}
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            <a href="{% url 'faculty_app:mark_student_attendance2' lecture.id %}" class="mark-btn">✓ Mark</a>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endfor %}
-        </div>
-    {% elif form.is_bound and selected_subject %}
-        <div class="empty-state">
-            <div class="empty-icon">📭</div>
-            <div class="empty-message">No sessions found</div>
-            <div class="empty-hint">Try a different subject or session type</div>
-        </div>
-    {% endif %}
 </div>
+{% endblock %}
 
+{% block style %}
+.att-select-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+.att-page-header { margin-bottom: 28px; }
+.att-page-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 4px;
+  letter-spacing: -0.3px;
+}
+.att-page-header p { font-size: 14px; color: #6b7280; margin: 0; }
+.att-alert {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 16px; border-radius: 8px;
+  font-size: 13px; font-weight: 500; margin-bottom: 20px;
+}
+.att-alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.att-alert .material-icons { font-size: 18px; }
+.att-form-card {
+  background: #fff; border: 1px solid #e5e7eb;
+  border-radius: 12px; padding: 28px;
+}
+.att-field { margin-bottom: 24px; }
+.att-field-label {
+  display: block; font-size: 13px; font-weight: 600;
+  color: #374151; margin-bottom: 8px;
+}
+.att-optional { font-weight: 400; color: #9ca3af; font-size: 12px; margin-left: 4px; }
+.att-select-wrap select,
+.att-input-wrap input {
+  width: 100%; padding: 10px 14px;
+  border: 1px solid #d1d5db; border-radius: 8px;
+  font-size: 14px; color: #111; background: #fff;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.att-select-wrap select:focus,
+.att-input-wrap input:focus {
+  outline: none; border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+.att-hint { font-size: 12px; color: #9ca3af; margin: 6px 0 0; }
+.att-type-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.att-chip { cursor: pointer; margin: 0; }
+.att-chip input { display: none; }
+.att-chip-face {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border: 1px solid #e5e7eb;
+  border-radius: 8px; font-size: 13px; font-weight: 500;
+  color: #6b7280; background: #fff;
+  transition: all 0.15s; user-select: none;
+}
+.att-chip-face:hover { border-color: #d1d5db; background: #f9fafb; }
+.att-chip input:checked + .att-chip-face {
+  background: #111; color: #fff; border-color: #111;
+}
+.att-chip input:checked + .att-chip-face .material-icons { color: #fff; }
+.att-submit-btn {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; width: 100%; padding: 12px;
+  background: #111; color: #fff; border: none;
+  border-radius: 10px; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s;
+  margin-top: 4px; font-family: inherit;
+}
+.att-submit-btn:hover { background: #000; }
+.att-submit-btn .material-icons { font-size: 18px; }
+.att-results { margin-top: 36px; }
+.att-results-header {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 20px;
+}
+.att-results-header h2 { font-size: 17px; font-weight: 700; color: #111; margin: 0; }
+.att-day-group { margin-bottom: 24px; }
+.att-day-label {
+  font-size: 13px; font-weight: 600; color: #2563eb;
+  margin-bottom: 10px; padding-left: 2px;
+}
+.att-session-row {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 16px;
+  background: #fff; border: 1px solid #e5e7eb;
+  border-radius: 10px; padding: 16px 20px;
+  margin-bottom: 8px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.att-session-row:hover { border-color: #d1d5db; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+.att-session-info { flex: 1; min-width: 0; }
+.att-session-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.att-session-name { font-size: 15px; font-weight: 600; color: #111; }
+.att-tag {
+  display: inline-flex; align-items: center;
+  padding: 2px 10px; border-radius: 6px;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.02em; text-transform: uppercase;
+}
+.att-tag-theory { background: #eff6ff; color: #1e40af; }
+.att-tag-practical { background: #f0fdf4; color: #166534; }
+.att-tag-tutorial { background: #fffbeb; color: #92400e; }
+.att-session-meta { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: #6b7280; }
+.att-session-meta span { display: inline-flex; align-items: center; gap: 4px; }
+.att-session-meta .material-icons { font-size: 15px; color: #9ca3af; }
+.att-mark-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; background: #111; color: #fff;
+  border-radius: 8px; font-size: 13px; font-weight: 600;
+  text-decoration: none; white-space: nowrap; transition: background 0.15s;
+}
+.att-mark-btn:hover { background: #000; color: #fff; text-decoration: none; }
+.att-mark-btn .material-icons { font-size: 16px; }
+.att-empty {
+  text-align: center; padding: 56px 20px; margin-top: 36px;
+  background: #fff; border: 1px dashed #d1d5db; border-radius: 12px;
+}
+.att-empty .material-icons { font-size: 40px; color: #d1d5db; margin-bottom: 12px; }
+.att-empty h3 { font-size: 15px; font-weight: 600; color: #374151; margin: 0 0 4px; }
+.att-empty p { font-size: 13px; color: #9ca3af; margin: 0; }
+@media (max-width: 640px) {
+  .att-select-page { padding: 20px 16px 48px; }
+  .att-form-card { padding: 20px; }
+  .att-type-chips { flex-direction: column; }
+  .att-chip-face { width: 100%; justify-content: center; }
+  .att-session-row { flex-direction: column; align-items: stretch; }
+  .att-mark-btn { justify-content: center; }
+  .att-session-meta { flex-direction: column; gap: 6px; }
+}
 {% endblock %}

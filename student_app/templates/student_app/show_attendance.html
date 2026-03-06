@@ -3,102 +3,107 @@
 {% block title %}Attendance{% endblock %}
 
 {% block container %}
+<div class="sa-page">
 
-<div class="container mt-5">
-    <div class="card shadow-lg mb-4">
-        <div class="card-header bg-primary text-white text-center">
-            <h2>Attendance Record</h2>
-        </div>
-        <div class="card-body">
-            {% if attendance %}
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for record in attendance %}
-                            <tr>
-                                <td>{{ record.date }}</td>
-                                <td>{{ record.get_status_display }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p>No attendance records found.</p>
-            {% endif %}
-        </div>
+  <!-- Header -->
+  <div class="sa-top">
+    <div>
+      <h1>Attendance Record</h1>
+      <p>Your attendance history</p>
     </div>
-    <a href="{% url 'student_app:student_dashboard' %}" class="btn btn-primary">back</a>
-</div>
+    <a href="{% url 'student_app:student_dashboard' %}" class="sa-back-link">
+      <span class="material-icons">arrow_back</span> Dashboard
+    </a>
+  </div>
 
+  {% if attendance %}
+  <div class="sa-table-card">
+    <table class="sa-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th class="sa-th-c">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in attendance %}
+        <tr>
+          <td>{{ record.date }}</td>
+          <td class="sa-td-c">
+            {% with status=record.get_status_display|lower %}
+            <span class="sa-badge sa-badge-{{ status }}">{{ record.get_status_display }}</span>
+            {% endwith %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="sa-empty">
+    <span class="material-icons">event_busy</span>
+    <h3>No Records</h3>
+    <p>No attendance records found.</p>
+  </div>
+  {% endif %}
+
+</div>
 {% endblock %}
 
-
 {% block style %}
-body {
-    background-color: #f8f9fa; /* Light gray background */
-}
+.sa-page { max-width:700px; margin:0 auto; padding:32px 24px 64px; }
 
-.container {
-    max-width: 800px;
+/* Header */
+.sa-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:24px; }
+.sa-top h1 { font-size:22px; font-weight:700; color:#111; margin:0 0 2px; letter-spacing:-.3px; }
+.sa-top p { font-size:14px; color:#6b7280; margin:0; }
+.sa-back-link {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:13px; font-weight:500; color:#6b7280;
+  text-decoration:none; transition:color .15s;
 }
+.sa-back-link:hover { color:#111; text-decoration:none; }
+.sa-back-link .material-icons { font-size:16px; }
 
-.card {
-    border-radius: 12px;
-    overflow: hidden;
+/* Table */
+.sa-table-card {
+  background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden;
 }
-
-.card-header {
-    font-size: 24px;
-    font-weight: bold;
-    padding: 15px;
+.sa-table { width:100%; border-collapse:collapse; }
+.sa-table thead { background:#fafafa; }
+.sa-table th {
+  padding:10px 18px; text-align:left;
+  font-size:11px; font-weight:600; color:#9ca3af;
+  text-transform:uppercase; letter-spacing:.04em;
+  border-bottom:1px solid #f3f4f6;
 }
-
-.table {
-    background-color: white;
-    border-radius: 8px;
-    overflow: hidden;
+.sa-th-c { text-align:center !important; }
+.sa-table td {
+  padding:10px 18px; font-size:13px; color:#374151;
+  border-bottom:1px solid #f5f5f5;
 }
-
-th, td {
-    text-align: center;
-    padding: 12px;
-    font-size: 16px;
-    color: black; /* Ensure text is black */
+.sa-table tbody tr:last-child td { border-bottom:none; }
+.sa-table tbody tr:hover { background:#fafafa; }
+.sa-td-c { text-align:center; }
+.sa-badge {
+  display:inline-block; padding:3px 10px; border-radius:4px;
+  font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.02em;
 }
+.sa-badge-present { background:#f0fdf4; color:#166534; }
+.sa-badge-absent { background:#fef2f2; color:#991b1b; }
+.sa-badge-late { background:#fffbeb; color:#92400e; }
 
-th {
-    background-color: #007bff; /* Blue header */
-    color: white;
+/* Empty */
+.sa-empty {
+  text-align:center; padding:56px 20px;
+  background:#fff; border:1px dashed #d1d5db; border-radius:12px;
 }
+.sa-empty .material-icons { font-size:36px; color:#d1d5db; margin-bottom:10px; }
+.sa-empty h3 { font-size:15px; font-weight:600; color:#374151; margin:0 0 4px; }
+.sa-empty p { font-size:13px; color:#9ca3af; margin:0; }
 
-td:nth-child(2) { /* Status column */
-    font-weight: bold;
+@media (max-width:640px) {
+  .sa-page { padding:20px 16px 48px; }
+  .sa-top { flex-direction:column; }
 }
-
-td:contains("Present") {
-    background-color: #d4edda; /* Light green */
-    color: black;
-}
-
-td:contains("Absent") {
-    background-color: #f8d7da; /* Light red */
-    color: black;
-}
-
-.btn-primary {
-    display: block;
-    width: 150px;
-    margin: 20px auto;
-    padding: 10px;
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 8px;
-    text-align: center;
-}
-
 {% endblock %}

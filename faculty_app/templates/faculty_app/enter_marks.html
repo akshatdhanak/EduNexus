@@ -2,452 +2,436 @@
 
 {% block title %}Enter Student Marks{% endblock %}
 
-{% block style %}
-<style>
-    .exam-selector {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-    
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    
-    .form-group label {
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 0.75rem;
-        display: block;
-    }
-    
-    .form-control {
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 0.75rem 1rem;
-        font-size: 0.95rem;
-        transition: border-color 0.3s ease;
-    }
-    
-    .form-control:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        outline: none;
-    }
-    
-    .marks-form {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-    
-    .form-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1.5rem;
-        border-bottom: 2px solid #e0e0e0;
-    }
-    
-    .form-header h3 {
-        margin: 0;
-        color: #1a1a1a;
-        font-weight: 700;
-    }
-    
-    .exam-info {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
-        font-weight: 500;
-    }
-    
-    .marks-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 2rem;
-    }
-    
-    .marks-table thead {
-        background-color: #f5f5f5;
-        border-bottom: 2px solid #e0e0e0;
-    }
-    
-    .marks-table th {
-        padding: 1rem;
-        text-align: left;
-        font-weight: 600;
-        color: #333;
-        font-size: 0.95rem;
-    }
-    
-    .marks-table td {
-        padding: 1rem;
-        border-bottom: 1px solid #e0e0e0;
-        vertical-align: middle;
-    }
-    
-    .marks-table tbody tr:hover {
-        background-color: #f9f9f9;
-    }
-    
-    .student-name {
-        font-weight: 600;
-        color: #333;
-    }
-    
-    .marks-input {
-        width: 100%;
-        border: 1px solid #ddd;
-        border-radius: 6px;
-        padding: 0.5rem;
-        font-size: 0.9rem;
-        text-align: center;
-    }
-    
-    .marks-input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
-        outline: none;
-    }
-    
-    .max-marks-info {
-        color: #666;
-        font-size: 0.85rem;
-        margin-top: 0.25rem;
-    }
-    
-    .form-actions {
-        display: flex;
-        gap: 1rem;
-        justify-content: flex-end;
-        margin-top: 2rem;
-        padding-top: 2rem;
-        border-top: 2px solid #e0e0e0;
-    }
-    
-    .btn {
-        padding: 0.75rem 1.75rem;
-        border-radius: 8px;
-        font-weight: 600;
-        border: none;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
-    }
-    
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
-    
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
-    
-    .btn-secondary {
-        background: #e0e0e0;
-        color: #333;
-    }
-    
-    .btn-secondary:hover {
-        background: #d0d0d0;
-    }
-    
-    .no-exams {
-        text-align: center;
-        padding: 3rem 1rem;
-        color: #999;
-        background: white;
-        border-radius: 12px;
-    }
-    
-    .no-exams-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
-    }
-    
-    .alert {
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        margin-bottom: 1.5rem;
-        border: none;
-    }
-    
-    .alert-info {
-        background-color: #e3f2fd;
-        color: #1976d2;
-    }
-    
-    .alert-warning {
-        background-color: #fff3e0;
-        color: #f57c00;
-    }
-    
-    .alert-success {
-        background-color: #e8f5e9;
-        color: #388e3c;
-    }
-    
-    .alert-danger {
-        background-color: #ffebee;
-        color: #d32f2f;
-    }
-    
-    .required-indicator {
-        color: #d32f2f;
-    }
-</style>
+{% block container %}
+<div class="em-page">
+
+  <!-- Header -->
+  <div class="em-top">
+    <div>
+      <h1>Enter Marks</h1>
+      <p>Add exam marks for your subjects</p>
+    </div>
+    <a href="{% url 'faculty_app:faculty_dashboard' %}" class="em-back-link">
+      <span class="material-icons">arrow_back</span> Dashboard
+    </a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+    <div class="em-toast em-toast-{{ message.tags }}">
+      <span class="material-icons">{% if 'success' in message.tags %}check_circle{% elif 'warning' in message.tags %}warning{% elif 'error' in message.tags %}error{% else %}info{% endif %}</span>
+      <span>{{ message }}</span>
+    </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- STEP 1: SELECT EXAM                         -->
+  <!-- ═══════════════════════════════════════════ -->
+  {% if not exam_id %}
+
+    <!-- Filter Bar -->
+    <form method="get" class="em-filter-card">
+      <div class="em-filter-row">
+        <div class="em-filter-field">
+          <label>Subject</label>
+          <select name="subject_id" class="em-select" onchange="this.form.submit()">
+            <option value="">All Subjects</option>
+            {% for subj in subjects %}
+              <option value="{{ subj.id }}" {% if selected_subject_id and subj.id|stringformat:"s" == selected_subject_id|stringformat:"s" %}selected{% endif %}>{{ subj.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="em-filter-field">
+          <label>Exam Type</label>
+          <select name="exam_type_id" class="em-select" onchange="this.form.submit()">
+            <option value="">All Types</option>
+            {% for et in exam_types_for_selected %}
+              <option value="{{ et.0 }}" {% if et.0|stringformat:"s" == selected_exam_type_id|stringformat:"s" %}selected{% endif %}>{{ et.1 }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="em-filter-actions">
+          <a href="{% url 'faculty_app:enter_marks' %}" class="em-reset-btn">
+            <span class="material-icons">refresh</span>
+          </a>
+        </div>
+      </div>
+    </form>
+
+    <!-- Exam Cards -->
+    {% if exams %}
+      <div class="em-hint">
+        <span class="material-icons">info</span>
+        Select an exam below to begin entering marks.
+      </div>
+
+      <div class="em-exam-grid">
+        {% for exam in exams %}
+        <a href="?exam_id={{ exam.id }}" class="em-exam-card">
+          <div class="em-exam-top-row">
+            <div class="em-exam-subj">{{ exam.subject.name }}</div>
+            <span class="em-type-tag em-type-{{ exam.exam_type.name|lower }}">{{ exam.exam_type.name }}</span>
+          </div>
+          <div class="em-exam-meta">
+            <span><span class="material-icons">school</span>Semester {{ exam.subject.semester }}</span>
+            {% if exam.exam_date %}
+            <span><span class="material-icons">event</span>{{ exam.exam_date|date:"M d, Y" }}</span>
+            {% endif %}
+          </div>
+          <div class="em-exam-max">
+            <span class="em-max-label">Max Marks</span>
+            <span class="em-max-val">{{ exam.max_marks }}</span>
+          </div>
+          <div class="em-exam-arrow">
+            <span class="material-icons">arrow_forward</span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+
+    {% else %}
+      <div class="em-empty">
+        <span class="material-icons">quiz</span>
+        <h3>No Exams Found</h3>
+        <p>No exams match your filters. Try a different subject or type.</p>
+      </div>
+    {% endif %}
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- STEP 2: MARK ENTRY                          -->
+  <!-- ═══════════════════════════════════════════ -->
+  {% else %}
+
+    <!-- Exam Info Bar -->
+    <div class="em-info-bar">
+      <div class="em-info-left">
+        <span class="material-icons">assignment</span>
+        <div>
+          <div class="em-info-subj">{{ exam.subject.name }}</div>
+          <div class="em-info-detail">{{ exam.exam_type.name }} &middot; Semester {{ exam.subject.semester }}</div>
+        </div>
+      </div>
+      <div class="em-info-right">
+        <span class="em-info-max-label">Max</span>
+        <span class="em-info-max-val">{{ exam.max_marks }}</span>
+      </div>
+    </div>
+
+    <!-- Division / Degree Filter (separate GET form, NOT nested) -->
+    {% if divisions or degree_programs %}
+    <form method="get" class="em-sub-filter">
+      <input type="hidden" name="exam_id" value="{{ exam_id }}">
+      {% if divisions %}
+      <select name="division" class="em-select em-select-sm" onchange="this.form.submit()">
+        <option value="">All Divisions</option>
+        {% for d in divisions %}
+          <option value="{{ d }}" {% if d == selected_division %}selected{% endif %}>{{ d }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+      {% if degree_programs %}
+      <select name="degree_program" class="em-select em-select-sm" onchange="this.form.submit()">
+        <option value="">All Programs</option>
+        {% for dp in degree_programs %}
+          <option value="{{ dp.id }}" {% if dp.id|stringformat:"s" == selected_degree %}selected{% endif %}>{{ dp.name }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+    </form>
+    {% endif %}
+
+    {% if students %}
+      <!-- Marks Entry Form (POST) -->
+      <form method="POST" id="marksForm">
+        {% csrf_token %}
+
+        <div class="em-marks-card">
+          <div class="em-marks-head">
+            <span>{{ students|length }} student{{ students|length|pluralize }}</span>
+            <span class="em-marks-hint">Enter marks between 0 and {{ exam.max_marks }}</span>
+          </div>
+
+          <table class="em-table">
+            <thead>
+              <tr>
+                <th>Roll No.</th>
+                <th>Name</th>
+                <th class="em-th-center">Current</th>
+                <th class="em-th-center">New Marks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for student in students %}
+                {% with marks=student.marks %}
+                <tr>
+                  <td><code class="em-code">{{ student.user.username }}</code></td>
+                  <td class="em-td-name">{{ student.name }}</td>
+                  <td class="em-td-center">
+                    {% if marks.marks_obtained is not None and marks.is_marked %}
+                      <span class="em-current-mark">{{ marks.marks_obtained|floatformat:1 }}</span>
+                    {% else %}
+                      <span class="em-not-entered">—</span>
+                    {% endif %}
+                  </td>
+                  <td class="em-td-center">
+                    <input type="number"
+                           name="marks_{{ student.id }}"
+                           class="em-input"
+                           min="0" max="{{ exam.max_marks }}" step="0.5"
+                           placeholder="0–{{ exam.max_marks }}"
+                           value="{% if marks.marks_obtained is not None and marks.is_marked %}{{ marks.marks_obtained }}{% endif %}">
+                  </td>
+                </tr>
+                {% endwith %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="em-actions">
+          <a href="{% url 'faculty_app:enter_marks' %}" class="em-cancel">
+            <span class="material-icons">arrow_back</span> Back
+          </a>
+          <button type="submit" class="em-save" onclick="return confirm('Save marks for {{ students|length }} student(s)?')">
+            <span class="material-icons">check</span> Save Marks
+          </button>
+        </div>
+      </form>
+
+    {% else %}
+      <div class="em-empty">
+        <span class="material-icons">group_off</span>
+        <h3>No Students</h3>
+        <p>No students found for this exam's semester.</p>
+      </div>
+      <div class="em-actions" style="margin-top:16px;">
+        <a href="{% url 'faculty_app:enter_marks' %}" class="em-cancel">
+          <span class="material-icons">arrow_back</span> Back
+        </a>
+      </div>
+    {% endif %}
+
+  {% endif %}
+
+</div>
 {% endblock %}
 
-{% block container %}
-<div class="container-fluid p-4">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1 class="h2" style="color: #1a1a1a; font-weight: 700;">
-                <i class="bi bi-pencil-square" style="color: #667eea;"></i> Enter Student Marks
-            </h1>
-            <p class="text-muted mb-0">Add exam marks for your subject's exams</p>
-        </div>
-    </div>
-    
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        {% endfor %}
-    {% endif %}
-    
-    <!-- Step 1: Exam Selection -->
-    {% if not exam_id %}
-        <div class="exam-selector">
-            <h3 style="margin-bottom: 1.5rem; color: #1a1a1a;">
-                <i class="bi bi-list-check" style="color: #667eea;"></i> Select Subject &amp; Exam
-            </h3>
+{% block style %}
+.em-page { max-width:900px; margin:0 auto; padding:32px 24px 64px; }
 
-            <form method="get" class="mb-3" id="subjectExamForm">
-                <div class="row g-2 align-items-end">
-                    <div class="col-md-5">
-                        <label class="form-label">Subject</label>
-                        <select name="subject_id" class="form-control">
-                            <option value="">Choose subject</option>
-                            {% for subj in subjects %}
-                                <option value="{{ subj.id }}" {% if selected_subject_id and subj.id|stringformat:"s" == selected_subject_id %}selected{% endif %}>{{ subj.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Exam Type</label>
-                        <select name="exam_type_id" class="form-control">
-                            <option value="">All Types</option>
-                            {% for et in exam_types_for_selected %}
-                                <option value="{{ et.0 }}" {% if et.0|stringformat:"s" == selected_exam_type_id %}selected{% endif %}>{{ et.1 }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-primary">Show Exams</button>
-                        <a href="{% url 'faculty_app:enter_marks' %}" class="btn btn-secondary ms-2">Reset</a>
-                    </div>
-                </div>
-            </form>
+/* Header */
+.em-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:24px; }
+.em-top h1 { font-size:22px; font-weight:700; color:#111; margin:0 0 2px; letter-spacing:-.3px; }
+.em-top p { font-size:14px; color:#6b7280; margin:0; }
+.em-back-link {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:13px; font-weight:500; color:#6b7280;
+  text-decoration:none; transition:color .15s;
+}
+.em-back-link:hover { color:#111; text-decoration:none; }
+.em-back-link .material-icons { font-size:16px; }
 
-            {% if exams %}
-                <div class="alert alert-info">
-                    <i class="bi bi-info-circle"></i> Choose an exam to view and enter marks for all students in that semester.
-                </div>
+/* Toast */
+.em-toast {
+  display:flex; align-items:center; gap:8px;
+  padding:10px 16px; border-radius:8px;
+  font-size:13px; font-weight:500; margin-bottom:16px;
+}
+.em-toast .material-icons { font-size:18px; }
+.em-toast-success { background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
+.em-toast-warning { background:#fffbeb; color:#92400e; border:1px solid #fde68a; }
+.em-toast-error, .em-toast-danger { background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
+.em-toast-info { background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe; }
 
-                <div class="row">
-                    {% for exam in exams %}
-                        {# If exam_type filter is present, ensure it matches (server-side filtered already) #}
-                        <div class="col-md-6 mb-3">
-                            <a href="?exam_id={{ exam.id }}" class="card text-decoration-none" style="cursor: pointer; height: 100%; border: 2px solid #e0e0e0; transition: all 0.3s ease;"
-                               onmouseover="this.style.borderColor='#667eea'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.2)';"
-                               onmouseout="this.style.borderColor='#e0e0e0'; this.style.boxShadow='none';">
-                                <div class="card-body">
-                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                                        <div>
-                                            <h5 class="card-title" style="color: #1a1a1a; margin: 0;">
-                                                {{ exam.subject.name }}
-                                            </h5>
-                                            <p class="text-muted" style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">
-                                                Semester {{ exam.subject.semester }}
-                                            </p>
-                                        </div>
-                                        <span style="display: inline-block; padding: 0.35rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background-color: #667eea; color: white;">
-                                            <i class="bi bi-certificate"></i> {{ exam.exam_type.name }}
-                                        </span>
-                                    </div>
+/* Filter Card */
+.em-filter-card {
+  background:#fff; border:1px solid #e5e7eb; border-radius:12px;
+  padding:16px 18px; margin-bottom:16px;
+}
+.em-filter-row { display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+.em-filter-field { display:flex; flex-direction:column; gap:5px; flex:1; min-width:160px; }
+.em-filter-field label { font-size:11px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:.04em; }
+.em-select {
+  padding:8px 12px; border:1px solid #e5e7eb; border-radius:8px;
+  font-size:13px; color:#111; background:#fff; appearance:auto;
+  transition:border-color .15s; font-family:inherit;
+}
+.em-select:focus { outline:none; border-color:#111; }
+.em-select-sm { padding:7px 10px; font-size:13px; }
+.em-filter-actions { display:flex; align-items:flex-end; }
+.em-reset-btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:8px;
+  border:1px solid #e5e7eb; background:#fff;
+  color:#9ca3af; text-decoration:none; transition:all .15s;
+}
+.em-reset-btn:hover { border-color:#111; color:#111; }
+.em-reset-btn .material-icons { font-size:18px; }
 
-                                    <div style="background-color: #f5f5f5; padding: 0.75rem; border-radius: 6px; text-align: center;">
-                                        <p style="margin: 0; color: #666; font-size: 0.9rem;">Max Marks: <strong style="color: #667eea; font-size: 1.1rem;">{{ exam.max_marks }}</strong></p>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="no-exams">
-                    <div class="no-exams-icon">📭</div>
-                    <h5>No Exams Available</h5>
-                    <p class="text-muted mb-0">There are no exams created for your selected subject yet. Try a different subject or contact the admin.</p>
-                </div>
-            {% endif %}
-        </div>
-    
-    <!-- Step 2: Mark Entry -->
-    {% else %}
-        <form method="POST">
-            {% csrf_token %}
-            
-            <div class="marks-form">
-                <div class="form-header">
-                    <h3>Enter Marks</h3>
-                    <div class="exam-info">
-                        <i class="bi bi-certificate"></i> {{ exam.exam_type.name }} Exam
-                        — {{ exam.subject.name }} (Sem {{ exam.subject.semester }})
-                        — Max: <strong>{{ exam.max_marks }}</strong> marks
-                    </div>
-                </div>
-                
-                {% if students %}
-                    <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px;">
-                        <form method="get" style="display:flex;gap:8px;align-items:center;" id="marksFilterForm">
-                            <input type="hidden" name="exam_id" value="{{ exam_id }}">
-                            {% if divisions %}
-                                <select name="division" class="form-control" style="width:140px;">
-                                    <option value="">All Divisions</option>
-                                    {% for d in divisions %}
-                                        <option value="{{ d }}" {% if d == selected_division %}selected{% endif %}>{{ d }}</option>
-                                    {% endfor %}
-                                </select>
-                            {% endif %}
-                            {% if degree_programs %}
-                                <select name="degree_program" class="form-control" style="width:240px;">
-                                    <option value="">All Degree Programs</option>
-                                    {% for dp in degree_programs %}
-                                        <option value="{{ dp.id }}" {% if dp.id|stringformat:"s" == selected_degree %}selected{% endif %}>{{ dp.name }}</option>
-                                    {% endfor %}
-                                </select>
-                            {% endif %}
-                            <button type="submit" class="btn btn-secondary">Apply</button>
-                        </form>
-                    </div>
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle"></i> <strong>Important:</strong> Enter marks between 0 and {{ exam.max_marks }}. Leave empty if marks are not yet available.
-                    </div>
-                    
-                    <div style="overflow-x: auto;">
-                        <table class="marks-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 20%;">Roll Number</th>
-                                    <th style="width: 40%;">Student Name</th>
-                                    <th style="width: 20%;">Current Marks</th>
-                                    <th style="width: 20%;">
-                                        Enter Marks <span class="required-indicator">*</span>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for student in students %}
-                                    {% with marks=student.marks %}
-                                        <tr>
-                                            <td style="text-align: center;">
-                                                <code style="background-color: #f5f5f5; padding: 0.25rem 0.5rem; border-radius: 4px;">
-                                                    {{ student.user.username }}
-                                                </code>
-                                            </td>
-                                            <td>
-                                                <div class="student-name">{{ student.name }}</div>
-                                            </td>
-                                            <td style="text-align: center;">
-                                                {% if marks.marks_obtained %}
-                                                    <span style="color: #667eea; font-weight: 600;">{{ marks.marks_obtained|floatformat:1 }}</span>
-                                                    <div class="max-marks-info">Last updated</div>
-                                                {% else %}
-                                                    <span style="color: #999;">Not entered</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                <input type="number" 
-                                                       name="marks_{{ student.id }}" 
-                                                       class="marks-input" 
-                                                       min="0" 
-                                                       max="{{ exam.max_marks }}"
-                                                       step="0.5"
-                                                       placeholder="0-{{ exam.max_marks }}"
-                                                       value="{% if marks.marks_obtained %}{{ marks.marks_obtained }}{% endif %}">
-                                                <div class="max-marks-info">0 to {{ exam.max_marks }}</div>
-                                            </td>
-                                        </tr>
-                                    {% endwith %}
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <a href="{% url 'faculty_app:enter_marks' %}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Back to Exam Selection
-                        </a>
-                        <button type="submit" class="btn btn-primary" onclick="return confirm('Are you sure you want to save these marks? This will update the student records.');">
-                            <i class="bi bi-check-circle"></i> Save Marks
-                        </button>
-                    </div>
-                {% else %}
-                    <div class="no-exams">
-                        <div class="no-exams-icon">👥</div>
-                        <h5>No Students Found</h5>
-                        <p class="text-muted mb-0">There are no students in Semester {{ exam.subject.semester }}.</p>
-                    </div>
-                    
-                    <div style="margin-top: 2rem;">
-                        <a href="{% url 'faculty_app:enter_marks' %}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i> Back to Exam Selection
-                        </a>
-                    </div>
-                {% endif %}
-            </div>
-        </form>
-    {% endif %}
-    
-    <!-- Navigation -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <a href="{% url 'faculty_app:faculty_dashboard' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Dashboard
-            </a>
-        </div>
-    </div>
-</div>
+/* Hint */
+.em-hint {
+  display:flex; align-items:center; gap:6px;
+  padding:10px 14px; margin-bottom:16px;
+  font-size:13px; color:#6b7280;
+  background:#f9fafb; border-radius:8px;
+  border:1px solid #f3f4f6;
+}
+.em-hint .material-icons { font-size:16px; color:#9ca3af; }
 
+/* Exam Grid */
+.em-exam-grid { display:flex; flex-direction:column; gap:8px; }
+.em-exam-card {
+  display:block; position:relative;
+  background:#fff; border:1px solid #e5e7eb; border-radius:10px;
+  padding:16px 48px 16px 18px;
+  text-decoration:none; color:inherit;
+  transition:border-color .15s, box-shadow .15s;
+}
+.em-exam-card:hover { border-color:#d1d5db; box-shadow:0 1px 4px rgba(0,0,0,.04); text-decoration:none; color:inherit; }
+.em-exam-top-row { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.em-exam-subj { font-size:14px; font-weight:600; color:#111; }
+.em-type-tag {
+  padding:2px 8px; border-radius:4px;
+  font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.02em;
+}
+.em-type-sessional { background:#eff6ff; color:#1e40af; }
+.em-type-practical { background:#f0fdf4; color:#166534; }
+.em-type-external { background:#faf5ff; color:#7c3aed; }
+.em-exam-meta {
+  display:flex; gap:14px; font-size:12px; color:#9ca3af; margin-bottom:8px;
+}
+.em-exam-meta span { display:inline-flex; align-items:center; gap:3px; }
+.em-exam-meta .material-icons { font-size:14px; }
+.em-exam-max { display:flex; align-items:baseline; gap:6px; }
+.em-max-label { font-size:12px; color:#9ca3af; }
+.em-max-val { font-size:16px; font-weight:700; color:#111; }
+.em-exam-arrow {
+  position:absolute; right:16px; top:50%; transform:translateY(-50%);
+  color:#d1d5db; transition:color .15s;
+}
+.em-exam-card:hover .em-exam-arrow { color:#374151; }
+.em-exam-arrow .material-icons { font-size:20px; }
+
+/* Info Bar (Step 2) */
+.em-info-bar {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:14px 18px; margin-bottom:12px;
+  background:#111; border-radius:10px; color:#fff;
+}
+.em-info-left { display:flex; align-items:center; gap:10px; }
+.em-info-left .material-icons { font-size:20px; opacity:.6; }
+.em-info-subj { font-size:14px; font-weight:600; }
+.em-info-detail { font-size:12px; opacity:.6; }
+.em-info-right { display:flex; align-items:baseline; gap:6px; }
+.em-info-max-label { font-size:11px; font-weight:600; text-transform:uppercase; opacity:.5; }
+.em-info-max-val { font-size:22px; font-weight:800; }
+
+/* Sub-filter */
+.em-sub-filter {
+  display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;
+}
+
+/* Marks Card */
+.em-marks-card {
+  background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden;
+}
+.em-marks-head {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 18px; border-bottom:1px solid #f3f4f6;
+  font-size:13px; font-weight:600; color:#374151;
+}
+.em-marks-hint { font-weight:400; color:#9ca3af; font-size:12px; }
+
+/* Table */
+.em-table { width:100%; border-collapse:collapse; }
+.em-table thead { background:#fafafa; }
+.em-table th {
+  padding:10px 18px; text-align:left;
+  font-size:11px; font-weight:600; color:#9ca3af;
+  text-transform:uppercase; letter-spacing:.04em;
+  border-bottom:1px solid #f3f4f6;
+}
+.em-th-center { text-align:center !important; }
+.em-table td {
+  padding:10px 18px; font-size:13px;
+  border-bottom:1px solid #f5f5f5; color:#374151;
+}
+.em-table tbody tr:last-child td { border-bottom:none; }
+.em-table tbody tr:hover { background:#fafafa; }
+.em-code {
+  background:#f3f4f6; padding:2px 7px; border-radius:4px;
+  font-size:12px; color:#374151; font-weight:500;
+}
+.em-td-name { font-weight:600; color:#111; }
+.em-td-center { text-align:center; }
+.em-current-mark { font-size:14px; font-weight:700; color:#111; }
+.em-not-entered { color:#d1d5db; font-size:14px; }
+.em-input {
+  width:90px; padding:6px 8px; text-align:center;
+  border:1px solid #e5e7eb; border-radius:6px;
+  font-size:13px; color:#111; font-family:inherit;
+  transition:border-color .15s;
+}
+.em-input:focus { outline:none; border-color:#111; }
+.em-input:invalid { border-color:#dc2626; }
+
+/* Actions */
+.em-actions {
+  display:flex; justify-content:space-between; align-items:center;
+  margin-top:16px; gap:12px;
+}
+.em-cancel {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:8px 14px; font-size:13px; font-weight:500;
+  color:#6b7280; text-decoration:none; border-radius:8px;
+  transition:all .15s;
+}
+.em-cancel:hover { background:#f3f4f6; color:#374151; text-decoration:none; }
+.em-cancel .material-icons { font-size:16px; }
+.em-save {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:9px 22px; font-size:13px; font-weight:600;
+  color:#fff; background:#111; border:none; border-radius:8px;
+  cursor:pointer; transition:background .15s;
+}
+.em-save:hover { background:#000; }
+.em-save .material-icons { font-size:16px; }
+
+/* Empty */
+.em-empty {
+  text-align:center; padding:56px 20px;
+  background:#fff; border:1px dashed #d1d5db; border-radius:12px;
+}
+.em-empty .material-icons { font-size:36px; color:#d1d5db; margin-bottom:10px; }
+.em-empty h3 { font-size:15px; font-weight:600; color:#374151; margin:0 0 4px; }
+.em-empty p { font-size:13px; color:#9ca3af; margin:0; }
+
+@media (max-width:640px) {
+  .em-page { padding:20px 16px 48px; }
+  .em-top { flex-direction:column; }
+  .em-filter-row { flex-direction:column; }
+  .em-info-bar { flex-direction:column; gap:8px; align-items:flex-start; }
+  .em-table th, .em-table td { padding:8px 12px; }
+  .em-marks-head { flex-direction:column; gap:4px; align-items:flex-start; }
+}
+
+/* Marks input validation color */
+.em-input.em-input-error { border-color:#dc2626; background:#fef2f2; }
+{% endblock %}
+
+{% block extra_js %}
 <script>
-// Validate marks input
-document.querySelectorAll('.marks-input').forEach(input => {
-    input.addEventListener('blur', function() {
-        const maxMarks = parseInt(this.getAttribute('max'));
-        const value = parseFloat(this.value);
-        
-        if (this.value && (isNaN(value) || value < 0 || value > maxMarks)) {
-            this.style.borderColor = '#d32f2f';
-            this.title = `Please enter a value between 0 and ${maxMarks}`;
-        } else {
-            this.style.borderColor = '#ddd';
-            this.title = '';
-        }
-    });
+document.querySelectorAll('.em-input').forEach(input => {
+  input.addEventListener('input', function() {
+    const max = parseFloat(this.max);
+    const val = parseFloat(this.value);
+    if (this.value && (isNaN(val) || val < 0 || val > max)) {
+      this.classList.add('em-input-error');
+    } else {
+      this.classList.remove('em-input-error');
+    }
+  });
 });
 </script>
 {% endblock %}

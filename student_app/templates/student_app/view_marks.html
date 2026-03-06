@@ -3,273 +3,256 @@
 
 {% block title %}View Marks{% endblock %}
 
-{% block style %}
-<style>
-    .marks-card {
-        border: 1px solid #e0e0e0;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-    }
-    
-    .marks-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1.5rem;
-        font-size: 1.3rem;
-        font-weight: 600;
-    }
-    
-    .marks-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    
-    .marks-table thead {
-        background-color: #f5f5f5;
-        border-bottom: 2px solid #e0e0e0;
-    }
-    
-    .marks-table th {
-        padding: 1rem;
-        text-align: left;
-        font-weight: 600;
-        color: #333;
-        font-size: 0.95rem;
-    }
-    
-    .marks-table td {
-        padding: 1rem;
-        border-bottom: 1px solid #e0e0e0;
-        color: #555;
-    }
-    
-    .marks-table tbody tr:hover {
-        background-color: #f9f9f9;
-    }
-    
-    .marks-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-    
-    .exam-type-badge {
-        display: inline-block;
-        padding: 0.35rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-    
-    .internal-badge {
-        background-color: #e3f2fd;
-        color: #1976d2;
-    }
-    
-    .external-badge {
-        background-color: #f3e5f5;
-        color: #7b1fa2;
-    }
-    
-    .practical-badge {
-        background-color: #e8f5e9;
-        color: #388e3c;
-    }
-    
-    .marks-value {
-        font-weight: 600;
-        color: #1a73e8;
-        font-size: 1.1rem;
-    }
-    
-    .not-entered {
-        color: #999;
-        font-style: italic;
-    }
-    
-    .semester-tabs {
-        display: flex;
-        gap: 0.5rem;
-        margin-bottom: 2rem;
-        flex-wrap: wrap;
-    }
-    
-    .semester-btn {
-        padding: 0.75rem 1.5rem;
-        border: 2px solid #ddd;
-        background: white;
-        color: #333;
-        cursor: pointer;
-        border-radius: 25px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-    
-    .semester-btn:hover {
-        border-color: #667eea;
-        color: #667eea;
-    }
-    
-    .semester-btn.active {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-color: #667eea;
-    }
-    
-    .no-marks {
-        text-align: center;
-        padding: 3rem 1rem;
-        color: #999;
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 3rem 1rem;
-        background-color: #f5f5f5;
-        border-radius: 12px;
-    }
-    
-    .empty-state-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
-    }
-</style>
-{% endblock %}
-
 {% block container %}
-<div class="container-fluid p-4">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1 class="h2" style="color: #1a1a1a; font-weight: 700;">
-                <i class="bi bi-file-earmark-check" style="color: #667eea;"></i> View Marks
-            </h1>
-            <p class="text-muted mb-0">Review your exam marks across all semesters</p>
-        </div>
+<div class="vm-page">
+
+  <!-- Header Row -->
+  <div class="vm-top">
+    <div>
+      <h1>Marks</h1>
+      <p>Exam performance across semesters</p>
     </div>
-    
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        {% endfor %}
-    {% endif %}
-    
-    <!-- Semester Tabs -->
-    {% if semesters %}
-        <div class="semester-tabs">
-            {% for semester in semesters %}
-                <button class="semester-btn {% if forloop.first %}active{% endif %}" onclick="showSemester({{ semester }})">
-                    Semester {{ semester }}
-                </button>
-            {% endfor %}
-        </div>
-    {% endif %}
-    
-    <!-- Marks Cards -->
-    {% if marks_by_semester %}
-        {% for semester in semesters %}
-            <div class="semester-content" id="semester-{{ semester }}" style="{% if not forloop.first %}display: none;{% endif %}">
-                {% with marks=marks_by_semester|get_item:semester %}
-                    {% if marks %}
-                        {% regroup marks by exam_schedule.subject as marks_by_subject %}
-                        
-                        {% for subject_group in marks_by_subject %}
-                            <div class="marks-card">
-                                <div class="marks-header">
-                                    <i class="bi bi-book"></i> {{ subject_group.grouper.name }}
-                                </div>
-                                <table class="marks-table">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 35%;">Exam Type</th>
-                                            <th style="width: 20%;">Max Marks</th>
-                                            <th style="width: 20%;">Marks Obtained</th>
-                                            <th style="width: 25%;">Percentage</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for mark in subject_group.list %}
-                                            <tr>
-                                                <td>
-                                                    {% with type_name=mark.exam_schedule.exam_type.name|lower %}
-                                                    <span class="exam-type-badge {% if 'internal' in type_name %}internal-badge{% elif 'external' in type_name %}external-badge{% elif 'practical' in type_name %}practical-badge{% else %}external-badge{% endif %}">
-                                                        {{ mark.exam_schedule.exam_type.name }}
-                                                    </span>
-                                                    {% endwith %}
-                                                </td>
-                                                <td class="marks-value">{{ mark.exam_schedule.max_marks }}</td>
-                                                <td>
-                                                    {% if mark.marks_obtained is not None %}
-                                                        <span class="marks-value">{{ mark.marks_obtained|floatformat:1 }}</span>
-                                                    {% else %}
-                                                        <span class="not-entered">Not Entered</span>
-                                                    {% endif %}
-                                                </td>
-                                                <td>
-                                                    {% if mark.marks_obtained is not None %}
-                                                        {% with percentage=mark.marks_obtained|multiply:100|divide:mark.exam_schedule.max_marks %}
-                                                            <span class="marks-value">{{ percentage|floatformat:0 }}%</span>
-                                                        {% endwith %}
-                                                    {% else %}
-                                                        <span class="not-entered">—</span>
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                        {% endfor %}
+    <a href="{% url 'student_app:view_results' %}" class="vm-link-btn">
+      <span class="material-icons">emoji_events</span> Results &amp; Grades
+    </a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+    <div class="vm-alert">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% if semesters %}
+  <!-- Semester Switcher -->
+  <div class="vm-nav">
+    {% for semester in semesters %}
+    <button class="vm-tab {% if forloop.first %}vm-tab-on{% endif %}" onclick="vmSwitch({{ semester }}, this)">
+      <span class="vm-tab-num">{{ semester }}</span>
+      <span class="vm-tab-lbl">Sem</span>
+    </button>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if marks_by_semester %}
+    {% for semester in semesters %}
+    <div class="vm-panel" id="vm-sem-{{ semester }}" {% if not forloop.first %}style="display:none"{% endif %}>
+
+      {% with marks=marks_by_semester|get_item:semester %}
+        {% if marks %}
+          {% regroup marks by exam_schedule.subject as marks_by_subject %}
+
+          <div class="vm-subjects">
+            {% for subject_group in marks_by_subject %}
+            <div class="vm-subj">
+              <!-- Subject Title -->
+              <div class="vm-subj-head">
+                <span class="material-icons">menu_book</span>
+                <span class="vm-subj-name">{{ subject_group.grouper.name }}</span>
+              </div>
+
+              <!-- Marks Grid -->
+              <div class="vm-grid">
+                {% for mark in subject_group.list %}
+                <div class="vm-cell">
+                  <div class="vm-cell-type">
+                    {% with type_name=mark.exam_schedule.exam_type.name|lower %}
+                    <span class="vm-tag vm-tag-{% if 'internal' in type_name or 'sessional' in type_name %}int{% elif 'practical' in type_name %}prac{% else %}ext{% endif %}">
+                      {{ mark.exam_schedule.exam_type.name }}
+                    </span>
+                    {% endwith %}
+                  </div>
+                  <div class="vm-cell-body">
+                    {% if mark.marks_obtained is not None %}
+                      <span class="vm-score">{{ mark.marks_obtained|floatformat:1 }}</span>
+                      <span class="vm-max">/ {{ mark.exam_schedule.max_marks }}</span>
                     {% else %}
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📭</div>
-                            <h5>No Marks Available</h5>
-                            <p class="text-muted">Marks for Semester {{ semester }} will appear here once faculty enters them.</p>
-                        </div>
+                      <span class="vm-pending">—</span>
+                      <span class="vm-max">/ {{ mark.exam_schedule.max_marks }}</span>
                     {% endif %}
-                {% endwith %}
+                  </div>
+                  <div class="vm-cell-bar">
+                    {% if mark.marks_obtained is not None %}
+                      {% with percentage=mark.marks_obtained|multiply:100|divide:mark.exam_schedule.max_marks %}
+                      <div class="vm-bar-track">
+                        <div class="vm-bar-fill {% if percentage >= 75 %}vm-bar-good{% elif percentage >= 50 %}vm-bar-mid{% else %}vm-bar-low{% endif %}" style="width:{{ percentage|floatformat:0 }}%"></div>
+                      </div>
+                      <span class="vm-pct">{{ percentage|floatformat:0 }}%</span>
+                      {% endwith %}
+                    {% else %}
+                      <div class="vm-bar-track"><div class="vm-bar-fill" style="width:0"></div></div>
+                      <span class="vm-pct vm-pct-na">N/A</span>
+                    {% endif %}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
             </div>
-        {% endfor %}
-    {% else %}
-        <div class="empty-state">
-            <div class="empty-state-icon">📊</div>
-            <h5>No Marks Yet</h5>
-            <p class="text-muted">You don't have any exam marks yet. Check back after exams are conducted.</p>
-        </div>
-    {% endif %}
-    
-    <!-- Navigation -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <a href="{% url 'student_app:view_results' %}" class="btn btn-primary">
-                <i class="bi bi-trophy"></i> View Results & Grades
-            </a>
-            <a href="{% url 'student_app:student_dashboard' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Dashboard
-            </a>
-        </div>
+            {% endfor %}
+          </div>
+
+        {% else %}
+          <div class="vm-empty-sem">
+            <span class="material-icons">hourglass_empty</span>
+            <p>Marks for Semester {{ semester }} will appear once faculty enters them.</p>
+          </div>
+        {% endif %}
+      {% endwith %}
+
     </div>
+    {% endfor %}
+
+  {% else %}
+    <div class="vm-empty">
+      <span class="material-icons">assignment</span>
+      <h3>No Marks Yet</h3>
+      <p>Check back after exams are conducted.</p>
+    </div>
+  {% endif %}
+
+  <!-- Footer Nav -->
+  <div class="vm-foot">
+    <a href="{% url 'student_app:student_dashboard' %}" class="vm-back">
+      <span class="material-icons">arrow_back</span> Dashboard
+    </a>
+  </div>
+
 </div>
 
 <script>
-function showSemester(semester) {
-    // Hide all semesters
-    document.querySelectorAll('.semester-content').forEach(el => {
-        el.style.display = 'none';
-    });
-    
-    // Show selected semester
-    document.getElementById('semester-' + semester).style.display = 'block';
-    
-    // Update buttons
-    document.querySelectorAll('.semester-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    event.target.classList.add('active');
+function vmSwitch(sem, btn) {
+  document.querySelectorAll('.vm-panel').forEach(p => p.style.display = 'none');
+  document.getElementById('vm-sem-' + sem).style.display = 'block';
+  document.querySelectorAll('.vm-tab').forEach(t => t.classList.remove('vm-tab-on'));
+  btn.classList.add('vm-tab-on');
 }
 </script>
+{% endblock %}
+
+{% block style %}
+.vm-page { max-width: 840px; margin: 0 auto; padding: 32px 24px 64px; }
+
+/* Header */
+.vm-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:28px; }
+.vm-top h1 { font-size:24px; font-weight:700; color:#111; margin:0 0 2px; letter-spacing:-.4px; }
+.vm-top p { font-size:14px; color:#6b7280; margin:0; }
+.vm-link-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 16px; font-size:13px; font-weight:600;
+  color:#fff; background:#111; border-radius:8px;
+  text-decoration:none; white-space:nowrap; transition:background .15s;
+}
+.vm-link-btn:hover { background:#000; color:#fff; text-decoration:none; }
+.vm-link-btn .material-icons { font-size:16px; }
+
+/* Alert */
+.vm-alert {
+  padding:10px 16px; margin-bottom:16px;
+  border:1px solid #fde68a; background:#fffbeb;
+  border-radius:8px; font-size:13px; color:#92400e;
+}
+
+/* Semester Nav */
+.vm-nav {
+  display:flex; gap:6px; margin-bottom:24px;
+  padding-bottom:20px; border-bottom:1px solid #f3f4f6;
+}
+.vm-tab {
+  display:flex; flex-direction:column; align-items:center;
+  gap:1px; padding:10px 18px;
+  border:1px solid #e5e7eb; border-radius:10px;
+  background:#fff; cursor:pointer;
+  transition:all .15s; min-width:56px;
+}
+.vm-tab:hover { border-color:#d1d5db; background:#f9fafb; }
+.vm-tab-num { font-size:18px; font-weight:700; color:#374151; line-height:1; }
+.vm-tab-lbl { font-size:10px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:.04em; }
+.vm-tab-on { background:#111; border-color:#111; }
+.vm-tab-on .vm-tab-num { color:#fff; }
+.vm-tab-on .vm-tab-lbl { color:rgba(255,255,255,.6); }
+
+/* Subjects */
+.vm-subjects { display:flex; flex-direction:column; gap:16px; }
+.vm-subj {
+  background:#fff; border:1px solid #e5e7eb;
+  border-radius:12px; overflow:hidden;
+}
+.vm-subj-head {
+  display:flex; align-items:center; gap:8px;
+  padding:14px 18px;
+  border-bottom:1px solid #f3f4f6;
+}
+.vm-subj-head .material-icons { font-size:18px; color:#9ca3af; }
+.vm-subj-name { font-size:14px; font-weight:600; color:#111; }
+
+/* Marks Grid */
+.vm-grid { display:flex; flex-direction:column; }
+.vm-cell {
+  display:grid;
+  grid-template-columns: 140px 1fr 1fr;
+  align-items:center;
+  padding:12px 18px;
+  border-bottom:1px solid #f5f5f5;
+  gap:12px;
+}
+.vm-cell:last-child { border-bottom:none; }
+.vm-cell:hover { background:#fafafa; }
+.vm-tag {
+  display:inline-block; padding:3px 10px; border-radius:5px;
+  font-size:11px; font-weight:600; text-transform:uppercase;
+  letter-spacing:.02em;
+}
+.vm-tag-int { background:#eff6ff; color:#1e40af; }
+.vm-tag-ext { background:#faf5ff; color:#7c3aed; }
+.vm-tag-prac { background:#f0fdf4; color:#166534; }
+
+.vm-cell-body { display:flex; align-items:baseline; gap:4px; }
+.vm-score { font-size:20px; font-weight:700; color:#111; line-height:1; }
+.vm-max { font-size:13px; color:#9ca3af; font-weight:500; }
+.vm-pending { font-size:20px; color:#d1d5db; font-weight:700; }
+
+.vm-cell-bar { display:flex; align-items:center; gap:8px; }
+.vm-bar-track {
+  flex:1; height:6px; background:#f3f4f6;
+  border-radius:3px; overflow:hidden;
+}
+.vm-bar-fill { height:100%; border-radius:3px; transition:width .4s ease; }
+.vm-bar-good { background:#16a34a; }
+.vm-bar-mid { background:#d97706; }
+.vm-bar-low { background:#dc2626; }
+.vm-pct { font-size:12px; font-weight:700; color:#374151; min-width:32px; text-align:right; }
+.vm-pct-na { color:#d1d5db; }
+
+/* Empty */
+.vm-empty-sem {
+  text-align:center; padding:40px 20px;
+  color:#9ca3af; font-size:13px;
+}
+.vm-empty-sem .material-icons { font-size:32px; color:#d1d5db; margin-bottom:8px; display:block; }
+.vm-empty-sem p { margin:0; }
+.vm-empty {
+  text-align:center; padding:64px 20px;
+  background:#fff; border:1px dashed #d1d5db; border-radius:12px;
+}
+.vm-empty .material-icons { font-size:40px; color:#d1d5db; margin-bottom:12px; }
+.vm-empty h3 { font-size:16px; font-weight:600; color:#374151; margin:0 0 4px; }
+.vm-empty p { font-size:13px; color:#9ca3af; margin:0; }
+
+/* Footer */
+.vm-foot { margin-top:28px; }
+.vm-back {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:13px; font-weight:500; color:#6b7280;
+  text-decoration:none; transition:color .15s;
+}
+.vm-back:hover { color:#111; text-decoration:none; }
+.vm-back .material-icons { font-size:16px; }
+
+@media (max-width:640px) {
+  .vm-page { padding:20px 16px 48px; }
+  .vm-top { flex-direction:column; }
+  .vm-cell { grid-template-columns:1fr; gap:6px; }
+  .vm-nav { overflow-x:auto; flex-wrap:nowrap; -webkit-overflow-scrolling:touch; }
+}
 {% endblock %}

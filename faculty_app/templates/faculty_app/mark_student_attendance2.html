@@ -3,828 +3,430 @@
 {% block title %}Mark Student Attendance{% endblock %}
 
 {% block container %}
-<div class="modern-attendance-page">
-  <!-- Header Section -->
-  <div class="attendance-header">
-    <div class="header-content">
-      <h1 class="page-title">
-        <span class="title-icon">📹</span> Mark Attendance
-      </h1>
-      <p class="page-subtitle">Barcode scanner or manual entry</p>
+<div class="ms-page">
+
+  <!-- Header -->
+  <div class="ms-header">
+    <div class="ms-header-left">
+      <h1>Mark Attendance</h1>
+      <p class="ms-header-sub">{{ lecture.subject_offering.subject.name }} · {{ lecture.date|date:"M d, Y" }}</p>
+    </div>
+    <a href="{% url 'faculty_app:show_student_attendance' %}" class="ms-view-all-btn">
+      <span class="material-icons">visibility</span> View Records
+    </a>
+  </div>
+
+  <!-- Session Info Bar -->
+  <div class="ms-info-bar">
+    <div class="ms-info-item">
+      <span class="material-icons">menu_book</span>
+      <div>
+        <span class="ms-info-label">Subject</span>
+        <span class="ms-info-value">{{ lecture.subject_offering.subject.name }}</span>
+      </div>
+    </div>
+    <div class="ms-info-item">
+      <span class="material-icons">
+        {% if slot_type == 'practical' %}science{% elif slot_type == 'tutorial' %}school{% else %}class{% endif %}
+      </span>
+      <div>
+        <span class="ms-info-label">Type</span>
+        <span class="ms-info-value">
+          <span class="ms-type-chip ms-type-{{ slot_type }}">{{ slot_type_display }}</span>
+        </span>
+      </div>
+    </div>
+    <div class="ms-info-item">
+      <span class="material-icons">schedule</span>
+      <div>
+        <span class="ms-info-label">Date & Time</span>
+        <span class="ms-info-value">{{ lecture.date|date:"M d, Y" }} · {{ lecture.start_time|time:"H:i" }}</span>
+      </div>
+    </div>
+    <div class="ms-info-item">
+      <span class="material-icons">person</span>
+      <div>
+        <span class="ms-info-label">Faculty</span>
+        <span class="ms-info-value">{{ lecture.faculty.name }}</span>
+      </div>
     </div>
   </div>
 
-  <div class="container-lg">
-    <!-- Lecture Details Card -->
-    <div class="lecture-card">
-      <div class="card-inner">
-        <div class="lecture-detail">
-          <span class="detail-icon">📚</span>
-          <div class="detail-content">
-            <p class="detail-label">Subject</p>
-            <p class="detail-value">{{ lecture.subject_offering.subject.name }}</p>
-          </div>
-        </div>
-        <div class="lecture-detail">
-          <span class="detail-icon">
-            {% if slot_type == 'practical' %}🔬{% elif slot_type == 'tutorial' %}📝{% else %}📖{% endif %}
-          </span>
-          <div class="detail-content">
-            <p class="detail-label">Session Type</p>
-            <p class="detail-value">
-              <span class="session-badge session-{{ slot_type }}">{{ slot_type_display }}</span>
-            </p>
-          </div>
-        </div>
-        <div class="lecture-detail">
-          <span class="detail-icon">📅</span>
-          <div class="detail-content">
-            <p class="detail-label">Date & Time</p>
-            <p class="detail-value">{{ lecture.date|date:"M d, Y" }} · {{ lecture.start_time|time:"H:i" }}</p>
-          </div>
-        </div>
-        <div class="lecture-detail">
-          <span class="detail-icon">👨‍🏫</span>
-          <div class="detail-content">
-            <p class="detail-label">Faculty</p>
-            <p class="detail-value">{{ lecture.faculty.name }}</p>
-          </div>
-        </div>
-      </div>
+  <!-- Messages -->
+  {% if messages %}
+  <div class="ms-messages">
+    {% for message in messages %}
+    <div class="ms-alert ms-alert-{{ message.tags }}">
+      <span class="material-icons">
+        {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
+      </span>
+      <span>{{ message }}</span>
+      <button type="button" class="ms-alert-close" onclick="this.parentElement.remove()">
+        <span class="material-icons">close</span>
+      </button>
     </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
-    <!-- Messages -->
-    {% if messages %}
-    <div class="messages-container">
-      {% for message in messages %}
-      <div class="alert-message alert-{{ message.tags }}">
-        <div class="alert-content">
-          <span class="alert-icon">
-            {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}❌{% elif message.tags == 'warning' %}⚠️{% else %}ℹ️{% endif %}
-          </span>
-          <p>{{ message }}</p>
-        </div>
-        <button type="button" class="alert-close" onclick="this.parentElement.remove()"></button>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
-
-    <!-- Main Content Grid -->
-    <div class="attendance-grid">
-      <!-- Left Column: Scanner -->
-      <div class="scanner-section">
-        <div class="scanner-card">
-          <div class="card-header">
-            <h2 class="card-title">
-              <span>🎥</span> Barcode Scanner
-            </h2>
-            <p class="card-subtitle">Point camera at student ID barcode</p>
+  <!-- Main Grid -->
+  <div class="ms-grid">
+    <!-- Left: Scanner + Manual -->
+    <div class="ms-left">
+      <!-- Scanner Card -->
+      <div class="ms-card">
+        <div class="ms-card-head">
+          <div>
+            <h2><span class="material-icons">qr_code_scanner</span> Barcode Scanner</h2>
+            <p>Point camera at student ID barcode</p>
           </div>
-          
-          <div class="scanner-container">
+        </div>
+        <div class="ms-card-body">
+          <div class="ms-scanner-viewport">
             <video id="video" autoplay playsinline></video>
             <canvas id="canvas" hidden></canvas>
-            <div id="scanner-status" class="scanner-status">
+            <div id="scanner-status" class="ms-scanner-overlay">
               <span id="status-text">Click "Start Scanner" to begin</span>
             </div>
           </div>
-
-          <div class="scanner-controls">
-            <button id="startBtn" class="btn-primary btn-lg">
-              <span>▶</span> Start Scanner
+          <div class="ms-scanner-actions">
+            <button id="startBtn" class="ms-btn ms-btn-dark">
+              <span class="material-icons">play_arrow</span> Start Scanner
             </button>
-            <button id="stopBtn" class="btn-danger btn-lg" disabled>
-              <span>⏹</span> Stop Scanner
+            <button id="stopBtn" class="ms-btn ms-btn-outline" disabled>
+              <span class="material-icons">stop</span> Stop
             </button>
           </div>
-
-          <div class="detected-code-container">
-            <span id="detected-code" class="code-badge"></span>
+          <div id="detected-code-wrap" class="ms-detected-wrap">
+            <span id="detected-code" class="ms-detected-badge"></span>
           </div>
         </div>
+      </div>
 
-        <!-- Manual Entry Card -->
-        <div class="manual-entry-card">
-          <div class="card-header">
-            <h2 class="card-title">
-              <span>⌨️</span> Manual Entry
-            </h2>
-            <p class="card-subtitle">Fallback option</p>
+      <!-- Manual Entry Card -->
+      <div class="ms-card">
+        <div class="ms-card-head">
+          <div>
+            <h2><span class="material-icons">keyboard</span> Manual Entry</h2>
+            <p>Type student username to mark present</p>
           </div>
-
-          <form method="post" id="attendanceForm" class="manual-form">
+        </div>
+        <div class="ms-card-body">
+          <form method="post" id="attendanceForm" class="ms-manual-form">
             {% csrf_token %}
-            <div class="form-group">
-              <label for="student_username" class="form-label">Student Username</label>
-              <input
-                type="text"
-                class="form-input"
-                id="student_username"
-                name="student_username"
-                placeholder="Enter username (e.g., 23ceuos035)"
-                required
-              />
-              <p class="form-hint">Or scan barcode in the scanner above</p>
+            <div class="ms-form-row">
+              <input type="text" class="ms-input" id="student_username"
+                name="student_username" placeholder="e.g. 23ceuos035" required />
+              <button type="submit" class="ms-btn ms-btn-dark">
+                <span class="material-icons">check</span> Mark Present
+              </button>
             </div>
-            <button type="submit" class="btn-submit">
-              <span>✓</span> Mark Present
-            </button>
           </form>
         </div>
       </div>
+    </div>
 
-      <!-- Right Column: Enrolled Students -->
-      <div class="students-section">
-        <div class="students-card">
-          <div class="card-header">
-            <h2 class="card-title">
-              <span>👥</span> Enrolled Students
-            </h2>
-            <p class="card-subtitle">{{ attendances.count }} student{{ attendances.count|pluralize }}</p>
+    <!-- Right: Student List -->
+    <div class="ms-right">
+      <div class="ms-card ms-card-full">
+        <div class="ms-card-head">
+          <div>
+            <h2><span class="material-icons">groups</span> Enrolled Students</h2>
+            <p>{{ attendances.count }} student{{ attendances.count|pluralize }}</p>
           </div>
-
-          <div class="students-table-wrapper">
-            {% if attendances %}
-            <table class="students-table">
-              <thead>
-                <tr>
-                  <th>Username</th>
-                  <th>Name</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for attendance in attendances %}
-                <tr class="student-row {% if attendance.status == 'present' %}present{% endif %}">
-                  <td class="username-cell">
-                    <code>{{ attendance.student.user.username }}</code>
-                  </td>
-                  <td class="name-cell">{{ attendance.student.name }}</td>
-                  <td class="status-cell">
-                    {% if attendance.status == 'present' %}
-                      <span class="status-badge present">✓ Present</span>
-                    {% elif attendance.status == 'late' %}
-                      <span class="status-badge late">⏱ Late</span>
-                    {% else %}
-                      <span class="status-badge absent">✗ Absent</span>
-                    {% endif %}
-                  </td>
-                  <td class="action-cell">
-                    {% if attendance.status != 'present' %}
-                    <form method="post" class="quick-mark-form">
-                      {% csrf_token %}
-                      <input type="hidden" name="student_username" value="{{ attendance.student.user.username }}" />
-                      <button type="submit" class="btn-quick-mark">Mark</button>
-                    </form>
-                    {% else %}
-                    <span class="marked-label">Done</span>
-                    {% endif %}
-                  </td>
-                </tr>
-                {% empty %}
-                <tr class="empty-state">
-                  <td colspan="4">
-                    <p class="empty-message">No students enrolled in this subject</p>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-            {% else %}
-            <div class="empty-state-full">
-              <p class="empty-message">No attendance records found</p>
-            </div>
-            {% endif %}
+        </div>
+        <div class="ms-card-body ms-card-body-flush">
+          {% if attendances %}
+          <table class="ms-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for attendance in attendances %}
+              <tr class="{% if attendance.status == 'present' %}ms-row-present{% endif %}">
+                <td><code class="ms-code">{{ attendance.student.user.username }}</code></td>
+                <td class="ms-name-cell">{{ attendance.student.name }}</td>
+                <td>
+                  {% if attendance.status == 'present' %}
+                  <span class="ms-status ms-status-present">Present</span>
+                  {% elif attendance.status == 'late' %}
+                  <span class="ms-status ms-status-late">Late</span>
+                  {% else %}
+                  <span class="ms-status ms-status-absent">Absent</span>
+                  {% endif %}
+                </td>
+                <td class="ms-action-cell">
+                  {% if attendance.status != 'present' %}
+                  <form method="post" style="margin:0">
+                    {% csrf_token %}
+                    <input type="hidden" name="student_username" value="{{ attendance.student.user.username }}" />
+                    <button type="submit" class="ms-btn-sm ms-btn-mark">Mark</button>
+                  </form>
+                  {% else %}
+                  <span class="ms-done-label">
+                    <span class="material-icons">done</span>
+                  </span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="ms-table-empty">No students enrolled</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div class="ms-empty-state">
+            <span class="material-icons">person_off</span>
+            <p>No attendance records found</p>
           </div>
+          {% endif %}
         </div>
       </div>
     </div>
-
-    <!-- Footer Actions -->
-    <div class="footer-actions">
-      <a href="{% url 'faculty_app:show_student_attendance' %}" class="btn-secondary">
-        <span>📊</span> View All Attendance
-      </a>
-    </div>
   </div>
+
 </div>
 {% endblock %}
 
 {% block style %}
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  background: #f5f7fa;
-  min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  color: #1a202c;
-}
-
-.modern-attendance-page {
-  background: #f5f7fa;
-}
-
-/* Header Section */
-.attendance-header {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-  color: white;
-  padding: 48px 24px;
-  text-align: center;
-  margin-bottom: 48px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.header-content {
-  max-width: 1200px;
+.ms-page {
+  max-width: 1280px;
   margin: 0 auto;
+  padding: 32px 24px 64px;
 }
 
-.page-title {
-  font-size: 2rem;
-  font-weight: 600;
-  margin-bottom: 12px;
-  letter-spacing: -0.025em;
+/* Header */
+.ms-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
 }
-
-.title-icon {
-  margin-right: 12px;
-  font-size: 2rem;
-  opacity: 0.9;
+.ms-header h1 {
+  font-size: 22px; font-weight: 700; color: #111;
+  margin: 0 0 2px; letter-spacing: -0.3px;
 }
-
-.page-subtitle {
-  font-size: 1rem;
-  opacity: 0.8;
-  font-weight: 400;
+.ms-header-sub { font-size: 14px; color: #6b7280; margin: 0; }
+.ms-view-all-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; font-size: 13px; font-weight: 500;
+  color: #374151; background: #fff; border: 1px solid #e5e7eb;
+  border-radius: 8px; text-decoration: none;
+  transition: all 0.15s;
 }
+.ms-view-all-btn:hover { border-color: #d1d5db; background: #f9fafb; color: #111; text-decoration: none; }
+.ms-view-all-btn .material-icons { font-size: 16px; }
 
-/* Container */
-.container-lg {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 20px 40px;
-}
-
-/* Lecture Card */
-.lecture-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  margin-bottom: 32px;
-  overflow: hidden;
-  border: 1px solid #e2e8f0;
-}
-
-.card-inner {
+/* Info Bar */
+.ms-info-bar {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 30px;
-  padding: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1px;
+  background: #e5e7eb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 24px;
 }
-
-.lecture-detail {
-  display: flex;
-  align-items: flex-start;
-  gap: 15px;
+.ms-info-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px 20px; background: #fff;
 }
-
-.detail-icon {
-  font-size: 2rem;
-  min-width: 40px;
+.ms-info-item > .material-icons { font-size: 20px; color: #9ca3af; margin-top: 2px; }
+.ms-info-label { display: block; font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.04em; }
+.ms-info-value { display: block; font-size: 14px; font-weight: 500; color: #111; margin-top: 2px; }
+.ms-type-chip {
+  display: inline-block; padding: 2px 8px; border-radius: 4px;
+  font-size: 12px; font-weight: 600;
 }
+.ms-type-theory { background: #eff6ff; color: #1e40af; }
+.ms-type-practical { background: #f0fdf4; color: #166534; }
+.ms-type-tutorial { background: #fffbeb; color: #92400e; }
 
-.detail-label {
-  font-size: 0.75rem;
-  color: #718096;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: 600;
-  margin: 0;
+/* Alerts */
+.ms-messages { margin-bottom: 20px; }
+.ms-alert {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-radius: 8px;
+  font-size: 13px; font-weight: 500; margin-bottom: 8px;
+  border: 1px solid;
 }
-
-.detail-value {
-  font-size: 1rem;
-  color: #2d3748;
-  font-weight: 500;
-  margin: 6px 0 0;
+.ms-alert-success { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+.ms-alert-error { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+.ms-alert-warning { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+.ms-alert-info { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+.ms-alert .material-icons { font-size: 18px; }
+.ms-alert-close {
+  margin-left: auto; background: none; border: none;
+  cursor: pointer; opacity: 0.5; padding: 0;
 }
+.ms-alert-close:hover { opacity: 1; }
+.ms-alert-close .material-icons { font-size: 16px; }
 
-/* Messages */
-.messages-container {
-  margin-bottom: 30px;
-}
-
-.alert-message {
-  display: flex;
-  align-items: flex-start;
-  gap: 15px;
-  padding: 15px 20px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  animation: slideInDown 0.3s ease;
-}
-
-.alert-message.alert-success {
-  background: #d4edda;
-  border-left: 4px solid #28a745;
-  color: #155724;
-}
-
-.alert-message.alert-error {
-  background: #f8d7da;
-  border-left: 4px solid #dc3545;
-  color: #721c24;
-}
-
-.alert-message.alert-warning {
-  background: #fff3cd;
-  border-left: 4px solid #ffc107;
-  color: #856404;
-}
-
-.alert-message.alert-info {
-  background: #d1ecf1;
-  border-left: 4px solid #17a2b8;
-  color: #0c5460;
-}
-
-.alert-content {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  flex: 1;
-}
-
-.alert-icon {
-  font-size: 1.2rem;
-  min-width: 20px;
-}
-
-.alert-close {
-  background: none;
-  border: none;
-  cursor: pointer;
-  opacity: 0.5;
-  transition: opacity 0.2s;
-  padding: 0;
-  font-size: 1.2rem;
-}
-
-.alert-close:hover {
-  opacity: 0.8;
-}
-
-/* Grid Layout */
-.attendance-grid {
+/* Grid */
+.ms-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 30px;
-  margin-bottom: 40px;
+  gap: 20px;
+  align-items: start;
 }
 
-@media (max-width: 1024px) {
-  .attendance-grid {
-    grid-template-columns: 1fr;
-  }
-}
+.ms-left { display: flex; flex-direction: column; gap: 20px; }
 
 /* Cards */
-.scanner-card,
-.manual-entry-card,
-.students-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  border: 1px solid #e2e8f0;
-  overflow: hidden;
-  transition: all 0.2s ease;
+.ms-card {
+  background: #fff; border: 1px solid #e5e7eb;
+  border-radius: 12px; overflow: hidden;
 }
-
-.scanner-card:hover,
-.manual-entry-card:hover,
-.students-card:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  border-color: #cbd5e0;
+.ms-card-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f3f4f6;
 }
-
-.card-header {
-  background: #ffffff;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e2e8f0;
+.ms-card-head h2 {
+  font-size: 14px; font-weight: 600; color: #111;
+  margin: 0 0 2px;
+  display: flex; align-items: center; gap: 8px;
 }
-
-.card-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1a202c;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-}
-
-.card-title span {
-  font-size: 1.25rem;
-  opacity: 0.7;
-}
-
-.card-subtitle {
-  font-size: 0.875rem;
-  color: #718096;
-  margin: 4px 0 0;
-  font-weight: 400;
-}
+.ms-card-head h2 .material-icons { font-size: 18px; color: #9ca3af; }
+.ms-card-head p { font-size: 12px; color: #9ca3af; margin: 0; }
+.ms-card-body { padding: 20px; }
+.ms-card-body-flush { padding: 0; }
+.ms-card-full { min-height: 0; }
 
 /* Scanner */
-.scanner-container {
-  position: relative;
-  width: 100%;
-  background: #000;
-  aspect-ratio: 4 / 3;
-  border-radius: 8px;
-  overflow: hidden;
-  margin: 25px;
-  margin-bottom: 15px;
+.ms-scanner-viewport {
+  position: relative; width: 100%;
+  aspect-ratio: 16 / 10; background: #111;
+  border-radius: 8px; overflow: hidden; margin-bottom: 16px;
+}
+#video { width: 100%; height: 100%; object-fit: cover; }
+.ms-scanner-overlay {
+  position: absolute; bottom: 12px; left: 12px; right: 12px;
+  padding: 10px; background: rgba(0,0,0,0.65);
+  border-radius: 6px; text-align: center;
+  color: #fff; font-size: 13px; font-weight: 500;
+  backdrop-filter: blur(4px);
+}
+.ms-scanner-actions {
+  display: flex; gap: 10px; margin-bottom: 12px;
+}
+.ms-detected-wrap { text-align: center; min-height: 28px; }
+.ms-detected-badge {
+  display: inline-block; padding: 4px 12px;
+  background: #eff6ff; color: #1e40af;
+  border-radius: 6px; font-size: 13px; font-weight: 600;
 }
 
-#video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.scanner-status {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  right: 15px;
-  padding: 12px 15px;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 6px;
-  text-align: center;
-  color: white;
-  font-weight: 500;
-  font-size: 0.95rem;
-  backdrop-filter: blur(5px);
-}
-
-.scanner-controls {
-  display: flex;
-  gap: 12px;
+/* Buttons */
+.ms-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 20px; border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all 0.15s; font-family: inherit;
+  text-decoration: none; white-space: nowrap;
+  flex: 1;
   justify-content: center;
-  padding: 0 25px 25px;
-  flex-wrap: wrap;
+}
+.ms-btn .material-icons { font-size: 17px; }
+.ms-btn-dark { background: #111; color: #fff; }
+.ms-btn-dark:hover { background: #000; }
+.ms-btn-dark:disabled { background: #d1d5db; color: #9ca3af; cursor: not-allowed; }
+.ms-btn-outline {
+  background: #fff; color: #374151;
+  border: 1px solid #e5e7eb;
+}
+.ms-btn-outline:hover { background: #f9fafb; border-color: #d1d5db; }
+.ms-btn-outline:disabled { color: #d1d5db; cursor: not-allowed; }
+
+/* Manual Form */
+.ms-manual-form { margin: 0; }
+.ms-form-row { display: flex; gap: 10px; }
+.ms-input {
+  flex: 1; padding: 10px 14px;
+  border: 1px solid #d1d5db; border-radius: 8px;
+  font-size: 14px; color: #111; font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.ms-input:focus {
+  outline: none; border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+.ms-form-row .ms-btn { flex: 0 0 auto; }
+
+/* Table */
+.ms-table {
+  width: 100%; border-collapse: collapse;
+}
+.ms-table thead { background: #fafafa; }
+.ms-table th {
+  padding: 10px 16px; text-align: left;
+  font-size: 11px; font-weight: 600;
+  color: #9ca3af; text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #f3f4f6;
+}
+.ms-table td {
+  padding: 10px 16px; font-size: 13px;
+  border-bottom: 1px solid #f5f5f5; color: #374151;
+}
+.ms-table tbody tr:hover { background: #fafafa; }
+.ms-row-present { background: #f8fdf9; }
+.ms-row-present:hover { background: #f0fdf4 !important; }
+.ms-code {
+  background: #f3f4f6; padding: 2px 7px; border-radius: 4px;
+  font-size: 12px; color: #374151; font-weight: 500;
+}
+.ms-name-cell { font-weight: 500; color: #111; }
+.ms-status {
+  display: inline-block; padding: 2px 10px; border-radius: 4px;
+  font-size: 12px; font-weight: 600;
+}
+.ms-status-present { background: #f0fdf4; color: #166534; }
+.ms-status-late { background: #fffbeb; color: #92400e; }
+.ms-status-absent { background: #fef2f2; color: #991b1b; }
+.ms-action-cell { text-align: right; }
+.ms-btn-sm {
+  padding: 4px 14px; font-size: 12px; font-weight: 600;
+  border: 1px solid #e5e7eb; border-radius: 6px;
+  background: #fff; color: #374151; cursor: pointer;
+  transition: all 0.15s; font-family: inherit;
+}
+.ms-btn-sm:hover { background: #f3f4f6; border-color: #d1d5db; }
+.ms-btn-mark { background: #111; color: #fff; border-color: #111; }
+.ms-btn-mark:hover { background: #000; }
+.ms-done-label { color: #16a34a; }
+.ms-done-label .material-icons { font-size: 18px; }
+.ms-table-empty {
+  text-align: center; color: #9ca3af;
+  padding: 32px 16px !important; font-style: italic;
 }
 
-.btn-primary,
-.btn-danger,
-.btn-submit,
-.btn-quick-mark,
-.btn-secondary,
-.btn-tertiary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  color: white;
+/* Empty State */
+.ms-empty-state {
+  text-align: center; padding: 48px 20px;
 }
+.ms-empty-state .material-icons { font-size: 36px; color: #d1d5db; margin-bottom: 8px; }
+.ms-empty-state p { font-size: 13px; color: #9ca3af; margin: 0; }
 
-.btn-primary {
-  background: #2563eb;
-  min-width: 180px;
+@media (max-width: 900px) {
+  .ms-grid { grid-template-columns: 1fr; }
+  .ms-info-bar { grid-template-columns: 1fr 1fr; }
+  .ms-header { flex-direction: column; }
 }
-
-.btn-primary:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+@media (max-width: 480px) {
+  .ms-page { padding: 20px 16px 48px; }
+  .ms-info-bar { grid-template-columns: 1fr; }
+  .ms-form-row { flex-direction: column; }
+  .ms-scanner-actions { flex-direction: column; }
 }
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  background: #93c5fd;
-}
-
-.btn-danger {
-  background: #dc2626;
-  min-width: 180px;
-}
-
-.btn-danger:hover {
-  background: #b91c1c;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.btn-danger:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  background: #fca5a5;
-}
-
-.btn-submit {
-  background: #2563eb;
-  width: 100%;
-  justify-content: center;
-  min-height: 48px;
-}
-
-.btn-submit:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.btn-quick-mark {
-  background: #059669;
-  padding: 6px 16px;
-  font-size: 0.875rem;
-  min-width: auto;
-}
-
-.btn-quick-mark:hover {
-  background: #047857;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
-}
-
-.btn-secondary {
-  background: #2563eb;
-}
-
-.btn-secondary:hover {
-  background: #1d4ed8;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.btn-tertiary {
-  background: #64748b;
-}
-
-.btn-tertiary:hover {
-  background: #475569;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.detected-code-container {
-  text-align: center;
-  padding: 0 25px 25px;
-}
-
-.code-badge {
-  display: inline-block;
-  padding: 8px 16px;
-  background: #dbeafe;
-  color: #1e40af;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  min-height: 34px;
-  line-height: 18px;
-  border: 1px solid #bfdbfe;
-}
-
-/* Manual Entry Form */
-.manual-form {
-  padding: 25px;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-label {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: 600;
-  color: #333;
-  font-size: 0.95rem;
-}
-
-.form-input {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1px solid #cbd5e0;
-  border-radius: 6px;
-  font-size: 0.9375rem;
-  transition: all 0.2s ease;
-}
-
-.form-input:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.form-hint {
-  font-size: 0.85rem;
-  color: #999;
-  margin-top: 8px;
-  font-style: italic;
-}
-
-/* Students Table */
-.students-table-wrapper {
-  overflow-x: auto;
-  padding: 25px;
-}
-
-.students-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 0;
-}
-
-.students-table thead {
-  background: #f8f9fa;
-}
-
-.students-table th {
-  padding: 15px;
-  text-align: left;
-  font-weight: 600;
-  color: #333;
-  border-bottom: 2px solid #e9ecef;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.students-table td {
-  padding: 15px;
-  border-bottom: 1px solid #e9ecef;
-}
-
-.student-row {
-  transition: background-color 0.2s ease;
-}
-
-.student-row:hover {
-  background-color: #f8f9fa;
-}
-
-.student-row.present {
-  background-color: #f0fdf4;
-}
-
-.username-cell code {
-  background: #f1f5f9;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  color: #475569;
-  font-weight: 500;
-  border: 1px solid #e2e8f0;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  border: 1px solid;
-}
-
-.status-badge.present {
-  background: #d1fae5;
-  color: #065f46;
-  border-color: #a7f3d0;
-}
-
-.status-badge.late {
-  background: #fef3c7;
-  color: #92400e;
-  border-color: #fde68a;
-}
-
-.status-badge.absent {
-  background: #fee2e2;
-  color: #991b1b;
-  border-color: #fecaca;
-}
-
-.marked-label {
-  color: #28a745;
-  font-weight: 600;
-}
-
-.session-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  border: 1px solid;
-}
-
-.session-badge.session-theory {
-  background: #dbeafe;
-  color: #1e40af;
-  border-color: #bfdbfe;
-}
-
-.session-badge.session-practical {
-  background: #d1fae5;
-  color: #065f46;
-  border-color: #a7f3d0;
-}
-
-.session-badge.session-tutorial {
-  background: #fef3c7;
-  color: #92400e;
-  border-color: #fde68a;
-}
-
-.empty-state,
-.empty-state-full {
-  text-align: center;
-  padding: 40px;
-}
-
-.empty-message {
-  color: #999;
-  font-size: 1rem;
-  margin: 0;
-}
-
-/* Footer Actions */
-.footer-actions {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  padding: 30px 20px;
-  flex-wrap: wrap;
-}
-
-/* Animations */
-@keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .page-title {
-    font-size: 1.8rem;
-  }
-
-  .card-inner {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 20px;
-  }
-
-  .attendance-grid {
-    gap: 20px;
-  }
-
-  .scanner-controls,
-  .manual-form {
-    padding: 15px;
-  }
-
-  .students-table th,
-  .students-table td {
-    padding: 10px;
-    font-size: 0.85rem;
-  }
-
-  .footer-actions {
-    flex-direction: column;
-  }
-
-  .btn-secondary,
-  .btn-tertiary {
-    width: 100%;
-    justify-content: center;
-  }
-}
-
 {% endblock %}
 
 {% block extra_js %}
@@ -842,11 +444,9 @@ body {
   const studentInput = document.getElementById("student_username");
   const form = document.getElementById("attendanceForm");
 
-  // Wait for ZXing library to load
   window.addEventListener("DOMContentLoaded", (event) => {
-    console.log("Page loaded, ZXing library status:", typeof ZXing);
     if (typeof ZXing === "undefined") {
-      statusText.textContent = "❌ Barcode library failed to load";
+      statusText.textContent = "Barcode library failed to load";
       startBtn.disabled = true;
     }
   });
@@ -856,50 +456,25 @@ body {
 
   async function startScanning() {
     try {
-      statusText.textContent = "🔄 Initializing scanner...";
+      statusText.textContent = "Initializing scanner...";
       startBtn.disabled = true;
-
-      console.log("Checking camera permissions...");
-
-      // Request camera access
       stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "environment",
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
+        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
       });
-
-      console.log("Camera access granted");
       video.srcObject = stream;
-
-      // Wait for video to be ready
       await new Promise((resolve) => {
-        video.onloadedmetadata = () => {
-          video.play();
-          resolve();
-        };
+        video.onloadedmetadata = () => { video.play(); resolve(); };
       });
-
-      console.log("Video playing, initializing barcode reader...");
-      statusText.textContent = "🎯 Scanning for barcodes...";
+      statusText.textContent = "Scanning for barcodes...";
       stopBtn.disabled = false;
       scanning = true;
-
-      // Initialize code reader
       codeReader = new ZXing.BrowserBarcodeReader();
-      console.log("Barcode reader initialized");
-
       scanBarcode();
     } catch (err) {
-      console.error("Camera error:", err);
-      statusText.textContent = "❌ Error: " + err.message;
+      statusText.textContent = "Error: " + err.message;
       startBtn.disabled = false;
-
       if (err.name === "NotAllowedError") {
-        alert(
-          "Camera permission denied. Please allow camera access in your browser settings."
-        );
+        alert("Camera permission denied. Please allow camera access in your browser settings.");
       } else if (err.name === "NotFoundError") {
         alert("No camera found on this device.");
       } else {
@@ -909,16 +484,8 @@ body {
   }
 
   function stopScanning() {
-    console.log("Stopping scanner...");
     scanning = false;
-
-    if (stream) {
-      stream.getTracks().forEach((track) => {
-        track.stop();
-        console.log("Stopped track:", track.kind);
-      });
-    }
-
+    if (stream) { stream.getTracks().forEach((track) => track.stop()); }
     video.srcObject = null;
     statusText.textContent = 'Camera stopped. Click "Start Scanner" to resume.';
     startBtn.disabled = false;
@@ -928,20 +495,14 @@ body {
 
   async function scanBarcode() {
     if (!scanning) return;
-
     try {
       const result = await codeReader.decodeFromVideoElement(video);
       if (result && result.text) {
         const code = result.text;
-        console.log("Barcode detected:", code);
-
-        detectedCode.textContent = "📦 Detected: " + code;
-        statusText.textContent = "✅ Barcode detected! Marking attendance...";
-
-        // Play success beep
+        detectedCode.textContent = "Detected: " + code;
+        statusText.textContent = "Barcode detected! Marking attendance...";
         try {
-          const audioContext = new (window.AudioContext ||
-            window.webkitAudioContext)();
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
           const oscillator = audioContext.createOscillator();
           const gainNode = audioContext.createGain();
           oscillator.connect(gainNode);
@@ -951,40 +512,16 @@ body {
           gainNode.gain.value = 0.3;
           oscillator.start();
           oscillator.stop(audioContext.currentTime + 0.2);
-        } catch (audioErr) {
-          console.log("Audio error:", audioErr);
-        }
-
-        // Stop scanning
+        } catch (audioErr) {}
         stopScanning();
-
-        // Auto-fill and submit the form
         studentInput.value = code;
-
-        // Submit form after short delay
-        setTimeout(() => {
-          form.submit();
-        }, 500);
-
-        return; // Stop scanning after detection
+        setTimeout(() => { form.submit(); }, 500);
+        return;
       }
     } catch (err) {
-      // Barcode not found yet, continue scanning
-      if (err.name !== "NotFoundException") {
-        console.error("Scan error:", err);
-      }
+      if (err.name !== "NotFoundException") { console.error("Scan error:", err); }
     }
-
-    if (scanning) {
-      requestAnimationFrame(scanBarcode);
-    }
+    if (scanning) { requestAnimationFrame(scanBarcode); }
   }
-
-  // Debug info
-  console.log("Scanner script loaded");
-  console.log(
-    "Navigator:",
-    navigator.mediaDevices ? "Available" : "Not available"
-  );
 </script>
 {% endblock %}

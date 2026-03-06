@@ -3,197 +3,108 @@
 {% block title %}Daily Attendance{% endblock %}
 
 {% block container %}
+<div class="da-page">
 
-<div class="attendance-container">
-    <div class="page-header">
-        <h1>Daily Attendance</h1>
-        <p class="subtitle">Your attendance records</p>
+  <!-- Header -->
+  <div class="da-top">
+    <div>
+      <h1>Daily Log</h1>
+      <p>Attendance records by date</p>
     </div>
+    <a href="{% url 'student_app:attendance_summary' %}" class="da-back-link">
+      <span class="material-icons">arrow_back</span> Summary
+    </a>
+  </div>
 
-    <div class="attendance-content">
-        {% if daily_attendance %}
-            <div class="records-list">
-                {% for date, records in daily_attendance.items %}
-                    <div class="date-group">
-                        <div class="date-header">{{ date|date:"M d, Y" }}</div>
-                        <div class="records-table">
-                            {% for record in records %}
-                                <div class="record-row">
-                                    <div class="subject-name">{{ record.subject }}</div>
-                                    <div class="status-badge status-{{ record.status|lower }}">
-                                        {{ record.status|title }}
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="empty-state">
-                <p>No attendance records available.</p>
-            </div>
-        {% endif %}
+  {% if daily_attendance %}
+    <div class="da-timeline">
+      {% for date, records in daily_attendance.items %}
+      <div class="da-day">
+        <div class="da-date-bar">
+          <span class="material-icons">event</span>
+          <span>{{ date|date:"D, M d, Y" }}</span>
+          <span class="da-count">{{ records|length }} class{{ records|length|pluralize:"es" }}</span>
+        </div>
+        <div class="da-rows">
+          {% for record in records %}
+          <div class="da-row">
+            <span class="da-subj">{{ record.subject }}</span>
+            <span class="da-badge da-badge-{{ record.status|lower }}">{{ record.status|title }}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
     </div>
+  {% else %}
+    <div class="da-empty">
+      <span class="material-icons">event_busy</span>
+      <h3>No Records</h3>
+      <p>No daily attendance records found.</p>
+    </div>
+  {% endif %}
 
-    <div class="page-actions">
-        <a href="{% url 'student_app:student_dashboard' %}" class="btn-back">← Back to Dashboard</a>
-    </div>
 </div>
-
 {% endblock %}
 
 {% block style %}
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+.da-page { max-width:800px; margin:0 auto; padding:32px 24px 64px; }
 
-body {
-    background: #f9fafb;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    color: #1f2937;
+/* Header */
+.da-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:24px; }
+.da-top h1 { font-size:22px; font-weight:700; color:#111; margin:0 0 2px; letter-spacing:-.3px; }
+.da-top p { font-size:14px; color:#6b7280; margin:0; }
+.da-back-link {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:13px; font-weight:500; color:#6b7280;
+  text-decoration:none; transition:color .15s;
 }
+.da-back-link:hover { color:#111; text-decoration:none; }
+.da-back-link .material-icons { font-size:16px; }
 
-.attendance-container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 0 20px;
+/* Timeline */
+.da-timeline { display:flex; flex-direction:column; gap:12px; }
+.da-day {
+  background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden;
 }
-
-.page-header {
-    padding: 40px 20px;
-    text-align: center;
-    border-bottom: 1px solid #e5e7eb;
-    background: white;
-    margin-bottom: 32px;
+.da-date-bar {
+  display:flex; align-items:center; gap:6px;
+  padding:10px 16px; background:#fafafa;
+  font-size:13px; font-weight:600; color:#374151;
+  border-bottom:1px solid #f3f4f6;
 }
-
-.page-header h1 {
-    font-size: 28px;
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 8px;
+.da-date-bar .material-icons { font-size:16px; color:#9ca3af; }
+.da-count {
+  margin-left:auto; font-size:11px; font-weight:500; color:#9ca3af;
 }
-
-.subtitle {
-    font-size: 14px;
-    color: #6b7280;
+.da-rows { display:flex; flex-direction:column; }
+.da-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 16px; border-bottom:1px solid #f5f5f5;
+  transition:background .1s;
 }
-
-.attendance-content {
-    padding: 0 20px 32px;
+.da-row:last-child { border-bottom:none; }
+.da-row:hover { background:#fafafa; }
+.da-subj { font-size:13px; font-weight:500; color:#111; }
+.da-badge {
+  padding:3px 10px; border-radius:4px;
+  font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.02em;
 }
+.da-badge-present { background:#f0fdf4; color:#166534; }
+.da-badge-absent { background:#fef2f2; color:#991b1b; }
+.da-badge-late { background:#fffbeb; color:#92400e; }
 
-.records-list {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
+/* Empty */
+.da-empty {
+  text-align:center; padding:56px 20px;
+  background:#fff; border:1px dashed #d1d5db; border-radius:12px;
 }
+.da-empty .material-icons { font-size:36px; color:#d1d5db; margin-bottom:10px; }
+.da-empty h3 { font-size:15px; font-weight:600; color:#374151; margin:0 0 4px; }
+.da-empty p { font-size:13px; color:#9ca3af; margin:0; }
 
-.date-group {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    border: 1px solid #e5e7eb;
+@media (max-width:640px) {
+  .da-page { padding:20px 16px 48px; }
+  .da-top { flex-direction:column; }
 }
-
-.date-header {
-    padding: 16px 20px;
-    background: #f3f4f6;
-    font-weight: 600;
-    color: #111827;
-    font-size: 15px;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.records-table {
-    display: flex;
-    flex-direction: column;
-}
-
-.record-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px 20px;
-    border-bottom: 1px solid #f3f4f6;
-    transition: background 0.2s;
-}
-
-.record-row:last-child {
-    border-bottom: none;
-}
-
-.record-row:hover {
-    background: #f9fafb;
-}
-
-.subject-name {
-    font-weight: 500;
-    color: #1f2937;
-    flex: 1;
-}
-
-.status-badge {
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.status-present {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.status-absent {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.status-late {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    background: white;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
-}
-
-.empty-state p {
-    color: #6b7280;
-    font-size: 15px;
-}
-
-.page-actions {
-    padding: 20px;
-    text-align: center;
-}
-
-.btn-back {
-    display: inline-block;
-    padding: 10px 20px;
-    background: white;
-    color: #1f2937;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s;
-}
-
-.btn-back:hover {
-    border-color: #9ca3af;
-    background: #f9fafb;
-}
-
 {% endblock %}

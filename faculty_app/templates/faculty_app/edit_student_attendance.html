@@ -3,72 +3,108 @@
 {% block title %}Edit Attendance{% endblock %}
 
 {% block container %}
+<div class="ea-page">
 
-<div class="container mt-4 text-white">
-    <h2 class="text-center">Edit Attendance for Student ID: {{ attendance.student.user.username }}</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Update Attendance</button>
-    </form>
-    <div class="d-flex justify-content-center">
-        <a href="{% url 'faculty_app:faculty_dashboard' %}" class="btn btn-primary">back</a>
+  <div class="ea-card">
+    <div class="ea-card-head">
+      <span class="material-icons">edit_note</span>
+      <div>
+        <h1>Edit Attendance</h1>
+        <p>Student <code class="ea-code">{{ attendance.student.user.username }}</code> &middot; {{ attendance.student.name }}</p>
+      </div>
     </div>
-</div>
 
+    <form method="post" class="ea-form">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="ea-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+      </div>
+      {% endfor %}
+      <div class="ea-actions">
+        <a href="{% url 'faculty_app:show_student_attendance' %}" class="ea-cancel">Cancel</a>
+        <button type="submit" class="ea-submit">
+          <span class="material-icons">check</span> Update
+        </button>
+      </div>
+    </form>
+  </div>
+
+</div>
 {% endblock %}
 
-
 {% block style %}
-/* Dark Theme */
-body {
-    background-color: #212529;
-    color: white;
+.ea-page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
 }
-
-/* Container Styling */
-.container {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 10px;
+.ea-card {
+  background: #fff; border: 1px solid #e5e7eb;
+  border-radius: 12px; overflow: hidden;
 }
-
-/* Form Styling */
-form {
-    background: rgba(255, 255, 255, 0.9);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    color: black;
+.ea-card-head {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f3f4f6;
 }
-
-/* Form Fields */
-form input, form select, form textarea {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
+.ea-card-head .material-icons {
+  font-size: 22px; color: #9ca3af; margin-top: 2px;
 }
-
-/* Form Buttons */
-.btn {
-    width: 100%;
-    padding: 10px;
+.ea-card-head h1 {
+  font-size: 17px; font-weight: 700; color: #111;
+  margin: 0 0 2px; letter-spacing: -0.2px;
 }
-
-.btn-primary {
-    background-color: #007bff;
-    border: none;
+.ea-card-head p {
+  font-size: 13px; color: #6b7280; margin: 0;
 }
-
-.btn-primary:hover {
-    background-color: #0056b3;
+.ea-code {
+  background: #f3f4f6; padding: 1px 6px; border-radius: 4px;
+  font-size: 12px; color: #374151; font-weight: 500;
 }
-
-/* Centering the Back Button */
-.d-flex.justify-content-center {
-    margin-top: 15px;
+.ea-form { padding: 24px; }
+.ea-field { margin-bottom: 18px; }
+.ea-field label {
+  display: block; margin-bottom: 6px;
+  font-size: 13px; font-weight: 600; color: #374151;
 }
+.ea-field select,
+.ea-field input,
+.ea-field textarea {
+  width: 100%; padding: 9px 12px;
+  border: 1px solid #e5e7eb; border-radius: 8px;
+  font-size: 14px; color: #111; background: #fff;
+  transition: border-color 0.15s;
+  font-family: inherit;
+}
+.ea-field select:focus,
+.ea-field input:focus,
+.ea-field textarea:focus {
+  outline: none; border-color: #111;
+}
+.ea-actions {
+  display: flex; justify-content: flex-end;
+  align-items: center; gap: 10px;
+  padding-top: 8px;
+}
+.ea-cancel {
+  padding: 8px 16px; font-size: 13px; font-weight: 500;
+  color: #6b7280; text-decoration: none;
+  border-radius: 8px; transition: all 0.15s;
+}
+.ea-cancel:hover { background: #f3f4f6; color: #374151; text-decoration: none; }
+.ea-submit {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 9px 20px; font-size: 13px; font-weight: 600;
+  color: #fff; background: #111; border: none;
+  border-radius: 8px; cursor: pointer;
+  transition: background 0.15s;
+}
+.ea-submit:hover { background: #000; }
+.ea-submit .material-icons { font-size: 16px; }
 
+@media (max-width: 520px) {
+  .ea-page { padding: 24px 16px 48px; }
+}
 {% endblock %}

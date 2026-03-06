@@ -4,596 +4,268 @@
 {% block title %}Attendance Summary{% endblock %}
 
 {% block container %}
+<div class="as-page">
 
-<div class="summary-container">
-    <!-- Main Header with Search and Download -->
-    <div class="main-header">
-        <h1>Attendance Summary</h1>
-        <div class="header-actions">
-            <button class="download-btn" onclick="window.location.href='{% url 'student_app:download_attendance' %}'">
-                Download Report
-            </button>
-        </div>
+  <!-- Header -->
+  <div class="as-top">
+    <div>
+      <h1>Attendance Summary</h1>
+      <p>Semester-wise attendance overview</p>
     </div>
-
-    <div class="content-wrapper">
-        <!-- Semester Sidebar -->
-        <div class="semester-sidebar">
-            <h3>Select Semester</h3>
-            <div class="semester-list">
-                {% for sem in all_semesters %}
-                <a href="?semester={{ sem.number }}" class="semester-item {% if sem.number == selected_semester %}active{% endif %}">
-                    <span class="semester-label">{{ sem.label }}</span>
-                    {% if sem.number == selected_semester %}
-                    <span class="semester-percent">{{ overall_percentage }}%</span>
-                    {% endif %}
-                </a>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Summary Cards -->
-            <div class="summary-cards">
-                <div class="summary-card card-purple">
-                    <div class="card-number">{{ total_conducted }}</div>
-                    <div class="card-label">Total Slots</div>
-                </div>
-                <div class="summary-card card-teal">
-                    <div class="card-number">{{ total_present }}</div>
-                    <div class="card-label">Present Slots</div>
-                </div>
-                <div class="summary-card card-red">
-                    <div class="card-number">{{ total_absent }}</div>
-                    <div class="card-label">Absent Slots</div>
-                </div>
-                <div class="summary-card card-blue">
-                    <div class="card-number">{{ overall_percentage }}%</div>
-                    <div class="card-label">Present %</div>
-                </div>
-            </div>
-
-            <!-- Search Bar -->
-            <div class="controls-bar">
-                <input type="text" id="searchInput" class="search-input" placeholder="Search:">
-            </div>
-
-            <!-- Attendance Table -->
-            <div class="table-container">
-                {% if attendance_data %}
-                <table class="attendance-table" id="attendanceTable">
-                    <thead>
-                        <tr>
-                            <th>Sr.</th>
-                            <th>Type</th>
-                            <th>Subject</th>
-                            <th>Conducted</th>
-                            <th>Present</th>
-                            <th>Absent</th>
-                            <th>Attendance %</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for record in attendance_data %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
-                            <td><span class="type-badge">{{ record.slot_type }}</span></td>
-                            <td>{{ record.subject_name }}</td>
-                            <td>{{ record.conducted }}</td>
-                            <td>{{ record.present }}</td>
-                            <td>{{ record.absent }}</td>
-                            <td>
-                                <span class="percentage-badge {% if record.percentage >= 75 %}percentage-high{% elif record.percentage >= 60 %}percentage-medium{% else %}percentage-low{% endif %}">
-                                    {{ record.percentage }}%
-                                </span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                        <tr class="total-row">
-                            <td colspan="3">Total</td>
-                            <td>{{ total_conducted }}</td>
-                            <td>{{ total_present }}</td>
-                            <td>{{ total_absent }}</td>
-                            <td>
-                                <span class="percentage-badge {% if overall_percentage >= 75 %}percentage-high{% elif overall_percentage >= 60 %}percentage-medium{% else %}percentage-low{% endif %}">
-                                    {{ overall_percentage }}%
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                {% else %}
-                <div class="empty-state">
-                    <p>No attendance data available for this semester</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
+    <div class="as-top-actions">
+      <a href="{% url 'student_app:download_attendance' %}" class="as-download">
+        <span class="material-icons">download</span> Download CSV
+      </a>
+      <a href="{% url 'student_app:student_dashboard' %}" class="as-back-link">
+        <span class="material-icons">arrow_back</span> Dashboard
+      </a>
     </div>
+  </div>
 
-    <div class="page-actions">
-        <a href="{% url 'student_app:student_dashboard' %}" class="btn-back">← Back to Dashboard</a>
+  <!-- Semester Switcher (compact numbered tiles) -->
+  {% if all_semesters %}
+  <div class="as-sem-bar">
+    {% for sem in all_semesters %}
+      <a href="?semester={{ sem.number }}"
+         class="as-sem-tile {% if sem.number == selected_semester %}as-sem-active{% endif %}">
+        {{ sem.number }}
+      </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Overall Stats Banner -->
+  <div class="as-banner">
+    <div class="as-stat">
+      <span class="as-stat-val">{{ overall_percentage }}%</span>
+      <span class="as-stat-lbl">Overall</span>
     </div>
+    <div class="as-stat-divider"></div>
+    <div class="as-stat">
+      <span class="as-stat-val">{{ total_present }}</span>
+      <span class="as-stat-lbl">Present</span>
+    </div>
+    <div class="as-stat">
+      <span class="as-stat-val">{{ total_absent }}</span>
+      <span class="as-stat-lbl">Absent</span>
+    </div>
+    <div class="as-stat">
+      <span class="as-stat-val">{{ total_conducted }}</span>
+      <span class="as-stat-lbl">Total</span>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="as-search-wrap">
+    <span class="material-icons">search</span>
+    <input type="text" id="asSearch" class="as-search" placeholder="Search subjects…">
+  </div>
+
+  <!-- Table -->
+  {% if attendance_data %}
+  <div class="as-table-card">
+    <table class="as-table" id="asTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Type</th>
+          <th>Subject</th>
+          <th class="as-th-c">Conducted</th>
+          <th class="as-th-c">Present</th>
+          <th class="as-th-c">Absent</th>
+          <th class="as-th-c">%</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in attendance_data %}
+        <tr>
+          <td class="as-td-num">{{ forloop.counter }}</td>
+          <td><span class="as-type-badge">{{ record.slot_type }}</span></td>
+          <td class="as-td-subj">{{ record.subject_name }}</td>
+          <td class="as-td-c">{{ record.conducted }}</td>
+          <td class="as-td-c">{{ record.present }}</td>
+          <td class="as-td-c">{{ record.absent }}</td>
+          <td class="as-td-c">
+            <span class="as-pct {% if record.percentage >= 75 %}as-pct-ok{% elif record.percentage >= 60 %}as-pct-warn{% else %}as-pct-low{% endif %}">{{ record.percentage }}%</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="as-total-row">
+          <td colspan="3" class="as-total-label">Total</td>
+          <td class="as-td-c">{{ total_conducted }}</td>
+          <td class="as-td-c">{{ total_present }}</td>
+          <td class="as-td-c">{{ total_absent }}</td>
+          <td class="as-td-c">
+            <span class="as-pct {% if overall_percentage >= 75 %}as-pct-ok{% elif overall_percentage >= 60 %}as-pct-warn{% else %}as-pct-low{% endif %}">{{ overall_percentage }}%</span>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+  {% else %}
+  <div class="as-empty">
+    <span class="material-icons">event_busy</span>
+    <h3>No Records</h3>
+    <p>No attendance data for this semester yet.</p>
+  </div>
+  {% endif %}
+
+  <!-- Quick Links -->
+  <div class="as-links">
+    <a href="{% url 'student_app:daily_attendance' %}" class="as-link-card">
+      <span class="material-icons">calendar_today</span>
+      <span>Daily Log</span>
+    </a>
+    <a href="{% url 'student_app:subject_wise_attendance' %}" class="as-link-card">
+      <span class="material-icons">menu_book</span>
+      <span>By Subject</span>
+    </a>
+    <a href="{% url 'student_app:attendance_risk' %}" class="as-link-card">
+      <span class="material-icons">warning</span>
+      <span>Risk Predictor</span>
+    </a>
+  </div>
+
 </div>
-
-<script>
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        const searchValue = this.value.toLowerCase();
-        const table = document.getElementById('attendanceTable');
-        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-        
-        for (let row of rows) {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(searchValue) ? '' : 'none';
-        }
-    });
-</script>
-
 {% endblock %}
 
 {% block style %}
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+.as-page { max-width:960px; margin:0 auto; padding:32px 24px 64px; }
 
-body {
-    background: #f5f7fa;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    color: #2c3e50;
+/* Header */
+.as-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
+.as-top h1 { font-size:22px; font-weight:700; color:#111; margin:0 0 2px; letter-spacing:-.3px; }
+.as-top p { font-size:14px; color:#6b7280; margin:0; }
+.as-top-actions { display:flex; gap:8px; align-items:center; }
+.as-download {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:7px 14px; font-size:13px; font-weight:600;
+  color:#111; background:#fff; border:1px solid #e5e7eb; border-radius:8px;
+  text-decoration:none; transition:all .15s;
 }
-
-.summary-container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 20px;
+.as-download:hover { border-color:#111; text-decoration:none; color:#111; }
+.as-download .material-icons { font-size:16px; }
+.as-back-link {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:13px; font-weight:500; color:#6b7280;
+  text-decoration:none; transition:color .15s;
 }
+.as-back-link:hover { color:#111; text-decoration:none; }
+.as-back-link .material-icons { font-size:16px; }
 
-.main-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 0;
-    margin-bottom: 30px;
-    border-bottom: 1px solid #e0e6ed;
+/* Semester Switcher */
+.as-sem-bar { display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap; }
+.as-sem-tile {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:36px; height:36px; border-radius:8px;
+  font-size:13px; font-weight:600; color:#374151;
+  background:#fff; border:1px solid #e5e7eb;
+  text-decoration:none; transition:all .15s;
 }
+.as-sem-tile:hover { border-color:#111; color:#111; text-decoration:none; }
+.as-sem-active { background:#111; color:#fff; border-color:#111; }
+.as-sem-active:hover { background:#000; color:#fff; border-color:#000; }
 
-.main-header h1 {
-    font-size: 32px;
-    font-weight: 600;
-    color: #1a202c;
-    margin: 0;
+/* Banner */
+.as-banner {
+  display:flex; align-items:center; gap:24px;
+  padding:18px 24px; margin-bottom:16px;
+  background:#111; border-radius:10px; color:#fff;
+  flex-wrap:wrap;
 }
+.as-stat { display:flex; flex-direction:column; align-items:center; }
+.as-stat-val { font-size:22px; font-weight:800; }
+.as-stat-lbl { font-size:11px; font-weight:600; text-transform:uppercase; opacity:.5; letter-spacing:.04em; }
+.as-stat-divider { width:1px; height:36px; background:rgba(255,255,255,.15); }
 
-.header-actions {
-    display: flex;
-    gap: 12px;
+/* Search */
+.as-search-wrap {
+  display:flex; align-items:center; gap:8px;
+  padding:8px 14px; margin-bottom:12px;
+  background:#fff; border:1px solid #e5e7eb; border-radius:8px;
 }
-
-.content-wrapper {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 32px;
-    margin-bottom: 32px;
+.as-search-wrap .material-icons { font-size:18px; color:#9ca3af; }
+.as-search {
+  flex:1; border:none; outline:none; font-size:13px; color:#111;
+  background:transparent; font-family:inherit;
 }
+.as-search::placeholder { color:#9ca3af; }
 
-/* Sidebar */
-.semester-sidebar {
-    padding: 0;
-    background: transparent;
-    border: none;
-    height: fit-content;
-    position: sticky;
-    top: 90px;
+/* Table Card */
+.as-table-card {
+  background:#fff; border:1px solid #e5e7eb; border-radius:12px;
+  overflow:hidden; margin-bottom:20px;
 }
-
-.semester-sidebar h3 {
-    font-size: 15px;
-    font-weight: 700;
-    color: #1a202c;
-    margin-bottom: 16px;
-    padding: 0 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.as-table { width:100%; border-collapse:collapse; }
+.as-table thead { background:#fafafa; }
+.as-table th {
+  padding:10px 16px; text-align:left;
+  font-size:11px; font-weight:600; color:#9ca3af;
+  text-transform:uppercase; letter-spacing:.04em;
+  border-bottom:1px solid #f3f4f6;
 }
-
-.semester-list {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    background: white;
-    border-radius: 8px;
-    border: 1px solid #e0e6ed;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+.as-th-c { text-align:center !important; }
+.as-table td {
+  padding:10px 16px; font-size:13px; color:#374151;
+  border-bottom:1px solid #f5f5f5;
 }
-
-.semester-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 16px;
-    border-bottom: 1px solid #f0f4f8;
-    text-decoration: none;
-    color: #5a6c7d;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    cursor: pointer;
+.as-table tbody tr:last-child td { border-bottom:none; }
+.as-table tbody tr:hover { background:#fafafa; }
+.as-td-num { color:#9ca3af; font-size:12px; font-weight:500; }
+.as-td-subj { font-weight:600; color:#111; }
+.as-td-c { text-align:center; }
+.as-type-badge {
+  display:inline-block; padding:2px 8px; border-radius:4px;
+  font-size:11px; font-weight:600; background:#f3f4f6; color:#374151;
 }
+.as-pct { font-weight:700; font-size:13px; }
+.as-pct-ok { color:#16a34a; }
+.as-pct-warn { color:#d97706; }
+.as-pct-low { color:#dc2626; }
 
-.semester-item:last-child {
-    border-bottom: none;
+/* Total */
+.as-total-row { background:#fafafa; }
+.as-total-row td { border-top:1px solid #e5e7eb; border-bottom:none; font-weight:700; color:#111; }
+.as-total-label { text-align:right !important; padding-right:24px !important; }
+
+/* Empty */
+.as-empty {
+  text-align:center; padding:56px 20px;
+  background:#fff; border:1px dashed #d1d5db; border-radius:12px; margin-bottom:20px;
 }
+.as-empty .material-icons { font-size:36px; color:#d1d5db; margin-bottom:10px; }
+.as-empty h3 { font-size:15px; font-weight:600; color:#374151; margin:0 0 4px; }
+.as-empty p { font-size:13px; color:#9ca3af; margin:0; }
 
-.semester-item:hover {
-    background: #f8fafc;
-    color: #2c3e50;
-    padding-left: 20px;
+/* Quick Links */
+.as-links { display:flex; gap:8px; flex-wrap:wrap; }
+.as-link-card {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:10px 16px; border-radius:8px;
+  background:#fff; border:1px solid #e5e7eb;
+  font-size:13px; font-weight:500; color:#374151;
+  text-decoration:none; transition:all .15s;
 }
+.as-link-card:hover { border-color:#111; color:#111; text-decoration:none; }
+.as-link-card .material-icons { font-size:16px; color:#9ca3af; }
 
-.semester-item.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-weight: 600;
+@media (max-width:640px) {
+  .as-page { padding:20px 16px 48px; }
+  .as-top { flex-direction:column; }
+  .as-banner { gap:16px; padding:16px; }
+  .as-banner .as-stat-val { font-size:18px; }
+  .as-table th, .as-table td { padding:8px 10px; }
 }
+{% endblock %}
 
-.semester-label {
-    font-weight: 500;
-}
-
-.semester-percent {
-    font-weight: 700;
-    font-size: 14px;
-}
-
-/* Main Content */
-.main-content {
-    flex: 1;
-}
-
-.summary-cards {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    margin-bottom: 32px;
-}
-
-.summary-card {
-    background: white;
-    border-radius: 12px;
-    padding: 28px;
-    text-align: center;
-    transition: all 0.3s ease;
-    color: white;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    position: relative;
-    overflow: hidden;
-}
-
-.summary-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100px;
-    height: 100px;
-    opacity: 0.1;
-    border-radius: 50%;
-}
-
-.summary-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-
-.card-purple {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.card-teal {
-    background: linear-gradient(135deg, #56ccf2 0%, #2f80ed 100%);
-}
-
-.card-red {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-}
-
-.card-blue {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-}
-
-.card-number {
-    font-size: 40px;
-    font-weight: 800;
-    margin-bottom: 12px;
-    letter-spacing: -1px;
-}
-
-.card-label {
-    font-size: 14px;
-    font-weight: 500;
-    opacity: 0.95;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
-
-/* Tabs */
-.tab-navigation {
-    display: flex;
-    gap: 0;
-    border-bottom: 2px solid #e0e6ed;
-    margin-bottom: 24px;
-    background: white;
-    padding: 0;
-    border-radius: 8px 8px 0 0;
-}
-
-.tab-link {
-    padding: 14px 24px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #5a6c7d;
-    text-decoration: none;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    position: relative;
-}
-
-.tab-link:hover {
-    color: #2c3e50;
-    background: #f8fafc;
-}
-
-.tab-link.active {
-    color: #667eea;
-    border-bottom-color: #667eea;
-}
-
-/* Controls */
-.controls-bar {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 24px;
-    align-items: stretch;
-    background: white;
-    padding: 14px 16px;
-    border-radius: 8px;
-    border: 1px solid #e0e6ed;
-}
-
-.search-input {
-    flex: 1;
-    padding: 10px 14px;
-    border: 1px solid #e0e6ed;
-    border-radius: 6px;
-    font-size: 14px;
-    background: #f8fafc;
-    transition: all 0.2s ease;
-    font-weight: 500;
-}
-
-.search-input:focus {
-    outline: none;
-    border-color: #667eea;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.search-input::placeholder {
-    color: #8b96a5;
-}
-
-.download-btn {
-    padding: 10px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-    white-space: nowrap;
-}
-
-.download-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-.download-btn:active {
-    transform: translateY(0);
-}
-
-/* Table */
-.table-container {
-    background: white;
-    border: 1px solid #e0e6ed;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.attendance-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-
-.attendance-table thead {
-    background: #f5f7fa;
-    border-bottom: 2px solid #e0e6ed;
-}
-
-.attendance-table th {
-    padding: 16px;
-    text-align: left;
-    font-size: 12px;
-    font-weight: 700;
-    color: #5a6c7d;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-}
-
-.attendance-table td {
-    padding: 16px;
-    border-bottom: 1px solid #f0f4f8;
-    color: #2c3e50;
-}
-
-.attendance-table tbody tr {
-    transition: all 0.2s ease;
-}
-
-.attendance-table tbody tr:hover {
-    background: #f8fafc;
-}
-
-.type-badge {
-    display: inline-block;
-    padding: 6px 12px;
-    background: #eef1ff;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #667eea;
-}
-
-.percentage-badge {
-    font-weight: 700;
-    font-size: 14px;
-}
-
-.percentage-high {
-    color: #16a34a;
-}
-
-.percentage-medium {
-    color: #d97706;
-}
-
-.percentage-low {
-    color: #dc2626;
-}
-
-.total-row {
-    background: #f5f7fa;
-    font-weight: 700;
-    border-top: 2px solid #e0e6ed;
-}
-
-.total-row td {
-    border-bottom: none;
-    color: #1a202c;
-    padding: 18px 16px;
-}
-
-.total-row td:first-child {
-    text-align: right;
-}
-
-.empty-state {
-    text-align: center;
-    padding: 80px 40px;
-    color: #8b96a5;
-    background: white;
-    border-radius: 8px;
-    border: 1px solid #e0e6ed;
-}
-
-.empty-state p {
-    font-size: 15px;
-    margin: 0;
-}
-
-.page-actions {
-    padding: 20px;
-    text-align: center;
-    margin-bottom: 32px;
-}
-
-.btn-back {
-    display: inline-block;
-    padding: 10px 20px;
-    background: white;
-    color: #2c3e50;
-    border: 1.5px solid #e0e6ed;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-.btn-back:hover {
-    border-color: #667eea;
-    background: #f8fafc;
-    color: #667eea;
-}
-
-@media (max-width: 1024px) {
-    .content-wrapper {
-        grid-template-columns: 1fr;
-    }
-    
-    .semester-sidebar {
-        position: relative;
-        top: 0;
-    }
-    
-    .summary-cards {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 768px) {
-    .main-header {
-        flex-direction: column;
-        gap: 16px;
-        align-items: flex-start;
-    }
-    
-    .main-header h1 {
-        font-size: 24px;
-    }
-    
-    .header-actions {
-        width: 100%;
-    }
-    
-    .download-btn {
-        flex: 1;
-    }
-    
-    .summary-cards {
-        grid-template-columns: 1fr;
-    }
-    
-    .controls-bar {
-        flex-direction: column;
-    }
-    
-    .search-input {
-        width: 100%;
-    }
-    
-    .tab-navigation {
-        flex-wrap: wrap;
-    }
-    
-    .attendance-table {
-        font-size: 12px;
-    }
-    
-    .attendance-table th,
-    .attendance-table td {
-        padding: 12px;
-    }
-}
-
+{% block extra_js %}
+<script>
+document.getElementById('asSearch').addEventListener('keyup', function() {
+  const q = this.value.toLowerCase();
+  const rows = document.querySelectorAll('#asTable tbody tr');
+  rows.forEach(r => { r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none'; });
+});
+</script>
 {% endblock %}

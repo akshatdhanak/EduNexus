@@ -1,210 +1,267 @@
 {% extends "layout.html" %}
 {% block title %}Attendance Risk Predictor{% endblock %}
-{% block nav_title %}Attendance Risk Predictor{% endblock %}
-
-{% block style %}
-.risk-container { max-width: 1100px; margin: 0 auto; }
-.risk-header { margin-bottom: 32px; }
-.risk-header h1 { font-size: 28px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
-.risk-header p { color: #666; font-size: 14px; }
-
-/* Overall Stats */
-.overall-card {
-    display: flex; gap: 24px; padding: 24px;
-    background: #fff; border-radius: 12px; margin-bottom: 32px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    align-items: center; flex-wrap: wrap;
-}
-.overall-stat { text-align: center; flex: 1; min-width: 120px; }
-.overall-stat .number { font-size: 36px; font-weight: 700; }
-.overall-stat .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
-
-/* Risk Indicators */
-.risk-safe .number { color: #1e8e3e; }
-.risk-warning .number { color: #f9ab00; }
-.risk-critical .number { color: #d93025; }
-
-.risk-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
-}
-.risk-badge.safe { background: #e6f4ea; color: #1e8e3e; }
-.risk-badge.warning { background: #fef7e0; color: #e37400; }
-.risk-badge.critical { background: #fce8e6; color: #d93025; }
-
-/* Subject Cards */
-.subject-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
-.subject-card {
-    background: #fff; border-radius: 12px; padding: 24px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 4px solid;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-.subject-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
-.subject-card.safe { border-left-color: #1e8e3e; }
-.subject-card.warning { border-left-color: #f9ab00; }
-.subject-card.critical { border-left-color: #d93025; }
-
-.subject-name { font-size: 16px; font-weight: 600; color: #202124; margin-bottom: 4px; }
-.subject-code { font-size: 12px; color: #5f6368; margin-bottom: 16px; }
-
-.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
-.stat-row:last-child { border-bottom: none; }
-.stat-label { font-size: 13px; color: #5f6368; }
-.stat-value { font-size: 13px; font-weight: 600; color: #202124; }
-
-/* Progress Bar */
-.progress-bar-container { width: 100%; height: 8px; background: #e8eaed; border-radius: 4px; margin: 12px 0; overflow: hidden; }
-.progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
-.progress-fill.safe { background: #1e8e3e; }
-.progress-fill.warning { background: #f9ab00; }
-.progress-fill.critical { background: #d93025; }
-
-/* Prediction Box */
-.prediction-box {
-    margin-top: 12px; padding: 12px; border-radius: 8px; font-size: 13px;
-}
-.prediction-box.safe { background: #e6f4ea; color: #137333; }
-.prediction-box.warning { background: #fef7e0; color: #e37400; }
-.prediction-box.critical { background: #fce8e6; color: #c5221f; }
-
-/* Skip Selector */
-.skip-selector {
-    display: flex; align-items: center; gap: 12px;
-    background: #fff; padding: 16px 24px; border-radius: 12px;
-    margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-}
-.skip-selector label { font-size: 14px; font-weight: 500; color: #202124; }
-.skip-selector select {
-    padding: 8px 16px; border: 1px solid #dadce0; border-radius: 8px;
-    font-size: 14px; background: #fff; cursor: pointer;
-}
-.skip-selector .btn-apply {
-    padding: 8px 20px; background: #1a73e8; color: #fff; border: none;
-    border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer;
-}
-.skip-selector .btn-apply:hover { background: #1765cc; }
-
-.empty-state { text-align: center; padding: 60px 20px; color: #5f6368; }
-.empty-state .material-icons { font-size: 64px; color: #dadce0; margin-bottom: 16px; }
-{% endblock %}
 
 {% block container %}
-<div class="risk-container">
-    <div class="risk-header">
-        <h1>Attendance Risk Predictor</h1>
-        <p>{{ student.name }} · Semester {{ student.semester }} · Min required: {{ min_attendance }}%</p>
+<div class="rp-page">
+
+  <!-- Header -->
+  <div class="rp-top">
+    <div>
+      <h1>Risk Predictor</h1>
+      <p>{{ student.name }} &middot; Semester {{ student.semester }} &middot; Min: {{ min_attendance }}%</p>
     </div>
+    <a href="{% url 'student_app:attendance_summary' %}" class="rp-back-link">
+      <span class="material-icons">arrow_back</span> Summary
+    </a>
+  </div>
 
-    {% if risk_data %}
-    <!-- Overall Status -->
-    <div class="overall-card">
-        <div class="overall-stat risk-{{ overall_risk }}">
-            <div class="number">{{ overall_percentage }}%</div>
-            <div class="label">Overall Attendance</div>
-        </div>
-        <div class="overall-stat">
-            <div class="number" style="color: #1a73e8;">{{ overall_present }}</div>
-            <div class="label">Classes Attended</div>
-        </div>
-        <div class="overall-stat">
-            <div class="number" style="color: #5f6368;">{{ overall_total }}</div>
-            <div class="label">Total Classes</div>
-        </div>
-        <div class="overall-stat">
-            <span class="risk-badge {{ overall_risk }}">
-                {% if overall_risk == "safe" %}● Safe{% elif overall_risk == "warning" %}⚠ Warning{% else %}✖ Critical{% endif %}
-            </span>
-        </div>
+  {% if risk_data %}
+
+  <!-- Overall Banner -->
+  <div class="rp-banner rp-banner-{{ overall_risk }}">
+    <div class="rp-banner-main">
+      <span class="rp-banner-pct">{{ overall_percentage }}%</span>
+      <span class="rp-banner-lbl">Overall Attendance</span>
     </div>
+    <div class="rp-banner-stats">
+      <div class="rp-bstat"><span class="rp-bstat-val">{{ overall_present }}</span><span class="rp-bstat-lbl">Attended</span></div>
+      <div class="rp-bstat"><span class="rp-bstat-val">{{ overall_total }}</span><span class="rp-bstat-lbl">Total</span></div>
+    </div>
+    <span class="rp-overall-badge rp-badge-{{ overall_risk }}">
+      {% if overall_risk == "safe" %}Safe{% elif overall_risk == "warning" %}Warning{% else %}Critical{% endif %}
+    </span>
+  </div>
 
-    <!-- Skip Predictor -->
-    <form method="get" class="skip-selector">
-        <label>Predict if you skip the next</label>
-        <select name="skip">
-            {% for val in "1 2 3 5 7 10 15 20"|make_list %}{% endfor %}
-            <option value="1" {% if skip_next == 1 %}selected{% endif %}>1 class</option>
-            <option value="2" {% if skip_next == 2 %}selected{% endif %}>2 classes</option>
-            <option value="3" {% if skip_next == 3 %}selected{% endif %}>3 classes</option>
-            <option value="5" {% if skip_next == 5 %}selected{% endif %}>5 classes</option>
-            <option value="7" {% if skip_next == 7 %}selected{% endif %}>7 classes</option>
-            <option value="10" {% if skip_next == 10 %}selected{% endif %}>10 classes</option>
-            <option value="15" {% if skip_next == 15 %}selected{% endif %}>15 classes</option>
-            <option value="20" {% if skip_next == 20 %}selected{% endif %}>20 classes</option>
-        </select>
-        <button type="submit" class="btn-apply">Predict</button>
-    </form>
+  <!-- Skip Predictor -->
+  <form method="get" class="rp-skip-bar">
+    <span class="material-icons rp-skip-ico">trending_down</span>
+    <span class="rp-skip-label">If I skip the next</span>
+    <select name="skip" class="rp-skip-select" onchange="this.form.submit()">
+      <option value="1" {% if skip_next == 1 %}selected{% endif %}>1</option>
+      <option value="2" {% if skip_next == 2 %}selected{% endif %}>2</option>
+      <option value="3" {% if skip_next == 3 %}selected{% endif %}>3</option>
+      <option value="5" {% if skip_next == 5 %}selected{% endif %}>5</option>
+      <option value="7" {% if skip_next == 7 %}selected{% endif %}>7</option>
+      <option value="10" {% if skip_next == 10 %}selected{% endif %}>10</option>
+      <option value="15" {% if skip_next == 15 %}selected{% endif %}>15</option>
+      <option value="20" {% if skip_next == 20 %}selected{% endif %}>20</option>
+    </select>
+    <span class="rp-skip-label">class{{ skip_next|pluralize:"es" }}…</span>
+  </form>
 
-    <!-- Subject Cards -->
-    <div class="subject-grid">
-        {% for item in risk_data %}
-        <div class="subject-card {{ item.risk_level }}">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                <div>
-                    <div class="subject-name">{{ item.subject }}</div>
-                    <div class="subject-code">{{ item.subject_code }}</div>
-                </div>
-                <span class="risk-badge {{ item.risk_level }}">
-                    {% if item.risk_level == "safe" %}● Safe{% elif item.risk_level == "warning" %}⚠ Warning{% else %}✖ Critical{% endif %}
-                </span>
-            </div>
+  <!-- Subject Cards -->
+  <div class="rp-grid">
+    {% for item in risk_data %}
+    <div class="rp-card rp-border-{{ item.risk_level }}">
+      <!-- Header Row -->
+      <div class="rp-card-head">
+        <div>
+          <div class="rp-card-subj">{{ item.subject }}</div>
+          <div class="rp-card-code">{{ item.subject_code }}</div>
+        </div>
+        <span class="rp-level-badge rp-badge-{{ item.risk_level }}">
+          {% if item.risk_level == "safe" %}Safe{% elif item.risk_level == "warning" %}Warning{% else %}Critical{% endif %}
+        </span>
+      </div>
 
-            <!-- Progress Bar -->
-            <div class="progress-bar-container">
-                <div class="progress-fill {{ item.risk_level }}" style="width: {{ item.percentage }}%;"></div>
-            </div>
+      <!-- Progress -->
+      <div class="rp-bar-track">
+        <div class="rp-bar-fill rp-fill-{{ item.risk_level }}" style="width:{{ item.percentage }}%"></div>
+      </div>
 
-            <div class="stat-row">
-                <span class="stat-label">Current Attendance</span>
-                <span class="stat-value" style="color: {% if item.risk_level == 'safe' %}#1e8e3e{% elif item.risk_level == 'warning' %}#e37400{% else %}#d93025{% endif %};">{{ item.percentage }}%</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Classes Attended / Total</span>
-                <span class="stat-value">{{ item.attended }} / {{ item.total_classes }}</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Classes Absent</span>
-                <span class="stat-value" style="color: #d93025;">{{ item.absent }}</span>
-            </div>
+      <!-- Stats -->
+      <div class="rp-stats">
+        <div class="rp-stat-row">
+          <span>Current Attendance</span>
+          <span class="rp-stat-val rp-color-{{ item.risk_level }}">{{ item.percentage }}%</span>
+        </div>
+        <div class="rp-stat-row">
+          <span>Attended / Total</span>
+          <span class="rp-stat-val">{{ item.attended }} / {{ item.total_classes }}</span>
+        </div>
+        <div class="rp-stat-row">
+          <span>Absent</span>
+          <span class="rp-stat-val" style="color:#dc2626;">{{ item.absent }}</span>
+        </div>
+      </div>
 
-            {% if item.type_breakdown|length > 1 %}
-            <div style="margin: 8px 0; padding: 8px 12px; background: #f8f9fa; border-radius: 8px;">
-                <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #5f6368; margin-bottom: 6px; font-weight: 600;">Breakdown</div>
-                {% for tb in item.type_breakdown %}
-                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 3px 0; {% if not forloop.last %}border-bottom: 1px solid #e8eaed;{% endif %}">
-                    <span style="color: #5f6368;">{{ tb.type }}</span>
-                    <span style="font-weight: 600; color: #202124;">{{ tb.attended }}/{{ tb.total }} <span style="color: {% if tb.percentage >= 75 %}#1e8e3e{% elif tb.percentage >= 60 %}#e37400{% else %}#d93025{% endif %};">({{ tb.percentage }}%)</span></span>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            {% if item.risk_level == "critical" %}
-            <div class="stat-row">
-                <span class="stat-label">Classes Needed to Reach 75%</span>
-                <span class="stat-value" style="color: #d93025;">{{ item.required_to_recover }} more</span>
-            </div>
-            {% endif %}
-
-            <div class="stat-row">
-                <span class="stat-label">Can Still Skip</span>
-                <span class="stat-value">{{ item.can_skip }} class{{ item.can_skip|pluralize:"es" }}</span>
-            </div>
-
-            <!-- Prediction -->
-            <div class="prediction-box {{ item.future_risk }}">
-                <strong>Prediction:</strong> If you skip the next {{ skip_next }} class{{ skip_next|pluralize:"es" }}, your attendance will drop to <strong>{{ item.future_percentage }}%</strong>
-                {% if item.future_risk == "critical" %} — You will fall below the minimum requirement!{% elif item.future_risk == "warning" %} — Dangerously close to the limit.{% else %} — Still safe.{% endif %}
-            </div>
+      {% if item.type_breakdown|length > 1 %}
+      <div class="rp-breakdown">
+        <div class="rp-breakdown-title">Breakdown</div>
+        {% for tb in item.type_breakdown %}
+        <div class="rp-breakdown-row">
+          <span>{{ tb.type }}</span>
+          <span>{{ tb.attended }}/{{ tb.total }}
+            <span class="rp-color-{% if tb.percentage >= 75 %}safe{% elif tb.percentage >= 60 %}warning{% else %}critical{% endif %}">({{ tb.percentage }}%)</span>
+          </span>
         </div>
         {% endfor %}
-    </div>
+      </div>
+      {% endif %}
 
-    {% else %}
-    <div class="empty-state">
-        <span class="material-icons">school</span>
-        <h3>No Attendance Data</h3>
-        <p>No attendance records found for your current semester subjects.</p>
+      {% if item.risk_level == "critical" %}
+      <div class="rp-stat-row">
+        <span>Need to recover</span>
+        <span class="rp-stat-val" style="color:#dc2626;">{{ item.required_to_recover }} more class{{ item.required_to_recover|pluralize:"es" }}</span>
+      </div>
+      {% endif %}
+
+      <div class="rp-stat-row">
+        <span>Can still skip</span>
+        <span class="rp-stat-val">{{ item.can_skip }} class{{ item.can_skip|pluralize:"es" }}</span>
+      </div>
+
+      <!-- Prediction -->
+      <div class="rp-predict rp-predict-{{ item.future_risk }}">
+        <span class="material-icons rp-predict-ico">insights</span>
+        <span>
+          Skip {{ skip_next }} → <strong>{{ item.future_percentage }}%</strong>
+          {% if item.future_risk == "critical" %} — below minimum!{% elif item.future_risk == "warning" %} — near the limit{% else %} — still safe{% endif %}
+        </span>
+      </div>
     </div>
-    {% endif %}
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="rp-empty">
+    <span class="material-icons">school</span>
+    <h3>No Data</h3>
+    <p>No attendance records for your current semester subjects.</p>
+  </div>
+  {% endif %}
 </div>
+{% endblock %}
+
+{% block style %}
+.rp-page { max-width:900px; margin:0 auto; padding:32px 24px 64px; }
+
+/* Header */
+.rp-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:24px; flex-wrap:wrap; }
+.rp-top h1 { font-size:22px; font-weight:700; color:#111; margin:0 0 2px; letter-spacing:-.3px; }
+.rp-top p { font-size:14px; color:#6b7280; margin:0; }
+.rp-back-link {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:13px; font-weight:500; color:#6b7280;
+  text-decoration:none; transition:color .15s;
+}
+.rp-back-link:hover { color:#111; text-decoration:none; }
+.rp-back-link .material-icons { font-size:16px; }
+
+/* Banner */
+.rp-banner {
+  display:flex; align-items:center; gap:24px; flex-wrap:wrap;
+  padding:18px 24px; border-radius:10px; margin-bottom:14px;
+  color:#fff;
+}
+.rp-banner-safe { background:#111; }
+.rp-banner-warning { background:#92400e; }
+.rp-banner-critical { background:#991b1b; }
+.rp-banner-main { display:flex; flex-direction:column; align-items:center; }
+.rp-banner-pct { font-size:28px; font-weight:800; }
+.rp-banner-lbl { font-size:11px; font-weight:600; text-transform:uppercase; opacity:.55; letter-spacing:.04em; }
+.rp-banner-stats { display:flex; gap:20px; }
+.rp-bstat { display:flex; flex-direction:column; align-items:center; }
+.rp-bstat-val { font-size:18px; font-weight:700; }
+.rp-bstat-lbl { font-size:10px; text-transform:uppercase; opacity:.5; }
+.rp-overall-badge { margin-left:auto; }
+
+/* Badges */
+.rp-badge-safe, .rp-level-badge.rp-badge-safe { background:#f0fdf4; color:#166534; }
+.rp-badge-warning, .rp-level-badge.rp-badge-warning { background:#fffbeb; color:#92400e; }
+.rp-badge-critical, .rp-level-badge.rp-badge-critical { background:#fef2f2; color:#991b1b; }
+.rp-overall-badge, .rp-level-badge {
+  display:inline-flex; padding:4px 10px; border-radius:4px;
+  font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.02em;
+}
+
+/* Skip Bar */
+.rp-skip-bar {
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  padding:10px 16px; margin-bottom:16px;
+  background:#fff; border:1px solid #e5e7eb; border-radius:8px;
+}
+.rp-skip-ico { font-size:18px; color:#9ca3af; }
+.rp-skip-label { font-size:13px; color:#374151; }
+.rp-skip-select {
+  padding:5px 10px; border:1px solid #e5e7eb; border-radius:6px;
+  font-size:13px; color:#111; background:#fff; font-family:inherit;
+}
+.rp-skip-select:focus { outline:none; border-color:#111; }
+
+/* Card Grid */
+.rp-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:12px; }
+.rp-card {
+  background:#fff; border:1px solid #e5e7eb; border-radius:10px;
+  padding:18px; border-left:4px solid;
+  transition:box-shadow .15s;
+}
+.rp-card:hover { box-shadow:0 2px 8px rgba(0,0,0,.04); }
+.rp-border-safe { border-left-color:#16a34a; }
+.rp-border-warning { border-left-color:#d97706; }
+.rp-border-critical { border-left-color:#dc2626; }
+
+.rp-card-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+.rp-card-subj { font-size:14px; font-weight:600; color:#111; }
+.rp-card-code { font-size:11px; color:#9ca3af; }
+
+/* Bar */
+.rp-bar-track { height:6px; background:#f3f4f6; border-radius:3px; overflow:hidden; margin-bottom:12px; }
+.rp-bar-fill { height:100%; border-radius:3px; transition:width .4s; }
+.rp-fill-safe { background:#16a34a; }
+.rp-fill-warning { background:#d97706; }
+.rp-fill-critical { background:#dc2626; }
+
+/* Stats */
+.rp-stats { margin-bottom:4px; }
+.rp-stat-row {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:5px 0; border-bottom:1px solid #f5f5f5;
+  font-size:12px; color:#6b7280;
+}
+.rp-stat-row:last-child { border-bottom:none; }
+.rp-stat-val { font-weight:600; color:#111; font-size:12px; }
+.rp-color-safe { color:#16a34a; }
+.rp-color-warning { color:#d97706; }
+.rp-color-critical { color:#dc2626; }
+
+/* Breakdown */
+.rp-breakdown {
+  margin:8px 0; padding:8px 12px; background:#fafafa; border-radius:6px;
+}
+.rp-breakdown-title { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#9ca3af; margin-bottom:4px; }
+.rp-breakdown-row {
+  display:flex; justify-content:space-between; align-items:center;
+  font-size:12px; color:#6b7280; padding:3px 0;
+  border-bottom:1px solid #f3f4f6;
+}
+.rp-breakdown-row:last-child { border-bottom:none; }
+.rp-breakdown-row span:last-child { font-weight:600; color:#111; }
+
+/* Prediction */
+.rp-predict {
+  display:flex; align-items:center; gap:6px;
+  margin-top:10px; padding:10px 12px; border-radius:6px;
+  font-size:12px; font-weight:500;
+}
+.rp-predict-ico { font-size:16px; }
+.rp-predict-safe { background:#f0fdf4; color:#166534; }
+.rp-predict-warning { background:#fffbeb; color:#92400e; }
+.rp-predict-critical { background:#fef2f2; color:#991b1b; }
+
+/* Empty */
+.rp-empty {
+  text-align:center; padding:56px 20px;
+  background:#fff; border:1px dashed #d1d5db; border-radius:12px;
+}
+.rp-empty .material-icons { font-size:36px; color:#d1d5db; margin-bottom:10px; }
+.rp-empty h3 { font-size:15px; font-weight:600; color:#374151; margin:0 0 4px; }
+.rp-empty p { font-size:13px; color:#9ca3af; margin:0; }
+
+@media (max-width:640px) {
+  .rp-page { padding:20px 16px 48px; }
+  .rp-top { flex-direction:column; }
+  .rp-banner { gap:16px; padding:16px; }
+  .rp-grid { grid-template-columns:1fr; }
+}
 {% endblock %}

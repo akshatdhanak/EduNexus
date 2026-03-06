@@ -509,7 +509,7 @@ def enter_marks(request):
                         student_enrollments = student_enrollments.filter(student__division=selected_division)
                     if selected_degree:
                         student_enrollments = student_enrollments.filter(student__degree_program_id=selected_degree)
-                    enrollment_iter = (enrollment.student for enrollment in student_enrollments)
+                    enrollment_students = [enrollment.student for enrollment in student_enrollments]
                 else:
                     # fallback: students in the same semester
                     fallback_qs = Student.objects.filter(semester=semester, status='active')
@@ -524,10 +524,18 @@ def enter_marks(request):
                         fallback_qs = fallback_qs.filter(division=selected_division)
                     if selected_degree:
                         fallback_qs = fallback_qs.filter(degree_program_id=selected_degree)
-                    enrollment_iter = fallback_qs
+                    enrollment_students = list(fallback_qs)
+
+                # Deduplicate students by id to avoid showing the same student twice
+                seen_ids = set()
+                unique_students = []
+                for student in enrollment_students:
+                    if student.id not in seen_ids:
+                        seen_ids.add(student.id)
+                        unique_students.append(student)
 
                 # Get or create marks for these students
-                for student in enrollment_iter:
+                for student in unique_students:
                     exam_mark, _ = ExamMarks.objects.get_or_create(
                         student=student,
                         exam_schedule=exam,
@@ -585,14 +593,19 @@ def enter_marks(request):
 
         # Provide subject and exam type options for the selection step
         subjects_for_faculty = subjects
-        exam_types_for_selected = []
         exams_for_display = exam_schedules
         if selected_subject_id:
             try:
                 selected_subject_id = int(selected_subject_id)
                 exams_for_display = exam_schedules.filter(subject_id=selected_subject_id)
-                # gather available exam types for this subject
-                exam_types_for_selected = exams_for_display.values_list('exam_type__id', 'exam_type__name').distinct()
+            except ValueError:
+                pass
+        # Always show available exam types (from filtered or all exams)
+        exam_types_for_selected = list(exams_for_display.values_list('exam_type__id', 'exam_type__name').distinct())
+        # Apply exam type filter if selected
+        if selected_exam_type_id:
+            try:
+                exams_for_display = exams_for_display.filter(exam_type_id=int(selected_exam_type_id))
             except ValueError:
                 pass
 

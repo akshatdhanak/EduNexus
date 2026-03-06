@@ -3,355 +3,276 @@
 
 {% block title %}View Results{% endblock %}
 
-{% block style %}
-<style>
-    .results-container {
-        background: #f5f5f5;
-        padding: 2rem;
-        border-radius: 12px;
-    }
-    
-    .result-card {
-        background: white;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-    }
-    
-    .result-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1.5rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .result-header h4 {
-        margin: 0;
-        font-weight: 600;
-    }
-    
-    .semester-gpa {
-        background: rgba(255, 255, 255, 0.2);
-        padding: 0.75rem 1.5rem;
-        border-radius: 25px;
-        font-weight: 600;
-        font-size: 0.95rem;
-    }
-    
-    .result-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    
-    .result-table thead {
-        background-color: #f5f5f5;
-        border-bottom: 2px solid #e0e0e0;
-    }
-    
-    .result-table th {
-        padding: 1rem;
-        text-align: left;
-        font-weight: 600;
-        color: #333;
-        font-size: 0.95rem;
-    }
-    
-    .result-table td {
-        padding: 1rem;
-        border-bottom: 1px solid #e0e0e0;
-        color: #555;
-    }
-    
-    .result-table tbody tr:hover {
-        background-color: #f9f9f9;
-    }
-    
-    .result-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-    
-    .marks-column {
-        text-align: center;
-        font-weight: 500;
-        color: #667eea;
-    }
-    
-    .grade-cell {
-        text-align: center;
-        font-weight: 700;
-        font-size: 1.1rem;
-    }
-    
-    .grade-a-plus {
-        color: #d32f2f;
-        background-color: #ffebee;
-        padding: 0.5rem 0.75rem;
-        border-radius: 6px;
-        display: inline-block;
-    }
-    
-    .grade-a {
-        color: #f57c00;
-        background-color: #fff3e0;
-        padding: 0.5rem 0.75rem;
-        border-radius: 6px;
-        display: inline-block;
-    }
-    
-    .grade-b-plus {
-        color: #388e3c;
-        background-color: #e8f5e9;
-        padding: 0.5rem 0.75rem;
-        border-radius: 6px;
-        display: inline-block;
-    }
-    
-    .grade-b {
-        color: #1976d2;
-        background-color: #e3f2fd;
-        padding: 0.5rem 0.75rem;
-        border-radius: 6px;
-        display: inline-block;
-    }
-    
-    .grade-c {
-        color: #7b1fa2;
-        background-color: #f3e5f5;
-        padding: 0.5rem 0.75rem;
-        border-radius: 6px;
-        display: inline-block;
-    }
-    
-    .grade-f {
-        color: #d32f2f;
-        background-color: #ffcdd2;
-        padding: 0.5rem 0.75rem;
-        border-radius: 6px;
-        display: inline-block;
-    }
-    
-    .download-btn {
-        background: #667eea;
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 500;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-    }
-    
-    .download-btn:hover {
-        background: #764ba2;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
-    
-    .semester-tabs {
-        display: flex;
-        gap: 0.5rem;
-        margin-bottom: 2rem;
-        flex-wrap: wrap;
-    }
-    
-    .semester-btn {
-        padding: 0.75rem 1.5rem;
-        border: 2px solid #ddd;
-        background: white;
-        color: #333;
-        cursor: pointer;
-        border-radius: 25px;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
-    
-    .semester-btn:hover {
-        border-color: #667eea;
-        color: #667eea;
-    }
-    
-    .semester-btn.active {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-color: #667eea;
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 3rem 1rem;
-        background-color: white;
-        border-radius: 12px;
-    }
-    
-    .empty-state-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
-    }
-</style>
-{% endblock %}
-
 {% block container %}
-<div class="container-fluid p-4">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <h1 class="h2" style="color: #1a1a1a; font-weight: 700;">
-                <i class="bi bi-trophy" style="color: #667eea;"></i> View Results
-            </h1>
-            <p class="text-muted mb-0">Review your semester results and grades</p>
-        </div>
+<div class="vr-page">
+
+  <!-- Header -->
+  <div class="vr-top">
+    <div>
+      <h1>Results</h1>
+      <p>Semester grades and GPA</p>
     </div>
-    
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <a href="{% url 'student_app:view_marks' %}" class="vr-link-btn">
+      <span class="material-icons">assignment</span> View Marks
+    </a>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+    <div class="vr-alert">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {% if semesters %}
+  <!-- Semester Switcher -->
+  <div class="vr-nav">
+    {% for semester in semesters %}
+    <button class="vr-tab {% if forloop.first %}vr-tab-on{% endif %}" onclick="vrSwitch({{ semester }}, this)">
+      <span class="vr-tab-num">{{ semester }}</span>
+      <span class="vr-tab-lbl">Sem</span>
+    </button>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if results_by_semester %}
+    {% for semester in semesters %}
+    <div class="vr-panel" id="vr-sem-{{ semester }}" {% if not forloop.first %}style="display:none"{% endif %}>
+
+      {% with result_data=results_by_semester|get_item:semester %}
+        {% if result_data.subjects %}
+
+          <!-- GPA Banner -->
+          <div class="vr-gpa-bar">
+            <div class="vr-gpa-left">
+              <span class="material-icons">school</span>
+              <span>Semester {{ semester }}</span>
             </div>
-        {% endfor %}
-    {% endif %}
-    
-    <!-- Semester Tabs -->
-    {% if semesters %}
-        <div class="semester-tabs">
-            {% for semester in semesters %}
-                <button class="semester-btn {% if forloop.first %}active{% endif %}" onclick="showSemester({{ semester }})">
-                    Semester {{ semester }}
-                </button>
-            {% endfor %}
-        </div>
-    {% endif %}
-    
-    <!-- Results Cards -->
-    {% if results_by_semester %}
-        {% for semester in semesters %}
-            <div class="semester-content" id="semester-{{ semester }}" style="{% if not forloop.first %}display: none;{% endif %}">
-                {% with result_data=results_by_semester|get_item:semester %}
-                    {% if result_data.subjects %}
-                        <div class="result-card">
-                            <div class="result-header">
-                                <h4>Semester {{ semester }} Results</h4>
-                                <div class="semester-gpa">
-                                    Semester GPA: <strong>{{ result_data.semester_gpa }}</strong>
-                                </div>
-                            </div>
-                            
-                            <table class="result-table">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 30%;">Subject</th>
-                                        <th style="width: 12%;" class="marks-column">Internal</th>
-                                        <th style="width: 12%;" class="marks-column">External</th>
-                                        <th style="width: 12%;" class="marks-column">Practical</th>
-                                        <th style="width: 12%;" class="marks-column">Total</th>
-                                        <th style="width: 10%;" class="marks-column">Grade</th>
-                                        <th style="width: 12%;" class="marks-column">GPA</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for result in result_data.subjects %}
-                                        <tr>
-                                            <td>
-                                                <strong>{{ result.subject.name }}</strong>
-                                            </td>
-                                            <td class="marks-column">
-                                                {% if result.internal_marks %}
-                                                    {{ result.internal_marks|floatformat:1 }}
-                                                {% else %}
-                                                    <span style="color: #999;">—</span>
-                                                {% endif %}
-                                            </td>
-                                            <td class="marks-column">
-                                                {% if result.external_marks %}
-                                                    {{ result.external_marks|floatformat:1 }}
-                                                {% else %}
-                                                    <span style="color: #999;">—</span>
-                                                {% endif %}
-                                            </td>
-                                            <td class="marks-column">
-                                                {% if result.practical_marks %}
-                                                    {{ result.practical_marks|floatformat:1 }}
-                                                {% else %}
-                                                    <span style="color: #999;">—</span>
-                                                {% endif %}
-                                            </td>
-                                            <td class="marks-column">
-                                                <strong>{{ result.total_marks|floatformat:1 }}</strong>
-                                            </td>
-                                            <td class="grade-cell">
-                                                <span class="grade-{{ result.grade|lower|replace:'+' }}" style="text-transform: uppercase;">
-                                                    {{ result.grade }}
-                                                </span>
-                                            </td>
-                                            <td class="marks-column">
-                                                <strong>{{ result.gpa }}</strong>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                            
-                            <div style="padding: 1.5rem; background-color: #f5f5f5; text-align: right; border-top: 1px solid #e0e0e0;">
-                                <button class="download-btn" onclick="downloadResult({{ semester }})">
-                                    <i class="bi bi-download"></i> Download Result (PDF)
-                                </button>
-                            </div>
-                        </div>
-                    {% else %}
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📭</div>
-                            <h5>No Results Available</h5>
-                            <p class="text-muted">Results for Semester {{ semester }} will appear here once all exam marks are finalized.</p>
-                        </div>
-                    {% endif %}
-                {% endwith %}
+            <div class="vr-gpa-right">
+              <span class="vr-gpa-label">SGPA</span>
+              <span class="vr-gpa-val">{{ result_data.semester_gpa }}</span>
             </div>
-        {% endfor %}
-    {% else %}
-        <div class="empty-state">
-            <div class="empty-state-icon">🎓</div>
-            <h5>No Results Yet</h5>
-            <p class="text-muted">Your semester results will appear here after exams are conducted and grades are generated.</p>
-        </div>
-    {% endif %}
-    
-    <!-- Navigation -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <a href="{% url 'student_app:view_marks' %}" class="btn btn-primary">
-                <i class="bi bi-file-earmark-check"></i> View Marks
-            </a>
-            <a href="{% url 'student_app:student_dashboard' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Dashboard
-            </a>
-        </div>
+          </div>
+
+          <!-- Results Table -->
+          <div class="vr-card">
+            <table class="vr-table">
+              <thead>
+                <tr>
+                  <th class="vr-th-subj">Subject</th>
+                  <th>Internal</th>
+                  <th>External</th>
+                  <th>Practical</th>
+                  <th>Total</th>
+                  <th>Grade</th>
+                  <th>GPA</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for result in result_data.subjects %}
+                <tr>
+                  <td class="vr-td-subj">{{ result.subject.name }}</td>
+                  <td class="vr-td-num">
+                    {% if result.internal_marks %}{{ result.internal_marks|floatformat:1 }}{% else %}<span class="vr-dash">—</span>{% endif %}
+                  </td>
+                  <td class="vr-td-num">
+                    {% if result.external_marks %}{{ result.external_marks|floatformat:1 }}{% else %}<span class="vr-dash">—</span>{% endif %}
+                  </td>
+                  <td class="vr-td-num">
+                    {% if result.practical_marks %}{{ result.practical_marks|floatformat:1 }}{% else %}<span class="vr-dash">—</span>{% endif %}
+                  </td>
+                  <td class="vr-td-total">{{ result.total_marks|floatformat:1 }}</td>
+                  <td class="vr-td-grade">
+                    <span class="vr-grade vr-grade-{{ result.grade|lower|replace:'+' }}">{{ result.grade }}</span>
+                  </td>
+                  <td class="vr-td-gpa">{{ result.gpa }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Download -->
+          <div class="vr-download-row">
+            <button onclick="vrDownload({{ semester }})" class="vr-dl-btn">
+              <span class="material-icons">download</span> Download PDF
+            </button>
+          </div>
+
+        {% else %}
+          <div class="vr-empty-sem">
+            <span class="material-icons">hourglass_empty</span>
+            <p>Results for Semester {{ semester }} will appear once all marks are finalized.</p>
+          </div>
+        {% endif %}
+      {% endwith %}
+
     </div>
+    {% endfor %}
+
+  {% else %}
+    <div class="vr-empty">
+      <span class="material-icons">emoji_events</span>
+      <h3>No Results Yet</h3>
+      <p>Results appear after exams are conducted and grades are generated.</p>
+    </div>
+  {% endif %}
+
+  <!-- Footer Nav -->
+  <div class="vr-foot">
+    <a href="{% url 'student_app:student_dashboard' %}" class="vr-back">
+      <span class="material-icons">arrow_back</span> Dashboard
+    </a>
+  </div>
+
 </div>
 
 <script>
-function showSemester(semester) {
-    // Hide all semesters
-    document.querySelectorAll('.semester-content').forEach(el => {
-        el.style.display = 'none';
-    });
-    
-    // Show selected semester
-    document.getElementById('semester-' + semester).style.display = 'block';
-    
-    // Update buttons
-    document.querySelectorAll('.semester-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    event.target.classList.add('active');
+function vrSwitch(sem, btn) {
+  document.querySelectorAll('.vr-panel').forEach(p => p.style.display = 'none');
+  document.getElementById('vr-sem-' + sem).style.display = 'block';
+  document.querySelectorAll('.vr-tab').forEach(t => t.classList.remove('vr-tab-on'));
+  btn.classList.add('vr-tab-on');
 }
-
-function downloadResult(semester) {
-    window.location.href = "{% url 'student_app:download_result' 0 %}".replace('0', semester);
+function vrDownload(sem) {
+  window.location.href = "{% url 'student_app:download_result' 0 %}".replace('0', sem);
 }
 </script>
+{% endblock %}
+
+{% block style %}
+.vr-page { max-width: 920px; margin:0 auto; padding:32px 24px 64px; }
+
+/* Header */
+.vr-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:28px; }
+.vr-top h1 { font-size:24px; font-weight:700; color:#111; margin:0 0 2px; letter-spacing:-.4px; }
+.vr-top p { font-size:14px; color:#6b7280; margin:0; }
+.vr-link-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 16px; font-size:13px; font-weight:600;
+  color:#fff; background:#111; border-radius:8px;
+  text-decoration:none; white-space:nowrap; transition:background .15s;
+}
+.vr-link-btn:hover { background:#000; color:#fff; text-decoration:none; }
+.vr-link-btn .material-icons { font-size:16px; }
+
+/* Alert */
+.vr-alert {
+  padding:10px 16px; margin-bottom:16px;
+  border:1px solid #fde68a; background:#fffbeb;
+  border-radius:8px; font-size:13px; color:#92400e;
+}
+
+/* Nav */
+.vr-nav { display:flex; gap:6px; margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid #f3f4f6; }
+.vr-tab {
+  display:flex; flex-direction:column; align-items:center;
+  gap:1px; padding:10px 18px;
+  border:1px solid #e5e7eb; border-radius:10px;
+  background:#fff; cursor:pointer; transition:all .15s; min-width:56px;
+}
+.vr-tab:hover { border-color:#d1d5db; background:#f9fafb; }
+.vr-tab-num { font-size:18px; font-weight:700; color:#374151; line-height:1; }
+.vr-tab-lbl { font-size:10px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:.04em; }
+.vr-tab-on { background:#111; border-color:#111; }
+.vr-tab-on .vr-tab-num { color:#fff; }
+.vr-tab-on .vr-tab-lbl { color:rgba(255,255,255,.6); }
+
+/* GPA Bar */
+.vr-gpa-bar {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:14px 18px; margin-bottom:12px;
+  background:#111; border-radius:10px; color:#fff;
+}
+.vr-gpa-left { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:500; }
+.vr-gpa-left .material-icons { font-size:18px; opacity:.7; }
+.vr-gpa-right { display:flex; align-items:baseline; gap:8px; }
+.vr-gpa-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; opacity:.6; }
+.vr-gpa-val { font-size:22px; font-weight:800; letter-spacing:-.3px; }
+
+/* Table Card */
+.vr-card {
+  background:#fff; border:1px solid #e5e7eb;
+  border-radius:12px; overflow:hidden;
+}
+.vr-table { width:100%; border-collapse:collapse; }
+.vr-table thead { background:#fafafa; }
+.vr-table th {
+  padding:10px 16px; text-align:center;
+  font-size:11px; font-weight:600; color:#9ca3af;
+  text-transform:uppercase; letter-spacing:.04em;
+  border-bottom:1px solid #f3f4f6;
+}
+.vr-th-subj { text-align:left !important; }
+.vr-table td {
+  padding:12px 16px; font-size:13px;
+  border-bottom:1px solid #f5f5f5; text-align:center;
+  color:#374151;
+}
+.vr-table tbody tr:last-child td { border-bottom:none; }
+.vr-table tbody tr:hover { background:#fafafa; }
+.vr-td-subj { text-align:left !important; font-weight:600; color:#111; }
+.vr-td-num { font-weight:500; font-variant-numeric:tabular-nums; }
+.vr-td-total { font-weight:700; color:#111; }
+.vr-dash { color:#d1d5db; }
+.vr-td-grade { }
+.vr-grade {
+  display:inline-block; padding:3px 10px; border-radius:6px;
+  font-size:12px; font-weight:700; text-transform:uppercase;
+}
+/* Grade colors — neutral compact palette */
+.vr-grade-a, .vr-grade-a- { background:#f0fdf4; color:#166534; }
+.vr-grade-b, .vr-grade-b- { background:#eff6ff; color:#1e40af; }
+.vr-grade-c, .vr-grade-c- { background:#fffbeb; color:#92400e; }
+.vr-grade-d { background:#fff7ed; color:#9a3412; }
+.vr-grade-f { background:#fef2f2; color:#991b1b; }
+/* Plus grades */
+.vr-grade-a { background:#f0fdf4; color:#166534; }
+.vr-grade-b { background:#eff6ff; color:#1e40af; }
+.vr-td-gpa { font-weight:700; color:#111; font-variant-numeric:tabular-nums; }
+
+/* Download */
+.vr-download-row { margin-top:12px; text-align:right; }
+.vr-dl-btn {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:8px 18px; font-size:13px; font-weight:600;
+  color:#374151; background:#fff; border:1px solid #e5e7eb;
+  border-radius:8px; cursor:pointer; transition:all .15s;
+}
+.vr-dl-btn:hover { border-color:#111; color:#111; }
+.vr-dl-btn .material-icons { font-size:16px; }
+
+/* Empty */
+.vr-empty-sem {
+  text-align:center; padding:40px 20px;
+  color:#9ca3af; font-size:13px;
+}
+.vr-empty-sem .material-icons { font-size:32px; color:#d1d5db; margin-bottom:8px; display:block; }
+.vr-empty-sem p { margin:0; }
+.vr-empty {
+  text-align:center; padding:64px 20px;
+  background:#fff; border:1px dashed #d1d5db; border-radius:12px;
+}
+.vr-empty .material-icons { font-size:40px; color:#d1d5db; margin-bottom:12px; }
+.vr-empty h3 { font-size:16px; font-weight:600; color:#374151; margin:0 0 4px; }
+.vr-empty p { font-size:13px; color:#9ca3af; margin:0; }
+
+/* Footer */
+.vr-foot { margin-top:28px; }
+.vr-back {
+  display:inline-flex; align-items:center; gap:4px;
+  font-size:13px; font-weight:500; color:#6b7280;
+  text-decoration:none; transition:color .15s;
+}
+.vr-back:hover { color:#111; text-decoration:none; }
+.vr-back .material-icons { font-size:16px; }
+
+@media (max-width:640px) {
+  .vr-page { padding:20px 16px 48px; }
+  .vr-top { flex-direction:column; }
+  .vr-nav { overflow-x:auto; flex-wrap:nowrap; -webkit-overflow-scrolling:touch; }
+  .vr-table { font-size:12px; }
+  .vr-table th, .vr-table td { padding:8px 10px; }
+  .vr-gpa-bar { flex-direction:column; gap:8px; align-items:flex-start; }
+}
 {% endblock %}
