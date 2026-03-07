@@ -2,130 +2,132 @@
 {% block title %}Leave Request{% endblock %}
 {% block nav_title %}Leave Request{% endblock %}
 {% block container %}
-<div class="leave-request-page">
-  <div class="page-hero">
-    <div class="hero-copy">
-      <p class="hero-kicker">Leave Request</p>
-      <h1 class="page-title">Apply for Leave</h1>
-      <p class="page-subtitle">
-        Submit a clear request with dates and context for faster approval.
-      </p>
-      <div class="hero-steps">
-        <div class="step-pill">1. Type</div>
-        <div class="step-pill">2. Dates</div>
-        <div class="step-pill">3. Submit</div>
-      </div>
-    </div>
-    <div class="hero-card">
-      <div class="hero-badge">Faculty</div>
-      <div class="hero-title">Quick Tips</div>
-      <ul class="hero-list">
-        <li>Be concise in the reason.</li>
-        <li>Use specific dates for clarity.</li>
-        <li>Add context if it impacts classes.</li>
-      </ul>
-    </div>
+<div class="lr">
+  <div class="lr-head">
+    <h1>Apply for Leave</h1>
+    <p>Submit a request with dates and reason for faster approval</p>
   </div>
 
-  <div class="form-container">
-    <form method="POST" class="leave-form">
+  <div class="lr-form-wrap">
+    <form method="POST" class="lr-form">
       {% csrf_token %}
 
-      <div class="form-section">
-        <div class="section-head">
-          <h2>Reason</h2>
-          <p>Help the reviewer understand the request at a glance.</p>
+      <div class="lr-section">
+        <label class="lr-label">Reason</label>
+        {{ form.reason }}
+      </div>
+
+      <div class="lr-row">
+        <div class="lr-section">
+          <label class="lr-label">Start Date</label>
+          {{ form.start_date }}
         </div>
-        <div class="form-group">
-          <label class="form-label">Reason</label>
-          {{ form.reason }}
+        <div class="lr-section">
+          <label class="lr-label">End Date</label>
+          {{ form.end_date }}
         </div>
       </div>
 
-      <div class="form-section">
-        <div class="section-head">
-          <h2>Dates</h2>
-          <p>
-            Choose the leave window. End date can be the same as start date.
-          </p>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Start Date</label>
-            {{ form.start_date }}
-          </div>
-          <div class="form-group">
-            <label class="form-label">End Date</label>
-            {{ form.end_date }}
-          </div>
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button type="submit" class="submit-btn">Submit Leave Request</button>
-        <p class="action-hint">You can track status in Leave Status.</p>
-      </div>
+      <button type="submit" class="lr-submit">Submit Leave Request</button>
+      <p class="lr-hint">You can track the status in Leave Status</p>
     </form>
   </div>
 </div>
 {% endblock %}
 {% block style %}
-@import
-url('https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
-:root { --ink: #101828; --muted: #667085; --surface: #ffffff; --border: #e4e7ec;
---accent: #1d4ed8; --accent-soft: #eff6ff; --shadow: 0 24px 60px rgba(16, 24,
-40, 0.12); } * { margin: 0; padding: 0; box-sizing: border-box; } body {
-background: radial-gradient(circle at 20% 20%, #f4f7ff 0%, #f8fafc 45%, #f4f4f5
-100%); font-family: 'Space Grotesk', 'Segoe UI', sans-serif; color: var(--ink);
-} .leave-request-page { max-width: 920px; margin: 0 auto; padding: 24px 20px
-48px; position: relative; } .leave-request-page::before { content: ""; position:
-absolute; top: 10px; right: 0; width: 240px; height: 240px; background:
-radial-gradient(circle, rgba(29, 78, 216, 0.15), rgba(29, 78, 216, 0)); filter:
-blur(10px); z-index: 0; } .page-hero { display: grid; grid-template-columns:
-minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px; align-items: stretch; margin-bottom:
-28px; position: relative; z-index: 1; } .hero-copy { background: var(--surface);
-border: 1px solid var(--border); border-radius: 20px; padding: 28px; box-shadow:
-var(--shadow); animation: riseIn 0.6s ease; } .hero-kicker { text-transform:
-uppercase; letter-spacing: 0.22em; font-size: 11px; color: var(--muted);
-margin-bottom: 8px; } .page-title { font-size: 32px; font-weight: 700;
-margin-bottom: 8px; font-family: 'Fraunces', 'Times New Roman', serif; }
-.page-subtitle { font-size: 15px; color: var(--muted); margin-bottom: 16px; }
-.hero-steps { display: flex; flex-wrap: wrap; gap: 10px; } .step-pill { padding:
-6px 12px; border-radius: 999px; background: var(--accent-soft); color:
-var(--accent); font-size: 12px; font-weight: 600; } .hero-card { background:
-#111827; color: #f9fafb; border-radius: 20px; padding: 26px; box-shadow:
-var(--shadow); display: flex; flex-direction: column; gap: 12px; animation:
-riseIn 0.6s ease 0.1s both; } .hero-badge { font-size: 12px; font-weight: 600;
-letter-spacing: 0.1em; text-transform: uppercase; color: #93c5fd; } .hero-title
-{ font-size: 18px; font-weight: 600; } .hero-list { list-style: none; display:
-grid; gap: 8px; font-size: 13px; color: #e5e7eb; } .form-container { position:
-relative; z-index: 1; } .leave-form { background: var(--surface); border: 1px
-solid var(--border); border-radius: 20px; padding: 28px; box-shadow:
-var(--shadow); animation: riseIn 0.6s ease 0.15s both; } .form-section {
-padding: 18px 0; border-bottom: 1px dashed #e6e7ec; } .form-section:last-of-type
-{ border-bottom: none; } .section-head h2 { font-size: 18px; margin-bottom: 6px;
-} .section-head p { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
-.form-group { margin-bottom: 18px; } .form-row { display: grid;
-grid-template-columns: 1fr 1fr; gap: 16px; } .form-label { display: block;
-margin-bottom: 8px; font-weight: 600; color: var(--ink); font-size: 13px;
-text-transform: uppercase; letter-spacing: 0.08em; } .leave-form
-input[type="text"], .leave-form input[type="date"], .leave-form textarea,
-.leave-form select { width: 100%; padding: 12px 14px; border: 1px solid #d0d5dd;
-border-radius: 12px; background: #f8fafc; color: var(--ink); font-size: 14px;
-font-family: inherit; transition: all 0.2s ease; } .leave-form
-input[type="text"]:focus, .leave-form input[type="date"]:focus, .leave-form
-textarea:focus, .leave-form select:focus { outline: none; border-color:
-var(--accent); background: #ffffff; box-shadow: 0 0 0 4px rgba(29, 78, 216,
-0.12); } .leave-form textarea { min-height: 120px; resize: vertical; }
-.form-actions { margin-top: 8px; display: flex; flex-direction: column; gap:
-10px; } .submit-btn { width: 100%; padding: 14px 16px; background:
-linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%); color: #ffffff; border: none;
-border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;
-transition: all 0.2s ease; } .submit-btn:hover { transform: translateY(-1px);
-box-shadow: 0 10px 24px rgba(29, 78, 216, 0.25); } .action-hint { font-size:
-12px; color: var(--muted); text-align: center; } @keyframes riseIn { from {
-opacity: 0; transform: translateY(14px); } to { opacity: 1; transform:
-translateY(0); } } @media (max-width: 900px) { .page-hero {
-grid-template-columns: 1fr; } } @media (max-width: 640px) { .form-row {
-grid-template-columns: 1fr; } .hero-copy, .hero-card, .leave-form { padding:
-20px; } } {% endblock %}
+.lr {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 24px 20px 72px;
+}
+.lr-head {
+  margin-bottom: 28px;
+}
+.lr-head h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #09090b;
+  letter-spacing: -0.5px;
+  margin: 0 0 4px;
+}
+.lr-head p {
+  font-size: 13px;
+  color: #a1a1aa;
+  margin: 0;
+}
+.lr-form-wrap {
+  background: #fff;
+  border: 1px solid #e4e4e7;
+  border-radius: 14px;
+  padding: 28px;
+}
+.lr-section {
+  margin-bottom: 20px;
+}
+.lr-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #52525b;
+  margin-bottom: 8px;
+}
+.lr-form input[type="text"],
+.lr-form input[type="date"],
+.lr-form textarea,
+.lr-form select {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #e4e4e7;
+  border-radius: 10px;
+  background: #fafaf9;
+  font-size: 14px;
+  font-family: inherit;
+  color: #09090b;
+  transition: all 0.2s;
+}
+.lr-form input:focus,
+.lr-form textarea:focus,
+.lr-form select:focus {
+  outline: none;
+  border-color: #a1a1aa;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(9,9,11,0.06);
+}
+.lr-form textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+.lr-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.lr-submit {
+  width: 100%;
+  padding: 12px;
+  background: #09090b;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.lr-submit:hover {
+  background: #27272a;
+}
+.lr-hint {
+  text-align: center;
+  font-size: 12px;
+  color: #a1a1aa;
+  margin-top: 10px;
+}
+@media (max-width: 600px) {
+  .lr { padding: 16px 16px 56px; }
+  .lr-form-wrap { padding: 20px; }
+  .lr-row { grid-template-columns: 1fr; }
+}
+{% endblock %}

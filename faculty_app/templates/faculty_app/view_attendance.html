@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}Attendance Records{% endblock %}
+{% block title %}My Lectures — Attendance{% endblock %}
 
 {% block container %}
 <div class="va-page">
@@ -8,43 +8,61 @@
   <!-- Header -->
   <div class="va-header">
     <div>
-      <h1>Attendance Records</h1>
-      <p>All attendance you've marked</p>
+      <h1>My Lecture Sessions</h1>
+      <p>Attendance summary for lectures you've conducted</p>
     </div>
-    {% if attendance %}
+    {% if total_lectures %}
     <div class="va-count">
-      <span class="material-icons">fact_check</span>
-      <span>{{ attendance|length }} record{{ attendance|length|pluralize }}</span>
+      <span class="material-icons">school</span>
+      <span>{{ total_lectures }} session{{ total_lectures|pluralize }}</span>
     </div>
     {% endif %}
   </div>
 
-  {% if attendance %}
+  {% if lectures %}
   <div class="va-list">
-    {% for record in attendance %}
-    <div class="va-item">
-      <div class="va-item-top">
-        <div class="va-item-left">
-          <div class="va-student-name">{{ record.student.name }}</div>
-          <code class="va-roll">{{ record.student.roll_number }}</code>
+    {% for lec in lectures %}
+    <div class="va-card">
+      <!-- Top row: subject + type badge -->
+      <div class="va-card-head">
+        <div class="va-subject">
+          <span class="material-icons">menu_book</span>
+          {{ lec.subject_offering.subject.name }}
+          <code class="va-code">{{ lec.subject_offering.subject.code }}</code>
         </div>
-        {% if record.status == 'present' %}
-        <span class="va-status va-s-present">Present</span>
-        {% elif record.status == 'late' %}
-        <span class="va-status va-s-late">Late</span>
-        {% else %}
-        <span class="va-status va-s-absent">Absent</span>
+        <span class="va-type va-type-{{ lec.lecture_type }}">{{ lec.get_lecture_type_display }}</span>
+      </div>
+
+      <!-- Meta row -->
+      <div class="va-card-meta">
+        <span><span class="material-icons">event</span>{{ lec.date|date:"D, M d, Y" }}</span>
+        <span><span class="material-icons">schedule</span>{{ lec.start_time|time:"H:i" }} – {{ lec.end_time|time:"H:i" }}</span>
+        {% if lec.room_number %}
+        <span><span class="material-icons">meeting_room</span>{{ lec.room_number }}</span>
         {% endif %}
       </div>
-      <div class="va-item-meta">
-        <span><span class="material-icons">menu_book</span>{{ record.lecture.subject_offering.subject.name }}</span>
-        <span><span class="material-icons">event</span>{{ record.lecture.date|date:"M d, Y" }}</span>
-        <span><span class="material-icons">schedule</span>{{ record.lecture.start_time|time:"H:i" }} – {{ record.lecture.end_time|time:"H:i" }}</span>
-        <span class="va-marked"><span class="material-icons">edit_calendar</span>Marked {{ record.marked_date|date:"M d, Y H:i" }}</span>
+
+      <!-- Stats row -->
+      {% if lec.total_students > 0 %}
+      <div class="va-stats">
+        <div class="va-bar-wrap">
+          <div class="va-bar" style="width:{{ lec.attendance_pct }}%"></div>
+        </div>
+        <div class="va-numbers">
+          <span class="va-pct">{{ lec.attendance_pct }}%</span>
+          <div class="va-chips">
+            <span class="va-chip va-chip-p"><span class="material-icons">check_circle</span>{{ lec.present_count }}</span>
+            {% if lec.late_count > 0 %}
+            <span class="va-chip va-chip-l"><span class="material-icons">watch_later</span>{{ lec.late_count }}</span>
+            {% endif %}
+            <span class="va-chip va-chip-a"><span class="material-icons">cancel</span>{{ lec.absent_count }}</span>
+            <span class="va-chip va-chip-t"><span class="material-icons">groups</span>{{ lec.total_students }}</span>
+          </div>
+        </div>
       </div>
-      {% if record.face_recognized %}
-      <div class="va-face-tag">
-        <span class="material-icons">face</span> Face Recognized
+      {% else %}
+      <div class="va-no-att">
+        <span class="material-icons">info</span> No attendance marked for this session
       </div>
       {% endif %}
     </div>
@@ -54,8 +72,8 @@
   {% else %}
   <div class="va-empty">
     <span class="material-icons">event_busy</span>
-    <h3>No Records Yet</h3>
-    <p>Attendance records you mark will appear here</p>
+    <h3>No Lecture Sessions</h3>
+    <p>Lectures you conduct will appear here with attendance statistics</p>
   </div>
   {% endif %}
 
@@ -64,7 +82,7 @@
 
 {% block style %}
 .va-page {
-  max-width: 760px;
+  max-width: 800px;
   margin: 0 auto;
   padding: 32px 24px 64px;
 }
@@ -73,7 +91,7 @@
 .va-header {
   display: flex; align-items: flex-start;
   justify-content: space-between; gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 .va-header h1 {
   font-size: 22px; font-weight: 700; color: #111;
@@ -84,51 +102,98 @@
   display: inline-flex; align-items: center; gap: 6px;
   padding: 6px 14px; border: 1px solid #e5e7eb;
   border-radius: 8px; font-size: 13px; font-weight: 500;
-  color: #6b7280; background: #fff;
+  color: #6b7280; background: #fff; white-space: nowrap;
 }
 .va-count .material-icons { font-size: 16px; color: #9ca3af; }
 
-/* List */
-.va-list { display: flex; flex-direction: column; gap: 10px; }
-.va-item {
+/* Cards list */
+.va-list { display: flex; flex-direction: column; gap: 12px; }
+
+.va-card {
   background: #fff; border: 1px solid #e5e7eb;
-  border-radius: 10px; padding: 16px 18px;
-  transition: border-color 0.15s;
+  border-radius: 12px; padding: 18px 20px;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
-.va-item:hover { border-color: #d1d5db; }
-.va-item-top {
+.va-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+
+/* Card head */
+.va-card-head {
   display: flex; justify-content: space-between;
   align-items: center; gap: 12px;
   margin-bottom: 10px;
 }
-.va-item-left { display: flex; align-items: center; gap: 10px; }
-.va-student-name { font-size: 14px; font-weight: 600; color: #111; }
-.va-roll {
-  background: #f3f4f6; padding: 2px 7px; border-radius: 4px;
-  font-size: 12px; color: #6b7280; font-weight: 500;
+.va-subject {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 600; color: #111;
 }
-.va-status {
-  display: inline-block; padding: 2px 10px; border-radius: 4px;
+.va-subject .material-icons { font-size: 18px; color: #6b7280; }
+.va-code {
+  background: #f3f4f6; padding: 2px 8px; border-radius: 4px;
+  font-size: 11px; color: #6b7280; font-weight: 500;
+}
+.va-type {
+  padding: 3px 10px; border-radius: 6px;
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.va-type-theory { background: #f3f4f6; color: #374151; }
+.va-type-practical { background: #eff6ff; color: #1d4ed8; }
+.va-type-tutorial { background: #fefce8; color: #854d0e; }
+
+/* Meta */
+.va-card-meta {
+  display: flex; gap: 16px; flex-wrap: wrap;
+  font-size: 13px; color: #6b7280;
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f3f4f6;
+}
+.va-card-meta span {
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.va-card-meta .material-icons { font-size: 15px; color: #9ca3af; }
+
+/* Stats */
+.va-stats { display: flex; flex-direction: column; gap: 8px; }
+.va-bar-wrap {
+  width: 100%; height: 6px; background: #f3f4f6;
+  border-radius: 3px; overflow: hidden;
+}
+.va-bar {
+  height: 100%; background: #111;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.va-numbers {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 10px;
+}
+.va-pct {
+  font-size: 20px; font-weight: 700; color: #111;
+  letter-spacing: -0.5px;
+}
+.va-chips {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.va-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 6px;
   font-size: 12px; font-weight: 600;
 }
-.va-s-present { background: #f0fdf4; color: #166534; }
-.va-s-late { background: #fffbeb; color: #92400e; }
-.va-s-absent { background: #fef2f2; color: #991b1b; }
-.va-item-meta {
-  display: flex; gap: 14px; flex-wrap: wrap;
-  font-size: 13px; color: #6b7280;
+.va-chip .material-icons { font-size: 14px; }
+.va-chip-p { background: #f0fdf4; color: #166534; }
+.va-chip-l { background: #fffbeb; color: #92400e; }
+.va-chip-a { background: #fef2f2; color: #991b1b; }
+.va-chip-t { background: #f3f4f6; color: #374151; }
+
+.va-no-att {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: #9ca3af;
 }
-.va-item-meta span { display: inline-flex; align-items: center; gap: 4px; }
-.va-item-meta .material-icons { font-size: 15px; color: #9ca3af; }
-.va-marked { color: #9ca3af; }
-.va-face-tag {
-  display: inline-flex; align-items: center; gap: 5px;
-  margin-top: 10px; padding: 4px 10px;
-  background: #f0f9ff; border: 1px solid #bae6fd;
-  border-radius: 6px; font-size: 12px;
-  font-weight: 500; color: #0369a1;
-}
-.va-face-tag .material-icons { font-size: 15px; }
+.va-no-att .material-icons { font-size: 16px; }
 
 /* Empty */
 .va-empty {
@@ -143,7 +208,8 @@
 @media (max-width: 640px) {
   .va-page { padding: 20px 16px 48px; }
   .va-header { flex-direction: column; }
-  .va-item-top { flex-direction: column; align-items: flex-start; }
-  .va-item-meta { flex-direction: column; gap: 4px; }
+  .va-card-head { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .va-card-meta { flex-direction: column; gap: 6px; }
+  .va-numbers { flex-direction: column; align-items: flex-start; gap: 6px; }
 }
 {% endblock %}

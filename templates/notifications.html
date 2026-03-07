@@ -3,123 +3,119 @@
 {% block title %}Notifications{% endblock %}
 
 {% block container %}
-<div class="notifications-page">
-  <div class="page-header">
-    <h1 class="page-title">Notifications</h1>
-    <p class="page-subtitle">Messages from administration</p>
+<div class="nt">
+  <div class="nt-head">
+    <h1>Notifications</h1>
+    <p>Messages from administration</p>
   </div>
 
-  <div class="page-content">
-    {% if notifications %}
-      <div class="notifications-list">
-        {% for notification in notifications %}
-        <div class="notification-item">
-          <div class="notification-title">{{ notification.title }}</div>
-          <div class="notification-message">{{ notification.message }}</div>
-          <div class="notification-time">{{ notification.created_at|date:"M d, Y · H:i" }}</div>
+  {% if notifications %}
+    <div class="nt-list">
+      {% for notification in notifications %}
+      <div class="nt-item">
+        <div class="nt-icon"><span class="material-icons">mail_outline</span></div>
+        <div class="nt-body">
+          <div class="nt-title">{{ notification.title }}</div>
+          <div class="nt-msg">{{ notification.message }}</div>
+          <div class="nt-time">{{ notification.created_at|date:"M d, Y · H:i" }}</div>
         </div>
-        {% endfor %}
       </div>
-    {% else %}
-      <div class="empty-state">
-        <p>No notifications available.</p>
-      </div>
-    {% endif %}
-  </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="nt-empty">
+      <span class="material-icons">notifications_off</span>
+      <p>No notifications yet</p>
+    </div>
+  {% endif %}
 </div>
 {% endblock %}
 
 {% block style %}
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  background: #f9fafb;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  color: #1f2937;
-}
-
-.notifications-page {
-  max-width: 900px;
+.nt {
+  max-width: 720px;
   margin: 0 auto;
+  padding: 24px 20px 72px;
 }
-
-.page-header {
-  padding: 40px 20px;
-  text-align: center;
-  border-bottom: 1px solid #e5e7eb;
-  background: white;
-  margin-bottom: 32px;
+.nt-head {
+  margin-bottom: 28px;
 }
-
-.page-title {
-  font-size: 28px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 8px;
+.nt-head h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #09090b;
+  letter-spacing: -0.5px;
+  margin: 0 0 4px;
 }
-
-.page-subtitle {
-  font-size: 14px;
-  color: #6b7280;
+.nt-head p {
+  font-size: 13px;
+  color: #a1a1aa;
+  margin: 0;
 }
-
-.page-content {
-  padding: 0 20px 32px;
-}
-
-.notifications-list {
+.nt-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
-
-.notification-item {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 20px;
+.nt-item {
+  display: flex;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid #e4e4e7;
+  border-radius: 14px;
+  padding: 18px;
   transition: all 0.2s;
 }
-
-.notification-item:hover {
-  border-color: #d1d5db;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+.nt-item:hover {
+  border-color: #d4d4d8;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
 }
-
-.notification-title {
+.nt-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #f4f4f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.nt-icon .material-icons { font-size: 18px; color: #52525b; }
+.nt-body { flex: 1; min-width: 0; }
+.nt-title {
+  font-size: 14px;
   font-weight: 600;
-  font-size: 1rem;
-  color: #111827;
+  color: #09090b;
+  margin-bottom: 4px;
+}
+.nt-msg {
+  font-size: 13px;
+  color: #71717a;
+  line-height: 1.5;
   margin-bottom: 8px;
 }
-
-.notification-message {
-  color: #4b5563;
-  font-size: 0.95rem;
-  line-height: 1.5;
+.nt-time {
+  font-size: 11px;
+  color: #a1a1aa;
+}
+.nt-empty {
+  text-align: center;
+  padding: 64px 20px;
+  background: #fff;
+  border: 1px solid #e4e4e7;
+  border-radius: 14px;
+}
+.nt-empty .material-icons {
+  font-size: 36px;
+  color: #d4d4d8;
   margin-bottom: 12px;
 }
-
-.notification-time {
-  font-size: 0.85rem;
-  color: #9ca3af;
+.nt-empty p {
+  font-size: 14px;
+  color: #a1a1aa;
 }
-
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
+@media (max-width: 600px) {
+  .nt { padding: 16px 16px 56px; }
+  .nt-item { padding: 14px; gap: 12px; }
 }
-
-.empty-state p {
-  color: #6b7280;
-  font-size: 15px;
-}
-
 {% endblock %}

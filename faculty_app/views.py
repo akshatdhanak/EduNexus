@@ -118,9 +118,39 @@ def edit_profile(request):
     
 @faculty_required
 def view_attendance(request):
+    from django.db.models import Count, Case, When, IntegerField
     faculty = Faculty.objects.get(user=request.user)
-    attendance = Attendance.objects.filter(marked_by=faculty).order_by("-marked_date")
-    return render(request, "faculty_app/view_attendance.html", {"attendance": attendance})
+
+    # Get lectures conducted by this faculty, annotated with attendance stats
+    lectures = (
+        Lecture.objects.filter(faculty=faculty)
+        .select_related('subject_offering__subject')
+        .annotate(
+            total_students=Count('attendances'),
+            present_count=Count(
+                Case(When(attendances__status='present', then=1), output_field=IntegerField())
+            ),
+            absent_count=Count(
+                Case(When(attendances__status='absent', then=1), output_field=IntegerField())
+            ),
+            late_count=Count(
+                Case(When(attendances__status='late', then=1), output_field=IntegerField())
+            ),
+        )
+        .order_by('-date', '-start_time')
+    )
+
+    # Calculate attendance percentage for each lecture
+    for lec in lectures:
+        if lec.total_students > 0:
+            lec.attendance_pct = round((lec.present_count + lec.late_count) / lec.total_students * 100)
+        else:
+            lec.attendance_pct = 0
+
+    return render(request, "faculty_app/view_attendance.html", {
+        "lectures": lectures,
+        "total_lectures": lectures.count(),
+    })
 
 
 

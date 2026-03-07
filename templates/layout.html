@@ -4,313 +4,353 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Bootstrap CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <!-- Bootstrap Icons -->
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
-    />
-    <title>{% block title %} Default {% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" />
+    <title>{% block title %}EduNexus{% endblock %}</title>
     <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <style>
-      /* Global Styles - Clean & Minimalist */
-      * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-      }
+    /* ═══════════════════════════════════════════════════════════════
+       EduNexus — Obsidian Design System
+       Inspired by Linear · Vercel · Notion
+       ═══════════════════════════════════════════════════════════════ */
+    :root {
+      --bg: #f5f5f4;
+      --surface: #ffffff;
+      --ink: #09090b;
+      --ink-2: #27272a;
+      --ink-3: #52525b;
+      --muted: #a1a1aa;
+      --border: #e4e4e7;
+      --border-hover: #d4d4d8;
+      --radius: 14px;
+      --radius-sm: 10px;
+      --radius-xs: 8px;
+      --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+      --shadow: 0 4px 12px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.03);
+      --shadow-lg: 0 10px 30px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+      --ease: cubic-bezier(0.4, 0, 0.2, 1);
+      --nav-h: 56px;
+    }
 
-      body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-          background-color: #f8f9fa;
-          color: #202124;
-          line-height: 1.6;
-          margin: 0;
-          padding: 0;
-      }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-      /* Top Navigation Bar */
-      .top-nav {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 64px;
-          background: #ffffff;
-          box-shadow: 0 1px 2px 0 rgba(60,64,67,0.1), 0 2px 6px 2px rgba(60,64,67,0.05);
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 24px;
-          z-index: 1000;
-      }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
 
-      .top-nav-title {
-          font-size: 22px;
-          font-weight: 400;
-          color: #5f6368;
-          letter-spacing: 0;
-      }
+    /* ── Floating Glass Navigation ─────────────────────────────── */
+    .top-nav {
+      position: fixed;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 1180px;
+      height: var(--nav-h);
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 8px 0 16px;
+      z-index: 1000;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
+    }
 
-      .nav-actions {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-      }
+    .top-nav-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.4px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
 
-      .nav-pill {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px 18px;
-          background: transparent;
-          border: 1px solid #dadce0;
-          border-radius: 24px;
-          color: #1a73e8;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-          text-decoration: none;
-      }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
 
-      .nav-pill:hover {
-          background: #f8f9fa;
-          border-color: #1a73e8;
-          box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-          color: #174ea6;
-      }
+    .nav-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 12px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-xs);
+      color: var(--ink-3);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s var(--ease);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .nav-pill:hover {
+      background: rgba(0,0,0,0.05);
+      color: var(--ink);
+    }
+    .nav-pill .material-icons { font-size: 17px; }
+    .nav-pill--accent {
+      background: var(--ink);
+      color: #fff;
+    }
+    .nav-pill--accent:hover {
+      background: var(--ink-2);
+      color: #fff;
+    }
 
-      .nav-pill .material-icons {
-          font-size: 18px;
-      }
+    /* Hide pill text on small screens */
+    @media (max-width: 700px) {
+      .nav-pill span:not(.material-icons) { display: none; }
+      .nav-pill { padding: 8px; border-radius: 10px; }
+      .top-nav { padding: 0 6px 0 14px; }
+    }
 
-      /* Container */
-      .container {
-          max-width: 1200px;
-          margin: 88px auto 24px;
-          padding: 0 24px;
-      }
+    /* ── Container ─────────────────────────────────────────────── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 88px 24px 48px;
+    }
 
-      /* Headings */
-      h1, h2, h3 {
-          color: #202124;
-          font-weight: 400;
-          margin-bottom: 16px;
-      }
+    /* ── Typography ────────────────────────────────────────────── */
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--ink);
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      line-height: 1.3;
+      margin-bottom: 12px;
+    }
+    h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+    h2 { font-size: 20px; color: var(--ink); }
+    h3 { font-size: 16px; }
+    p { color: var(--ink-3); font-size: 14px; line-height: 1.6; }
 
-      h1 {
-          font-size: 32px;
-          font-weight: 300;
-      }
+    /* ── Buttons ───────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s var(--ease);
+      text-decoration: none;
+      letter-spacing: -0.1px;
+      outline: none;
+      background: var(--surface);
+      color: var(--ink);
+    }
+    .btn:hover {
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow-xs);
+      color: var(--ink);
+    }
+    .btn-primary {
+      background: var(--ink);
+      color: #fff;
+      border-color: var(--ink);
+    }
+    .btn-primary:hover {
+      background: var(--ink-2);
+      border-color: var(--ink-2);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transform: translateY(-1px);
+    }
+    .btn-success {
+      background: #166534;
+      color: #fff;
+      border-color: #166534;
+    }
+    .btn-success:hover {
+      background: #15803d;
+      border-color: #15803d;
+      color: #fff;
+    }
+    .btn-danger {
+      background: #dc2626;
+      color: #fff;
+      border-color: #dc2626;
+    }
+    .btn-danger:hover {
+      background: #b91c1c;
+      border-color: #b91c1c;
+      color: #fff;
+    }
 
-      h2 {
-          font-size: 24px;
-          color: #5f6368;
-          font-weight: 300;
-      }
+    /* ── Forms ──────────────────────────────────────────────────── */
+    form { margin: 0; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-2);
+      letter-spacing: -0.1px;
+    }
+    .form-group input,
+    .form-group select,
+    .form-group textarea,
+    .form-group input[type="date"],
+    .form-group input[type="file"] {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.15s var(--ease);
+      background: var(--surface);
+      color: var(--ink);
+      -webkit-appearance: auto;
+      appearance: auto;
+      display: block;
+      height: auto;
+      min-height: 42px;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--ink);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(9,9,11,0.08);
+    }
+    .form-group input::placeholder,
+    .form-group textarea::placeholder { color: var(--muted); }
 
-      /* Buttons - Google Material Style */
-      .btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 10px 24px;
-          border: none;
-          border-radius: 4px;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-          text-decoration: none;
-          letter-spacing: 0.25px;
-          outline: none;
-      }
+    /* ── Tables ─────────────────────────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .timetable-grid table { margin-top: 0; border-radius: 0; border: none; }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    th {
+      background: #fafaf9;
+      color: var(--ink-3);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: #fafaf9; }
 
-      .btn-primary {
-          background-color: #1a73e8;
-          color: white;
-          box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-      }
+    /* ── Alerts ─────────────────────────────────────────────────── */
+    .alert {
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      border-radius: var(--radius-xs);
+      font-size: 13px;
+      font-weight: 500;
+      border: 1px solid;
+    }
+    .alert-success {
+      color: #166534;
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+    }
+    .alert-danger, .alert-error {
+      color: #991b1b;
+      background: #fef2f2;
+      border-color: #fecaca;
+    }
+    .alert-warning {
+      color: #854d0e;
+      background: #fefce8;
+      border-color: #fef08a;
+    }
+    .alert-info {
+      color: #1e40af;
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
 
-      .btn-primary:hover {
-          background-color: #1765cc;
-          box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
-          color: white;
-      }
+    /* ── Cards ──────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      transition: all 0.2s var(--ease);
+      overflow: hidden;
+      box-shadow: none;
+    }
+    .card:hover {
+      border-color: var(--border-hover);
+      box-shadow: var(--shadow);
+      transform: translateY(-2px);
+    }
+    .card-body { padding: 20px; }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .card-text {
+      font-size: 13px;
+      color: var(--ink-3);
+      line-height: 1.5;
+    }
 
-      .btn-success {
-          background-color: #1e8e3e;
-          color: white;
-          box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-      }
+    .display-4 {
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -1px;
+    }
 
-      .btn-success:hover {
-          background-color: #188038;
-          box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
-          color: white;
-      }
+    /* ── Scrollbar ──────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
 
-      /* Forms */
-      form {
-          margin: 24px 0;
-      }
+    /* ── Selection ──────────────────────────────────────────────── */
+    ::selection { background: rgba(9,9,11,0.1); }
 
-      .form-group {
-          margin-bottom: 20px;
-      }
-
-      .form-group label {
-          display: block;
-          margin-bottom: 8px;
-          font-size: 14px;
-          font-weight: 500;
-          color: #5f6368;
-      }
-
-      .form-group input,
-      .form-group select,
-      .form-group textarea,
-      .form-group input[type="date"],
-      .form-group input[type="file"] {
-          width: 100%;
-          padding: 12px 16px;
-          border: 1px solid #dadce0;
-          border-radius: 4px;
-          font-size: 14px;
-          transition: all 0.2s;
-          background: #ffffff;
-          -webkit-appearance: auto;
-          appearance: auto;
-          display: block;
-          height: auto;
-          min-height: 44px;
-      }
-
-      .form-group input:focus,
-      .form-group select:focus,
-      .form-group textarea:focus {
-          border-color: #1a73e8;
-          outline: none;
-          box-shadow: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
-      }
-
-      /* Table - Clean Design */
-      table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 24px;
-          background: #ffffff;
-          border-radius: 8px;
-          overflow: hidden;
-          box-shadow: 0 1px 2px 0 rgba(60,64,67,0.1), 0 2px 6px 2px rgba(60,64,67,0.05);
-      }
-
-      .timetable-grid table {
-          margin-top: 0;
-          border-radius: 0;
-          box-shadow: none;
-      }
-
-      th, td {
-          padding: 16px;
-          text-align: left;
-          border-bottom: 1px solid #e8eaed;
-      }
-
-      th {
-          background: #f8f9fa;
-          color: #5f6368;
-          font-weight: 500;
-          font-size: 14px;
-          letter-spacing: 0.25px;
-      }
-
-      tr:hover {
-          background: #f8f9fa;
-      }
-
-      /* Alerts - Material Design */
-      .alert {
-          padding: 16px 24px;
-          margin-bottom: 24px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 400;
-          border-left: 4px solid;
-      }
-
-      .alert-success {
-          color: #1e8e3e;
-          background: #e6f4ea;
-          border-left-color: #1e8e3e;
-      }
-
-      .alert-danger {
-          color: #d93025;
-          background: #fce8e6;
-          border-left-color: #d93025;
-      }
-
-      /* Card Styles */
-      .card {
-          background: #ffffff;
-          border-radius: 8px;
-          box-shadow: 0 1px 2px 0 rgba(60,64,67,0.1), 0 2px 6px 2px rgba(60,64,67,0.05);
-          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-          border: none;
-          overflow: hidden;
-      }
-
-      .card:hover {
-          box-shadow: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
-          transform: translateY(-2px);
-      }
-
-      .card-body {
-          padding: 24px;
-      }
-
-      .card-title {
-          font-size: 16px;
-          font-weight: 500;
-          color: #202124;
-          margin-bottom: 8px;
-      }
-
-      .card-text {
-          font-size: 14px;
-          color: #5f6368;
-          line-height: 1.5;
-      }
-
-      /* Display Numbers */
-      .display-4 {
-          font-size: 48px;
-          font-weight: 300;
-          color: #1a73e8;
-      }
-
-              {% block style %}
-              {% endblock %}
+    /* ── Page scoped styles ─────────────────────────────────────── */
+    {% block style %}{% endblock %}
     </style>
   </head>
   <body>
     <nav class="top-nav">
-      <div class="top-nav-title" style="display:flex;align-items:center;gap:10px;">
-        <img src="{% static 'images/logo.png' %}" alt="EduNexus" style="height:40px;width:40px;object-fit:contain;">
+      <div class="top-nav-title">
+        <img src="{% static 'images/logo.png' %}" alt="" style="height:26px;width:26px;object-fit:contain;border-radius:6px;">
         {% block nav_title %}EduNexus{% endblock %}
       </div>
       <div class="nav-actions">
@@ -321,58 +361,39 @@
         {% if user.is_authenticated %}
         {% if user.is_superuser or user.role == "admin" %}
         <a href="{% url 'admin_app:admin_dashboard' %}" class="nav-pill">
-          <span class="material-icons">dashboard</span>
+          <span class="material-icons">space_dashboard</span>
           <span>Dashboard</span>
         </a>
         <a href="{% url 'admin_app:database_chat' %}" class="nav-pill">
           <span class="material-icons">smart_toy</span>
-          <span>DB Chat</span>
+          <span>AI Chat</span>
         </a>
         {% elif user.role == "faculty" %}
         <a href="{% url 'faculty_app:faculty_dashboard' %}" class="nav-pill">
-          <span class="material-icons">dashboard</span>
+          <span class="material-icons">space_dashboard</span>
           <span>Dashboard</span>
         </a>
         {% elif user.role == "student" %}
         <a href="{% url 'student_app:student_dashboard' %}" class="nav-pill">
-          <span class="material-icons">dashboard</span>
+          <span class="material-icons">space_dashboard</span>
           <span>Dashboard</span>
         </a>
         {% endif %}
-        <a href="{% url 'registration:logout' %}" class="nav-pill">
+        <a href="{% url 'registration:logout' %}" class="nav-pill nav-pill--accent">
           <span class="material-icons">logout</span>
           <span>Logout</span>
         </a>
         {% endif %}
       </div>
     </nav>
+
     <div class="container">
       {% if messages %}
-      <div class="session-messages">
+      <div style="margin-bottom:16px;">
         {% for message in messages %}
-        <div
-          class="alert alert-{{ message.tags }} alert-dismissible"
-          role="alert"
-          style="position: relative"
-        >
+        <div class="alert alert-{{ message.tags }}" role="alert" style="position:relative;">
           {{ message }}
-          <button
-            type="button"
-            style="
-              position: absolute;
-              top: 8px;
-              right: 12px;
-              background: none;
-              border: none;
-              font-size: 18px;
-              cursor: pointer;
-              color: inherit;
-              opacity: 0.7;
-            "
-            onclick="this.parentElement.style.display = 'none'"
-          >
-            &times;
-          </button>
+          <button type="button" style="position:absolute;top:50%;right:12px;transform:translateY(-50%);background:none;border:none;font-size:18px;cursor:pointer;color:inherit;opacity:0.5;line-height:1;" onclick="this.parentElement.style.display='none'">&times;</button>
         </div>
         {% endfor %}
       </div>
@@ -380,138 +401,62 @@
       {% block container %}{% endblock %}
     </div>
 
-    <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     {% if user.is_authenticated %}
-    <!-- Session Timeout Warning -->
-    <div
-      id="sessionTimeoutModal"
-      style="
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 9999;
-        align-items: center;
-        justify-content: center;
-      "
-    >
-      <div
-        style="
-          background: #fff;
-          border-radius: 12px;
-          padding: 32px;
-          max-width: 420px;
-          width: 90%;
-          text-align: center;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        "
-      >
-        <span
-          class="material-icons"
-          style="font-size: 48px; color: #f9ab00; margin-bottom: 12px"
-          >timer</span
-        >
-        <h3 style="margin-bottom: 8px; font-weight: 500">
-          Session Expiring Soon
-        </h3>
-        <p style="color: #5f6368; margin-bottom: 8px">
-          Your session will expire in
-          <strong id="sessionCountdown">60</strong> seconds due to inactivity.
-        </p>
-        <p style="color: #5f6368; font-size: 13px; margin-bottom: 20px">
-          Click below to stay logged in.
-        </p>
-        <div style="display: flex; gap: 12px; justify-content: center">
-          <button
-            onclick="extendSession()"
-            class="btn btn-primary"
-            style="padding: 10px 28px"
-          >
-            Stay Logged In
-          </button>
-          <a
-            href="{% url 'registration:logout' %}"
-            class="btn"
-            style="
-              padding: 10px 28px;
-              border: 1px solid #dadce0;
-              color: #5f6368;
-            "
-            >Logout</a
-          >
+    <div id="sessionTimeoutModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;">
+      <div style="background:#fff;border-radius:16px;padding:32px;max-width:400px;width:90%;text-align:center;box-shadow:0 24px 48px rgba(0,0,0,0.16);border:1px solid var(--border);">
+        <span class="material-icons" style="font-size:40px;color:#f59e0b;margin-bottom:12px;">schedule</span>
+        <h3 style="margin-bottom:6px;font-weight:700;font-size:18px;letter-spacing:-0.3px;">Session Expiring</h3>
+        <p style="color:var(--ink-3);margin-bottom:4px;font-size:14px;">Your session expires in <strong id="sessionCountdown" style="color:var(--ink);">60</strong> seconds.</p>
+        <p style="color:var(--muted);font-size:12px;margin-bottom:20px;">Click below to stay signed in.</p>
+        <div style="display:flex;gap:10px;justify-content:center;">
+          <button onclick="extendSession()" class="btn btn-primary" style="padding:10px 24px;">Stay Logged In</button>
+          <a href="{% url 'registration:logout' %}" class="btn" style="padding:10px 24px;">Logout</a>
         </div>
       </div>
     </div>
 
     <script>
       (function() {
-        const SESSION_TIMEOUT = {{ SESSION_TIMEOUT_SECONDS|default:"1800" }};  // seconds
-        const WARNING_BEFORE = 60;  // show warning 60s before expiry
+        const SESSION_TIMEOUT = {{ SESSION_TIMEOUT_SECONDS|default:"1800" }};
+        const WARNING_BEFORE = 60;
         let idleTime = 0;
         let warningShown = false;
         let countdownInterval = null;
 
-        // Reset idle timer on user activity
         function resetIdle() {
           idleTime = 0;
           if (warningShown) {
             document.getElementById('sessionTimeoutModal').style.display = 'none';
             warningShown = false;
-            if (countdownInterval) {
-              clearInterval(countdownInterval);
-              countdownInterval = null;
-            }
+            if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
           }
         }
 
-        // Activity events
         ['mousemove', 'keypress', 'click', 'scroll', 'touchstart'].forEach(function(evt) {
           document.addEventListener(evt, resetIdle, { passive: true });
         });
 
-        // Check idle every second
         setInterval(function() {
           idleTime++;
-
           const timeLeft = SESSION_TIMEOUT - idleTime;
-
-          // Show warning
           if (timeLeft <= WARNING_BEFORE && timeLeft > 0 && !warningShown) {
             warningShown = true;
             document.getElementById('sessionTimeoutModal').style.display = 'flex';
-            // Start countdown
             let remaining = timeLeft;
             document.getElementById('sessionCountdown').textContent = remaining;
             countdownInterval = setInterval(function() {
               remaining--;
               document.getElementById('sessionCountdown').textContent = remaining;
-              if (remaining <= 0) {
-                clearInterval(countdownInterval);
-                window.location.href = "{% url 'registration:logout' %}";
-              }
+              if (remaining <= 0) { clearInterval(countdownInterval); window.location.href = "{% url 'registration:logout' %}"; }
             }, 1000);
           }
-
-          // Force logout
-          if (timeLeft <= 0 && !warningShown) {
-            window.location.href = "{% url 'registration:logout' %}";
-          }
+          if (timeLeft <= 0 && !warningShown) { window.location.href = "{% url 'registration:logout' %}"; }
         }, 1000);
 
-        // Extend session via AJAX
         window.extendSession = function() {
-          fetch(window.location.href, {
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-          }).then(function() {
-            resetIdle();
-          });
+          fetch(window.location.href, { method: 'GET', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function() { resetIdle(); });
         };
       })();
     </script>

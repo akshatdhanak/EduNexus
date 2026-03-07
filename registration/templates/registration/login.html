@@ -4,408 +4,360 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sign In - EduNexus</title>
+    <title>Sign In — EduNexus</title>
     <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <div class="login-page">
-      <div class="login-wrapper">
-        <!-- Left Section: Branding -->
-        <div class="branding-section">
-          <div class="brand-content" style="text-align:center;">
-            <img src="{% static 'images/logo.png' %}" alt="EduNexus" style="width:120px;height:120px;object-fit:contain;margin-bottom:20px;">
-            <h1 class="brand-title">EduNexus</h1>
-            <p class="brand-subtitle">A unified academic utility system</p>
+    <div class="lg-page">
+      <!-- Left — Brand panel -->
+      <div class="lg-brand">
+        <div class="lg-brand-bg"></div>
+        <div class="lg-brand-content">
+          <div class="lg-logo">
+            <img src="{% static 'images/logo.png' %}" alt="EduNexus">
+          </div>
+          <h1 class="lg-title">EduNexus</h1>
+          <p class="lg-subtitle">Unified academic management — attendance, grades, timetables and more in one place.</p>
+          <div class="lg-features">
+            <div class="lg-feat"><span>01</span>Real-time Attendance</div>
+            <div class="lg-feat"><span>02</span>Exam & Results</div>
+            <div class="lg-feat"><span>03</span>Smart Insights</div>
           </div>
         </div>
+        <div class="lg-brand-footer">&copy; 2026 EduNexus</div>
+      </div>
 
-        <!-- Right Section: Login Form -->
-        <div class="form-section">
-          <div class="form-container">
-            <h2 class="form-title">Sign In</h2>
-
-            {% if messages %}
-            {% for message in messages %}
-            <div
-              class="{% if message.tags == 'warning' or message.tags == 'info' %}info-box{% else %}error-box{% endif %}"
-              style="{% if message.tags == 'info' %}background:#e8f0fe; border-left:4px solid #1a73e8; color:#1a73e8;{% elif message.tags == 'warning' %}background:#fef7e0; border-left:4px solid #f9ab00; color:#e37400;{% endif %} padding:12px 16px; border-radius:8px; margin-bottom:16px; font-size:14px;"
-            >
-              <p style="margin: 0">{{ message }}</p>
-            </div>
-            {% endfor %}
-            {% endif %}
-            {% if form.errors %}
-            <div class="error-box">
-              {% for error in form.non_field_errors %}
-              <p>{{ error }}</p>
-              {% endfor %}
-            </div>
-            {% endif %}
-            {% if error_message %}
-            <div class="error-box">
-              <strong style="display: block; margin-bottom: 8px"
-                >⚠️ Error</strong
-              >
-              <p>{{ error_message }}</p>
-            </div>
-            {% endif %}
-
-            <form
-              method="post"
-              action="{% url 'registration:login' %}"
-              class="login-form"
-            >
-              {% csrf_token %}
-
-              <!-- Role Selection -->
-              <div class="role-group">
-                <label class="group-label">Select Role</label>
-                <div class="role-buttons">
-                  <label class="role-btn">
-                    <input
-                      type="radio"
-                      name="role"
-                      value="admin"
-                      {% if submitted_role == "admin" %}checked{% endif %}
-                      required
-                    />
-                    <span class="role-text">Admin</span>
-                  </label>
-                  <label class="role-btn">
-                    <input
-                      type="radio"
-                      name="role"
-                      value="faculty"
-                      {% if submitted_role == "faculty" %}checked{% endif %}
-                      required
-                    />
-                    <span class="role-text">Teacher</span>
-                  </label>
-                  <label class="role-btn">
-                    <input
-                      type="radio"
-                      name="role"
-                      value="student"
-                      {% if submitted_role == "student" %}checked{% endif %}
-                      required
-                    />
-                    <span class="role-text">Student</span>
-                  </label>
-                </div>
-              </div>
-
-              <!-- Username -->
-              <div class="form-group">
-                <label for="{{ form.username.id_for_label }}" class="form-label"
-                  >Username</label
-                >
-                <input
-                  type="text"
-                  name="{{ form.username.name }}"
-                  id="{{ form.username.id_for_label }}"
-                  class="form-input"
-                  placeholder="Enter username"
-                  value="{{ submitted_username|default:'' }}"
-                  autofocus
-                  required
-                />
-              </div>
-
-              <!-- Password -->
-              <div class="form-group">
-                <label for="{{ form.password.id_for_label }}" class="form-label"
-                  >Password</label
-                >
-                <input
-                  type="password"
-                  name="{{ form.password.name }}"
-                  id="{{ form.password.id_for_label }}"
-                  class="form-input"
-                  placeholder="Enter password"
-                  required
-                />
-              </div>
-
-              <!-- Submit Button -->
-              <button type="submit" class="submit-btn">Sign In</button>
-            </form>
+      <!-- Right — Form panel -->
+      <div class="lg-form-panel">
+        <div class="lg-form-wrap">
+          <div class="lg-form-header">
+            <h2>Sign in</h2>
+            <p>Enter your credentials to continue</p>
           </div>
+
+          {% if messages %}
+          {% for message in messages %}
+          <div class="lg-msg lg-msg-{% if message.tags == 'warning' or message.tags == 'info' %}info{% else %}error{% endif %}">
+            {{ message }}
+          </div>
+          {% endfor %}
+          {% endif %}
+          {% if form.errors %}
+          <div class="lg-msg lg-msg-error">
+            {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+          </div>
+          {% endif %}
+          {% if error_message %}
+          <div class="lg-msg lg-msg-error">{{ error_message }}</div>
+          {% endif %}
+
+          <form method="post" action="{% url 'registration:login' %}">
+            {% csrf_token %}
+
+            <div class="lg-roles">
+              <label class="lg-role">
+                <input type="radio" name="role" value="admin" {% if submitted_role == "admin" %}checked{% endif %} required />
+                <div class="lg-role-card">
+                  <span class="lg-role-icon">&#9670;</span>
+                  <span>Admin</span>
+                </div>
+              </label>
+              <label class="lg-role">
+                <input type="radio" name="role" value="faculty" {% if submitted_role == "faculty" %}checked{% endif %} required />
+                <div class="lg-role-card">
+                  <span class="lg-role-icon">&#9671;</span>
+                  <span>Faculty</span>
+                </div>
+              </label>
+              <label class="lg-role">
+                <input type="radio" name="role" value="student" {% if submitted_role == "student" %}checked{% endif %} required />
+                <div class="lg-role-card">
+                  <span class="lg-role-icon">&#9675;</span>
+                  <span>Student</span>
+                </div>
+              </label>
+            </div>
+
+            <div class="lg-field">
+              <label for="{{ form.username.id_for_label }}">Username</label>
+              <input type="text" name="{{ form.username.name }}" id="{{ form.username.id_for_label }}" placeholder="Enter username" value="{{ submitted_username|default:'' }}" autofocus required />
+            </div>
+
+            <div class="lg-field">
+              <label for="{{ form.password.id_for_label }}">Password</label>
+              <input type="password" name="{{ form.password.name }}" id="{{ form.password.id_for_label }}" placeholder="Enter password" required />
+            </div>
+
+            <button type="submit" class="lg-submit">Sign In</button>
+          </form>
         </div>
       </div>
     </div>
 
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
+      *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
       body {
-        font-family:
-          "Poppins",
-          -apple-system,
-          BlinkMacSystemFont,
-          "Segoe UI",
-          sans-serif;
-        background: #f5f5f5;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         min-height: 100vh;
+        background: #fafaf9;
+        -webkit-font-smoothing: antialiased;
       }
 
-      .login-page {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-      }
-
-      .login-wrapper {
+      /* ── Layout ── */
+      .lg-page {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        width: 100%;
-        max-width: 1000px;
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-        gap: 0;
+        min-height: 100vh;
       }
 
-      /* Branding Section */
-      .branding-section {
-        background: linear-gradient(135deg, #2d3436 0%, #1e272e 100%);
-        color: white;
+      /* ── Brand Panel ── */
+      .lg-brand {
+        position: relative;
+        background: #09090b;
+        color: #fafaf9;
         display: flex;
-        align-items: center;
+        flex-direction: column;
         justify-content: center;
-        padding: 60px 40px;
+        align-items: center;
+        padding: 60px 48px;
+        overflow: hidden;
       }
+      .lg-brand-bg {
+        position: absolute;
+        inset: 0;
+        background-image:
+          radial-gradient(circle at 25% 25%, rgba(255,255,255,0.03) 0%, transparent 50%),
+          radial-gradient(circle at 75% 75%, rgba(255,255,255,0.02) 0%, transparent 50%);
+      }
+      .lg-brand-bg::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background-image:
+          linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+        background-size: 60px 60px;
+        animation: gridShift 30s linear infinite;
+      }
+      @keyframes gridShift { to { transform: translate(60px, 60px); } }
 
-      .brand-content {
+      .lg-brand-content {
+        position: relative;
+        z-index: 2;
+        max-width: 380px;
+        text-align: center;
+      }
+      .lg-logo {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 24px;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.1);
+      }
+      .lg-logo img { width: 100%; height: 100%; object-fit: contain; }
+      .lg-title {
+        font-size: 36px;
+        font-weight: 800;
+        letter-spacing: -1px;
+        margin-bottom: 12px;
+        line-height: 1;
+      }
+      .lg-subtitle {
+        font-size: 15px;
+        line-height: 1.6;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 40px;
+      }
+      .lg-features {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
         text-align: left;
       }
-
-      .brand-title {
-        font-size: 2.5rem;
+      .lg-feat {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 14px;
+        font-weight: 500;
+        color: rgba(255,255,255,0.7);
+      }
+      .lg-feat span {
+        font-size: 11px;
         font-weight: 700;
-        line-height: 1.2;
-        margin-bottom: 16px;
-        letter-spacing: -0.5px;
+        color: rgba(255,255,255,0.3);
+        letter-spacing: 0.05em;
+        min-width: 20px;
+      }
+      .lg-brand-footer {
+        position: absolute;
+        bottom: 28px;
+        font-size: 12px;
+        color: rgba(255,255,255,0.2);
+        z-index: 2;
       }
 
-      .brand-subtitle {
-        font-size: 1rem;
-        font-weight: 300;
-        opacity: 0.7;
-      }
-
-      /* Form Section */
-      .form-section {
+      /* ── Form Panel ── */
+      .lg-form-panel {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 60px 40px;
+        padding: 40px 32px;
+        background: #fafaf9;
       }
-
-      .form-container {
+      .lg-form-wrap {
         width: 100%;
-        max-width: 360px;
+        max-width: 380px;
       }
-
-      .form-title {
-        font-size: 1.8rem;
-        font-weight: 600;
-        color: #1a1a1a;
+      .lg-form-header {
         margin-bottom: 32px;
       }
-
-      /* Error Box */
-      .error-box {
-        background: #ffe6e6;
-        border-left: 5px solid #dc3545;
-        color: #721c24;
-        padding: 16px 18px;
-        border-radius: 6px;
-        margin-bottom: 28px;
-        font-size: 0.95rem;
-        font-weight: 600;
-        line-height: 1.6;
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
+      .lg-form-header h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #09090b;
+        letter-spacing: -0.5px;
+        margin-bottom: 6px;
+      }
+      .lg-form-header p {
+        font-size: 14px;
+        color: #71717a;
       }
 
-      .error-box p {
-        margin: 6px 0;
-        display: block;
+      /* ── Messages ── */
+      .lg-msg {
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        margin-bottom: 20px;
+        border: 1px solid;
+      }
+      .lg-msg-error {
+        background: #fef2f2;
+        color: #991b1b;
+        border-color: #fecaca;
+      }
+      .lg-msg-info {
+        background: #eff6ff;
+        color: #1e40af;
+        border-color: #bfdbfe;
       }
 
-      /* Role Group */
-      .role-group {
-        margin-bottom: 32px;
-      }
-
-      .group-label {
-        display: block;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #666;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 12px;
-      }
-
-      .role-buttons {
+      /* ── Role Selector ── */
+      .lg-roles {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
+        gap: 10px;
+        margin-bottom: 28px;
       }
-
-      .role-btn {
-        position: relative;
-        cursor: pointer;
-      }
-
-      .role-btn input[type="radio"] {
-        display: none;
-      }
-
-      .role-text {
-        display: block;
-        padding: 12px 16px;
-        text-align: center;
-        border: 1.5px solid #ddd;
-        border-radius: 4px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: #333;
-        background: white;
-        transition: all 0.2s ease;
-      }
-
-      .role-btn input[type="radio"]:checked + .role-text {
-        border-color: #2d3436;
-        background: #2d3436;
-        color: white;
-      }
-
-      .role-btn:hover .role-text {
-        border-color: #999;
-      }
-
-      /* Form Group */
-      .form-group {
-        margin-bottom: 20px;
-      }
-
-      .form-label {
-        display: block;
-        font-size: 0.85rem;
+      .lg-role { cursor: pointer; }
+      .lg-role input { display: none; }
+      .lg-role-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 16px 12px;
+        border: 1px solid #e4e4e7;
+        border-radius: 12px;
+        font-size: 13px;
         font-weight: 600;
-        color: #333;
-        margin-bottom: 8px;
+        color: #52525b;
+        background: #fff;
+        transition: all 0.15s ease;
+      }
+      .lg-role-icon {
+        font-size: 18px;
+        color: #a1a1aa;
+        transition: color 0.15s;
+      }
+      .lg-role:hover .lg-role-card {
+        border-color: #d4d4d8;
+      }
+      .lg-role input:checked + .lg-role-card {
+        border-color: #09090b;
+        background: #09090b;
+        color: #fff;
+      }
+      .lg-role input:checked + .lg-role-card .lg-role-icon {
+        color: rgba(255,255,255,0.6);
       }
 
-      .form-input {
+      /* ── Fields ── */
+      .lg-field {
+        margin-bottom: 18px;
+      }
+      .lg-field label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #27272a;
+        margin-bottom: 6px;
+      }
+      .lg-field input {
         width: 100%;
-        padding: 12px 14px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 0.95rem;
+        padding: 11px 14px;
+        border: 1px solid #e4e4e7;
+        border-radius: 10px;
+        font-size: 14px;
         font-family: inherit;
-        transition: border-color 0.2s ease;
-        background: white;
+        color: #09090b;
+        background: #fff;
+        transition: all 0.15s ease;
       }
-
-      .form-input:focus {
+      .lg-field input:focus {
         outline: none;
-        border-color: #2d3436;
-        box-shadow: 0 0 0 2px rgba(45, 52, 54, 0.1);
+        border-color: #09090b;
+        box-shadow: 0 0 0 3px rgba(9,9,11,0.08);
       }
+      .lg-field input::placeholder { color: #a1a1aa; }
 
-      .form-input::placeholder {
-        color: #999;
-      }
-
-      /* Submit Button */
-      .submit-btn {
+      /* ── Submit ── */
+      .lg-submit {
         width: 100%;
         padding: 12px 16px;
-        background: #2d3436;
-        color: white;
+        margin-top: 8px;
+        background: #09090b;
+        color: #fff;
         border: none;
-        border-radius: 4px;
-        font-size: 0.95rem;
+        border-radius: 10px;
+        font-size: 14px;
         font-weight: 600;
+        font-family: inherit;
         cursor: pointer;
-        transition: all 0.2s ease;
-        margin-top: 28px;
+        transition: all 0.15s ease;
       }
-
-      .submit-btn:hover {
-        background: #1a1f21;
+      .lg-submit:hover {
+        background: #27272a;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-1px);
       }
+      .lg-submit:active { transform: scale(0.99) translateY(0); }
 
-      .submit-btn:active {
-        transform: scale(0.98);
+      /* ── Responsive ── */
+      @media (max-width: 800px) {
+        .lg-page { grid-template-columns: 1fr; }
+        .lg-brand { display: none; }
+        .lg-form-panel { min-height: 100vh; }
       }
-
-      /* Responsive Design */
-      @media (max-width: 768px) {
-        .login-wrapper {
-          grid-template-columns: 1fr;
-        }
-
-        .branding-section {
-          display: none;
-        }
-
-        .form-section {
-          padding: 40px 24px;
-        }
-
-        .form-container {
-          max-width: 100%;
-        }
-
-        .form-title {
-          font-size: 1.5rem;
-          margin-bottom: 24px;
-        }
-
-        .brand-title {
-          font-size: 2rem;
-        }
-
-        .role-buttons {
-          grid-template-columns: 1fr;
-        }
-      }
-
       @media (max-width: 480px) {
-        .form-section {
-          padding: 32px 16px;
-        }
-
-        .form-input {
-          font-size: 16px; /* Prevents zoom on iOS */
-        }
+        .lg-form-panel { padding: 32px 20px; }
+        .lg-field input { font-size: 16px; }
+        .lg-roles { gap: 8px; }
+        .lg-role-card { padding: 14px 8px; }
       }
     </style>
 
     <script>
-      // Pre-select the first role by default
       document.addEventListener("DOMContentLoaded", function () {
         const roleOptions = document.querySelectorAll('input[name="role"]');
-        if (
-          roleOptions.length > 0 &&
-          !Array.from(roleOptions).some((r) => r.checked)
-        ) {
+        if (roleOptions.length > 0 && !Array.from(roleOptions).some(r => r.checked)) {
           roleOptions[0].checked = true;
         }
       });
