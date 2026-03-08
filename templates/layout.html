@@ -216,28 +216,33 @@
     .form-group select,
     .form-group textarea,
     .form-group input[type="date"],
-    .form-group input[type="file"] {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xs);
-      font-size: 14px;
+    .form-group input[type="number"],
+    .form-group input[type="file"],
+    .form-group .form-control {
+      width: 100% !important;
+      padding: 10px 14px !important;
+      border: 1px solid var(--border) !important;
+      border-radius: var(--radius-xs) !important;
+      font-size: 14px !important;
       font-family: inherit;
       transition: all 0.15s var(--ease);
-      background: var(--surface);
-      color: var(--ink);
-      -webkit-appearance: auto;
-      appearance: auto;
-      display: block;
-      height: auto;
-      min-height: 42px;
+      background: var(--surface) !important;
+      color: var(--ink) !important;
+      -webkit-appearance: auto !important;
+      appearance: auto !important;
+      display: block !important;
+      height: auto !important;
+      min-height: 42px !important;
+      opacity: 1 !important;
+      box-sizing: border-box;
     }
     .form-group input:focus,
     .form-group select:focus,
-    .form-group textarea:focus {
-      border-color: var(--ink);
+    .form-group textarea:focus,
+    .form-group .form-control:focus {
+      border-color: var(--ink) !important;
       outline: none;
-      box-shadow: 0 0 0 3px rgba(9,9,11,0.08);
+      box-shadow: 0 0 0 3px rgba(9,9,11,0.08) !important;
     }
     .form-group input::placeholder,
     .form-group textarea::placeholder { color: var(--muted); }

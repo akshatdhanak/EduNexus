@@ -73,7 +73,7 @@ def student_add(request):
             return redirect("admin_app:student_info")
     else:
         form = StudentForm()
-    return render(request, "admin_app/register.html", {"form": form})
+    return render(request, "admin_app/register.html", {"form": form, "form_type": "student"})
 
 
 @staff_member_required
@@ -93,7 +93,7 @@ def student_edit(request, s_id):
             return redirect("admin_app:student_info")
     else:
         form = StudentForm(instance=student)
-    return render(request, "admin_app/register.html", {"form": form})
+    return render(request, "admin_app/register.html", {"form": form, "form_type": "student"})
         
 @staff_member_required
 def student_delete(request, s_id):
@@ -143,7 +143,7 @@ def faculty_add(request):
             return redirect("admin_app:faculty_info")
     else:
         form = FacultyForm()
-    return render(request, "admin_app/register.html", {"form": form})
+    return render(request, "admin_app/register.html", {"form": form, "form_type": "faculty"})
 
 @staff_member_required
 def faculty_edit(request, f_id):
@@ -159,7 +159,7 @@ def faculty_edit(request, f_id):
     else:
         form = FacultyForm(instance=faculty)
 
-    return render(request, "admin_app/register.html", {"form": form})
+    return render(request, "admin_app/register.html", {"form": form, "form_type": "faculty"})
         
 @staff_member_required
 def faculty_delete(request, f_id):
