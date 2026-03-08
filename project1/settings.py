@@ -223,4 +223,4 @@ LOGGING = {
 # ── Gemini AI API Key ──
 # Get your free key from: https://aistudio.google.com/apikey
 # Set via environment variable GEMINI_API_KEY (never hardcode)
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', 'AIzaSyCF68dpU0sIYq_-dbZrtPOBTfa3aDr-kkY')
